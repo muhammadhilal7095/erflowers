@@ -51,8 +51,8 @@ async function walk(dir, base = '') {
   return keys;
 }
 
-const toBuffer = (data) => (typeof data === 'string' ? Buffer.from(data) : Buffer.from(data instanceof ArrayBuffer ? new Uint8Array(data) : data));
-const asType = (buf, type) => {
+export const toBuffer = (data) => (typeof data === 'string' ? Buffer.from(data) : Buffer.from(data instanceof ArrayBuffer ? new Uint8Array(data) : data));
+export const asType = (buf, type) => {
   if (type === 'json') return JSON.parse(buf.toString('utf8'));
   if (type === 'arrayBuffer') return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
   return buf.toString('utf8');

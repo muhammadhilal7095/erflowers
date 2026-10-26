@@ -6,13 +6,15 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "netlify dev"
+    "dev": "netlify dev",
+    "db:sql": "node scripts/make-database-sql.mjs"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.6",
-    "@netlify/functions": "^6.0.3"
+    "@netlify/functions": "^6.0.3",
+    "mysql2": "^3.24.6"
   }
 }

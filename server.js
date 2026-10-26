@@ -7,11 +7,16 @@
 // Environment variables:
 //   PORT            port to listen on (the host usually sets this)
 //   ADMIN_PASSWORD  password for the dashboard at /admin
-//   DATA_DIR        where products, orders, reviews and uploaded photos are saved
+//   DATABASE_URL    MySQL database, e.g. mysql://user:password@host:3306/dbname
+//     or DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME (and DB_SSL=true if required)
+//                   When set, products, orders, reviews and uploaded photos are saved there.
+//   DATA_DIR        without a database: folder where the data is saved as files
 //                   (default ./data; use a folder that survives redeploys if your host allows)
 //   STRIPE_SECRET_KEY  only needed for card payments
 
-process.env.ENVIE_STORAGE = 'file';
+// Use the MySQL database when its details are set, otherwise save files in DATA_DIR
+const usingDatabase = Boolean(process.env.DATABASE_URL || (process.env.DB_HOST && process.env.DB_USER && process.env.DB_NAME));
+process.env.ENVIE_STORAGE = usingDatabase ? 'mysql' : 'file';
 
 const http = require('node:http');
 const fs = require('node:fs');
@@ -38,7 +43,7 @@ const TYPES = {
 const COMPRESSIBLE = new Set(['.html', '.css', '.js', '.json', '.svg', '.txt']);
 
 // Project files that are not part of the website
-const PRIVATE = /^\/(node_modules|netlify|data|\.git)(\/|$)|^\/(server\.js|package(-lock)?\.json|SETUP\.md|netlify\.toml)$|\/\./;
+const PRIVATE = /^\/(node_modules|netlify|data|database|scripts|\.git)(\/|$)|^\/(server\.js|package(-lock)?\.json|SETUP\.md|netlify\.toml)$|\/\./;
 
 // ---------- API routes (same handlers Netlify runs) ----------
 const fn = (file) => import(path.join(ROOT, 'netlify', 'functions', file));
@@ -165,7 +170,17 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`Envie Roses running on port ${PORT}`);
   if (!process.env.ADMIN_PASSWORD) console.log('Note: set ADMIN_PASSWORD to use the dashboard at /admin');
+  if (usingDatabase) {
+    try {
+      const { checkDatabase } = await import(path.join(ROOT, 'netlify', 'lib', 'mysql-store.mjs'));
+      console.log(`Connected to MySQL database (${await checkDatabase()} saved records)`);
+    } catch (err) {
+      console.error('Could not connect to the MySQL database. Check DB_HOST, DB_USER, DB_PASSWORD and DB_NAME:', err.message);
+    }
+  } else {
+    console.log('Saving data as files in', process.env.DATA_DIR || path.join(ROOT, 'data'));
+  }
 });

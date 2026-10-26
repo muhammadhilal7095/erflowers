@@ -106,21 +106,41 @@ The site also runs on hosts that start a Node.js app from an entry file. `server
 | Package manager | npm |
 | Install / build command | `npm install` |
 | Start command | `npm start` |
+| Database | MySQL, set up as described below (optional but recommended) |
 
-Add these environment variables in your host's settings:
+### Your live MySQL database
 
-| Variable | What it's for |
+When your host provides a MySQL database, the website stores **everything** there: products, prices, offers, settings, orders, reviews and uploaded photos.
+
+1. **Create the database.** In your host's panel, open **Databases → MySQL** and create a database and a user. Write down the database name, username, password and host. On Hostinger the host is usually `localhost` for websites on the same server, or a name like `srv123.hstgr.io`.
+2. **Import the database file.**
+   - Open **phpMyAdmin** for that database.
+   - Choose **Import**, select `database/envie.sql` from this project, and click **Go**. This creates the `envie_store` table and adds your 7 starting products and settings.
+   - Importing again is safe: it never overwrites existing data.
+   - If you skip this step, the website creates the table itself on first use.
+3. **Add these environment variables** in your host's Node.js app settings:
+
+| Variable | Value |
 |---|---|
-| `ADMIN_PASSWORD` | Your dashboard password (required for `/admin`) |
-| `DATA_DIR` | *(recommended)* A folder **outside** the app folder that survives redeploys, e.g. `/home/youruser/envie-data`. Products, orders, reviews and uploaded photos are saved here. |
-| `STRIPE_SECRET_KEY` | Only if you turn on card payments |
+| `ADMIN_PASSWORD` | Your dashboard password (for `/admin`) |
+| `DB_HOST` | Database host, e.g. `localhost` |
+| `DB_PORT` | `3306` (only if your host uses a different port) |
+| `DB_NAME` | Database name, e.g. `u123456789_envie` |
+| `DB_USER` | Database username, e.g. `u123456789_envie` |
+| `DB_PASSWORD` | Database password |
+| `DB_SSL` | `true`, only if your host requires an encrypted connection |
 
-**Back up regularly:**
-- Without `DATA_DIR`, data is saved in a `data` folder inside the app. Some hosts wipe that folder when you redeploy from GitHub.
-- Use **Dashboard → Settings → Download backup** regularly. **Restore backup** puts your products and settings back.
-- Uploaded photos live in the data folder too, so keep a copy of them as well.
+   Or use a single variable instead: `DATABASE_URL=mysql://user:password@host:3306/dbname`
 
-On a Node.js host, photos you upload aren't resized automatically, because Netlify's image service isn't available. Upload photos at a sensible size (the dashboard already crops product photos to 1080 × 1080).
+4. **Redeploy.** The host's log should show `Connected to MySQL database`. If the details are wrong, it says `Could not connect to the MySQL database`, along with the reason.
+
+To recreate `database/envie.sql` after changing the starting products in `js/catalog.js`, run `npm run db:sql`.
+
+**Without a database,** the data is saved as files instead. Set `DATA_DIR` to a folder outside the app folder (e.g. `/home/youruser/envie-data`) so it survives redeploys.
+
+**Back up regularly.** Use **Dashboard → Settings → Download backup**. With MySQL you can also export the database from phpMyAdmin.
+
+On a Node.js host, photos you upload aren't resized automatically, because Netlify's image service isn't available. The dashboard already crops product photos to 1080 × 1080.
 
 ## Turning on card payments (Stripe + Netlify)
 
