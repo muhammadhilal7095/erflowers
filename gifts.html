@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Gifts & Occasions | Envie Roses</title>
+  <meta name="description" content="Luxury rose gifts for anniversaries, birthdays, romance, congratulations and sympathy. Personal card messages and UK delivery.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Gifts & Occasions | Envie Roses">
+  <meta property="og:description" content="Luxury rose gifts for anniversaries, birthdays, romance, congratulations and sympathy. Personal card messages and UK delivery.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body class="">
+  <script>EnvieLayout.top('gifts');</script>
+
+  <main id="main">
+    <script>EnvieLayout.pageHero({"title": "Gifts & Occasions", "kicker": "Say It With Roses", "intro": "Luxury roses for every moment that matters, with a personal message and delivery across the UK."});</script>
+    <section class="section occasions">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker kicker--gold">For Every Moment</p>
+          <h2 class="section-title">Shop by Occasion</h2>
+          <span class="ornament" aria-hidden="true"><svg><use href="#i-rose"/></svg></span>
+        </div>
+        <div class="occasion-grid">
+          <a href="shop.html?o=Anniversary" class="occasion">
+            <svg class="occasion__icon"><use href="#i-rings"/></svg>
+            <h3>Anniversary</h3>
+            <p>Celebrate the years together</p>
+            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a href="shop.html?o=Birthday" class="occasion">
+            <svg class="occasion__icon"><use href="#i-gift"/></svg>
+            <h3>Birthday</h3>
+            <p>Make their day unforgettable</p>
+            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a href="shop.html?o=Love+and+Romance" class="occasion">
+            <svg class="occasion__icon"><use href="#i-hearts"/></svg>
+            <h3>Love &amp; Romance</h3>
+            <p>Say it with roses</p>
+            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a href="shop.html?o=Congratulations" class="occasion">
+            <svg class="occasion__icon"><use href="#i-sparkle"/></svg>
+            <h3>Congratulations</h3>
+            <p>Mark every milestone</p>
+            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a href="shop.html?o=Sympathy" class="occasion">
+            <svg class="occasion__icon"><use href="#i-leaf"/></svg>
+            <h3>Sympathy</h3>
+            <p>Thoughtful, gentle tributes</p>
+            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a href="shop.html?o=Just+Because" class="occasion">
+            <svg class="occasion__icon"><use href="#i-sun"/></svg>
+            <h3>Just Because</h3>
+            <p>No reason needed</p>
+            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">Most Gifted</p>
+          <h2 class="section-title section-title--sm">Gifts They&rsquo;ll Remember</h2>
+        </div>
+        <div class="product-grid" id="giftGrid"></div>
+        <script>
+          (function () {
+            const { products } = window.ENVIE_CATALOG;
+            const all = Object.keys(products).filter((id) => !products[id].enquire);
+            const picks = ['heart-of-roses', 'red-50-boxed', 'ivory-hatbox'].filter((id) => products[id]);
+            all.forEach((id) => { if (picks.length < 3 && !picks.includes(id)) picks.push(id); });
+            document.getElementById('giftGrid').innerHTML = picks.map(EnvieLayout.productCard).join('');
+          })();
+        </script>
+      </div>
+    </section>
+
+    <section class="section colours">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">The Language of Roses</p>
+          <h2 class="section-title section-title--sm">What Each Colour Says</h2>
+        </div>
+        <div class="colour-grid">
+          <div class="colour">
+            <span class="colour__swatch" style="background:#9e1b1f"></span>
+            <h3>Red</h3>
+            <p>Love, passion and deep respect. The classic romantic gesture.</p>
+          </div>
+          <div class="colour">
+            <span class="colour__swatch" style="background:#f4efe6"></span>
+            <h3>White</h3>
+            <p>Purity, new beginnings and remembrance. Elegant for weddings and sympathy.</p>
+          </div>
+          <div class="colour">
+            <span class="colour__swatch" style="background:#e9a3b4"></span>
+            <h3>Pink</h3>
+            <p>Admiration, gratitude and joy. A gentle way to say thank you.</p>
+          </div>
+          <div class="colour">
+            <span class="colour__swatch" style="background:#f2c94c"></span>
+            <h3>Yellow</h3>
+            <p>Friendship and happiness. Bright, warm and uplifting.</p>
+          </div>
+          <div class="colour">
+            <span class="colour__swatch" style="background:#2f5fb3"></span>
+            <h3>Blue</h3>
+            <p>Mystery and the extraordinary. For someone truly one of a kind.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container info-grid">
+        <div class="info-card">
+          <svg class="info-card__icon"><use href="#i-pen"/></svg>
+          <h3>A Personal Message</h3>
+          <p>Add a card message at checkout and we will include it with your roses. Up to 250 characters.</p>
+        </div>
+        <div class="info-card">
+          <svg class="info-card__icon"><use href="#i-clock"/></svg>
+          <h3>Choose the Day</h3>
+          <p>Pick your delivery date at checkout so your roses arrive exactly when they mean the most.</p>
+        </div>
+        <div class="info-card">
+          <svg class="info-card__icon"><use href="#i-box"/></svg>
+          <h3>Corporate Gifting</h3>
+          <p>Gifts for clients, teams and events. Message us with quantities and dates for a tailored quote.</p>
+          <a href="#" class="info-card__link" data-enquire="corporate rose gifts">Request a quote <svg class="icon"><use href="#i-arrow"/></svg></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+</body>
+</html>

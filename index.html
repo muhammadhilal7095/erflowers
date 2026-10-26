@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Envie Roses | Luxury Roses, London</title>
+  <meta name="description" content="Premium handpicked luxury roses and rose boxes for life's most special moments. Fast delivery across the UK.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Envie Roses | Luxury Roses, London">
+  <meta property="og:description" content="Premium roses for life's most special moments. Handcrafted rose boxes delivered across the UK.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Florist",
+    "name": "Envie Roses",
+    "telephone": "+44 7464 418817",
+    "email": "info@envieroses.co.uk",
+    "address": { "@type": "PostalAddress", "addressLocality": "London", "addressCountry": "GB" }
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body>
+  <script>EnvieLayout.top('home');</script>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero grain">
+      <div class="hero__media"><img data-img="hero" src="images/hero.jpg" srcset="images/w/hero-480.webp 480w, images/w/hero-800.webp 800w, images/w/hero-1200.webp 1200w, images/hero.jpg 2200w" sizes="(max-width: 640px) 100vw, 62vw" alt="Red roses in a black luxury gift box" fetchpriority="high"></div>
+      <div class="container hero__content">
+        <p class="eyebrow">Luxury Roses</p>
+        <h1 class="hero__title">Timeless<br><span class="foil">Beauty</span></h1>
+        <p class="hero__text">Premium roses for life's most special moments.</p>
+        <div class="hero__actions">
+          <a href="shop.html" class="btn btn--gold">Shop the Collection <svg class="icon"><use href="#i-arrow"/></svg></a>
+          <a href="about.html" class="btn btn--ghost">Our Story</a>
+        </div>
+        <ul class="hero__trust">
+          <li>Handpicked Roses</li>
+          <li>Handcrafted Boxes</li>
+          <li>UK Delivery</li>
+        </ul>
+      </div>
+      <a href="#signature" class="hero__scroll" aria-label="Scroll to collection"><span></span></a>
+    </section>
+
+    <!-- Features -->
+    <section class="features">
+      <div class="container features__grid">
+        <div class="feature">
+          <svg class="feature__icon"><use href="#i-diamond"/></svg>
+          <h3>Premium Quality</h3>
+          <p>Fresh &amp; Handpicked Roses</p>
+        </div>
+        <div class="feature">
+          <svg class="feature__icon"><use href="#i-truck"/></svg>
+          <h3>Fast &amp; Secure Delivery</h3>
+          <p>Across UK</p>
+        </div>
+        <div class="feature">
+          <svg class="feature__icon"><use href="#i-shield"/></svg>
+          <h3>Safe Payments</h3>
+          <p>100% Secure Checkout</p>
+        </div>
+        <div class="feature">
+          <svg class="feature__icon"><use href="#i-heart"/></svg>
+          <h3>Customer Support</h3>
+          <p>We're Here to Help</p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Marquee -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <span>Luxury Roses</span><span>Handcrafted Rose Boxes</span><span>Delivered Across the UK</span><span>Made in London</span><span>A Language of Love</span>
+        <span>Luxury Roses</span><span>Handcrafted Rose Boxes</span><span>Delivered Across the UK</span><span>Made in London</span><span>A Language of Love</span>
+      </div>
+    </div>
+
+    <!-- Signature line -->
+    <section class="section signature" id="signature">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">Our Signature Collection</p>
+          <h2 class="section-title">The Signature Line</h2>
+          <span class="ornament" aria-hidden="true"><svg><use href="#i-rose"/></svg></span>
+        </div>
+
+        <div class="products" id="featuredGrid"></div>
+        <script>
+          (function () {
+            const { products } = window.ENVIE_CATALOG;
+            const ids = Object.keys(products).filter((id) => products[id].featured);
+            document.getElementById('featuredGrid').innerHTML = (ids.length ? ids : Object.keys(products).slice(0, 3)).map(EnvieLayout.productCard).join('');
+          })();
+        </script>
+        <p class="swipe-hint" aria-hidden="true">Swipe to explore &rarr;</p>
+        <div class="center view-all"><a href="shop.html" class="btn btn--outline">View All Roses <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+      </div>
+    </section>
+
+    <!-- Occasions -->
+    <section class="section occasions">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker kicker--gold">For Every Moment</p>
+          <h2 class="section-title section-title--light">Shop by Occasion</h2>
+          <span class="ornament" aria-hidden="true"><svg><use href="#i-rose"/></svg></span>
+        </div>
+        <div class="occasion-grid">
+          <a href="shop.html?o=Anniversary" class="occasion">
+            <svg class="occasion__icon"><use href="#i-rings"/></svg>
+            <h3>Anniversary</h3>
+            <p>Celebrate the years together</p>
+            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a href="shop.html?o=Birthday" class="occasion">
+            <svg class="occasion__icon"><use href="#i-gift"/></svg>
+            <h3>Birthday</h3>
+            <p>Make their day unforgettable</p>
+            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a href="shop.html?o=Love+and+Romance" class="occasion">
+            <svg class="occasion__icon"><use href="#i-hearts"/></svg>
+            <h3>Love &amp; Romance</h3>
+            <p>Say it with roses</p>
+            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a href="shop.html?o=Congratulations" class="occasion">
+            <svg class="occasion__icon"><use href="#i-sparkle"/></svg>
+            <h3>Congratulations</h3>
+            <p>Mark every milestone</p>
+            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a href="shop.html?o=Sympathy" class="occasion">
+            <svg class="occasion__icon"><use href="#i-leaf"/></svg>
+            <h3>Sympathy</h3>
+            <p>Thoughtful, gentle tributes</p>
+            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a href="shop.html?o=Just+Because" class="occasion">
+            <svg class="occasion__icon"><use href="#i-sun"/></svg>
+            <h3>Just Because</h3>
+            <p>No reason needed</p>
+            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Blue roses banner -->
+    <section class="banner grain" id="blue">
+      <div class="banner__media"><img data-img="blueBanner" src="images/blue-roses.jpg" srcset="images/w/blue-roses-480.webp 480w, images/w/blue-roses-800.webp 800w, images/w/blue-roses-1200.webp 1200w" sizes="(max-width: 640px) 100vw, 62vw" alt="A lush bouquet of blue roses" loading="lazy" decoding="async"></div>
+      <div class="container banner__content">
+        <p class="eyebrow">Exclusive &amp; Timeless</p>
+        <h2 class="banner__title">Quintessential<br>Blue Roses</h2>
+        <p class="banner__text">Exclusively For Our Members</p>
+        <a href="#" class="btn btn--gold" data-enquire="Quintessential Blue Roses"><svg class="icon"><use href="#i-whatsapp"/></svg> Enquire Now</a>
+      </div>
+    </section>
+
+    <!-- Experience -->
+    <section class="section experience">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">How It Works</p>
+          <h2 class="section-title section-title--sm">The Envie Experience</h2>
+        </div>
+        <ol class="steps">
+          <li class="step">
+            <span class="step__num">01</span>
+            <svg class="step__icon"><use href="#i-rose"/></svg>
+            <h3>Choose Your Roses</h3>
+            <p>Browse our signature boxes and bouquets, then pick the size and colour that says it best.</p>
+          </li>
+          <li class="step">
+            <span class="step__num">02</span>
+            <svg class="step__icon"><use href="#i-pen"/></svg>
+            <h3>Make It Personal</h3>
+            <p>Add your own message so every gift carries the words that matter most.</p>
+          </li>
+          <li class="step">
+            <span class="step__num">03</span>
+            <svg class="step__icon"><use href="#i-box"/></svg>
+            <h3>Delivered Beautifully</h3>
+            <p>Your roses are handcrafted with care and delivered across the UK, ready to impress.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Bespoke -->
+    <section class="bespoke grain">
+      <div class="bespoke__media"><img data-img="bespoke" src="images/bespoke.jpg" srcset="images/w/bespoke-480.webp 480w, images/w/bespoke-800.webp 800w, images/w/bespoke-1200.webp 1200w" sizes="(max-width: 960px) 100vw, 50vw" alt="Red roses arranged in a heart shape in a black box" loading="lazy" decoding="async"></div>
+      <div class="bespoke__content">
+        <p class="eyebrow">Bespoke Service</p>
+        <h2 class="bespoke__title">Designed Around<br>Your Story</h2>
+        <p>A heart of roses for a proposal, a signature colour for a celebration, or a statement piece for an event. Tell us your idea and our florists will create something made only for you.</p>
+        <ul class="bespoke__list">
+          <li>Proposals &amp; anniversaries</li>
+          <li>Custom colours &amp; sizes</li>
+          <li>Events &amp; corporate gifting</li>
+        </ul>
+        <div class="bespoke__actions">
+          <a href="#" class="btn btn--gold" data-enquire="a bespoke rose arrangement"><svg class="icon"><use href="#i-whatsapp"/></svg> Start on WhatsApp</a>
+          <a href="#" data-shop-href="phone" class="btn btn--ghost">Call Us</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Instagram -->
+    <section class="section instagram">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">Instagram</p>
+          <h2 class="section-title section-title--sm">The Journey of the Roses</h2>
+        </div>
+      </div>
+      <div class="insta-grid">
+        <div class="insta-item"><img data-img="insta1" src="images/insta-1.jpg" srcset="images/w/insta-1-480.webp 480w, images/w/insta-1-800.webp 800w, images/w/insta-1-1200.webp 1200w" sizes="(max-width: 640px) 62vw, 22vw" alt="Red roses against dark foliage" loading="lazy" decoding="async"></div>
+        <div class="insta-item"><img data-img="insta2" src="images/insta-2.jpg" srcset="images/w/insta-2-480.webp 480w, images/w/insta-2-800.webp 800w, images/w/insta-2-1200.webp 1200w" sizes="(max-width: 640px) 62vw, 22vw" alt="Woman holding red roses" loading="lazy" decoding="async"></div>
+        <div class="insta-item"><img data-img="insta3" src="images/insta-3.jpg" srcset="images/w/insta-3-480.webp 480w, images/w/insta-3-800.webp 800w, images/w/insta-3-1200.webp 1200w" sizes="(max-width: 640px) 62vw, 22vw" alt="A red rose on a black background" loading="lazy" decoding="async"></div>
+        <div class="insta-item"><img data-img="insta4" src="images/insta-4.jpg" srcset="images/w/insta-4-480.webp 480w, images/w/insta-4-800.webp 800w, images/w/insta-4-1200.webp 1200w" sizes="(max-width: 640px) 62vw, 22vw" alt="Red roses in a square black gift box" loading="lazy" decoding="async"></div>
+        <div class="insta-item"><img data-img="insta5" src="images/insta-5.jpg" srcset="images/w/insta-5-480.webp 480w, images/w/insta-5-800.webp 800w, images/w/insta-5-1200.webp 1200w" sizes="(max-width: 640px) 62vw, 22vw" alt="Red rosebud with raindrops" loading="lazy" decoding="async"></div>
+      </div>
+      <div class="center">
+        <a href="#" data-social="instagram" class="btn btn--outline btn--sm">Follow Us on Instagram <svg class="icon"><use href="#i-arrow"/></svg></a>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="about" id="about">
+      <div class="about__media"><img data-img="about" src="images/about-rose.jpg" srcset="images/w/about-rose-480.webp 480w, images/w/about-rose-800.webp 800w, images/w/about-rose-1200.webp 1200w, images/about-rose.jpg 1800w" sizes="(max-width: 960px) 100vw, 47vw" alt="Red rose with water droplets" loading="lazy" decoding="async"></div>
+      <div class="about__content">
+        <p class="kicker kicker--left">About Envie Roses</p>
+        <h2 class="section-title section-title--left">The Journey of<br>the Roses</h2>
+        <p>At Envie Roses, we believe that flowers are more than just a gift, they are a language of love. A symbol of emotions and a way to create unforgettable moments. Our handcrafted rose boxes are designed with passion, care and the finest blooms, bringing elegance, beauty, and meaning to every occasion.</p>
+        <a href="about.html" class="btn btn--outline btn--sm">Read More <svg class="icon"><use href="#i-arrow"/></svg></a>
+      </div>
+    </section>
+
+    <!-- Rose care -->
+    <section class="section care">
+      <div class="container care__inner">
+        <div class="care__intro">
+          <p class="kicker kicker--left">Rose Care Guide</p>
+          <h2 class="section-title section-title--left">Make the Moment Last</h2>
+          <p>A little care goes a long way. Follow these simple steps to keep your fresh roses looking their most beautiful for longer.</p>
+          <a href="contact.html" class="btn btn--outline btn--sm">Ask Our Florists <svg class="icon"><use href="#i-arrow"/></svg></a>
+        </div>
+        <div class="care__list">
+          <details class="faq" open>
+            <summary>Trim the stems<span class="faq__icon" aria-hidden="true"></span></summary>
+            <p>Cut 2–3 cm from each stem at an angle with a clean, sharp knife or scissors before placing roses in water.</p>
+          </details>
+          <details class="faq">
+            <summary>Fresh water, often<span class="faq__icon" aria-hidden="true"></span></summary>
+            <p>Use a clean vase and replace the water every two days, trimming the stems again each time.</p>
+          </details>
+          <details class="faq">
+            <summary>Remove lower leaves<span class="faq__icon" aria-hidden="true"></span></summary>
+            <p>Strip any leaves that would sit below the waterline to keep the water clean for longer.</p>
+          </details>
+          <details class="faq">
+            <summary>Choose the right spot<span class="faq__icon" aria-hidden="true"></span></summary>
+            <p>Keep your roses away from direct sunlight, radiators and fruit bowls, as heat and ripening fruit shorten their life.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="section testimonials">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">What Our Customers Say</p>
+          <h2 class="section-title section-title--sm">Real Moments, Real Emotions</h2>
+        </div>
+        <div class="reviews">
+          <figure class="review">
+            <div class="review__avatar">S</div>
+            <div>
+              <blockquote>"Absolutely stunning roses! Fresh, beautiful and delivered on time. Highly recommended!"</blockquote>
+              <figcaption>Sarah M.</figcaption>
+              <div class="stars" aria-label="5 out of 5 stars"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div>
+            </div>
+          </figure>
+          <figure class="review">
+            <div class="review__avatar">J</div>
+            <div>
+              <blockquote>"The most luxurious rose box I've ever received. Will definitely order again!"</blockquote>
+              <figcaption>James T.</figcaption>
+              <div class="stars" aria-label="5 out of 5 stars"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div>
+            </div>
+          </figure>
+          <figure class="review">
+            <div class="review__avatar">E</div>
+            <div>
+              <blockquote>"Perfect service and amazing quality. My partner loved it! Thank you Envie Roses!"</blockquote>
+              <figcaption>Emily R.</figcaption>
+              <div class="stars" aria-label="5 out of 5 stars"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div>
+            </div>
+          </figure>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+</body>
+</html>

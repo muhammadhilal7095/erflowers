@@ -1,0 +1,13 @@
+{
+  "name": "envie-roses",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Envie Roses website, dashboard and serverless functions",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.6",
+    "@netlify/functions": "^6.0.3"
+  }
+}
