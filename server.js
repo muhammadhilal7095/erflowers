@@ -149,13 +149,53 @@ async function netlifyImageFallback(req, res, url) {
   res.writeHead(404).end();
 }
 
+// ---------- Status page: /api/health (no secrets) ----------
+async function health(res) {
+  const status = {
+    server: 'running',
+    node: process.version,
+    storage: usingDatabase ? 'mysql' : 'files',
+    dashboardPassword: process.env.ADMIN_PASSWORD ? 'set' : 'MISSING - set ADMIN_PASSWORD',
+    database: usingDatabase ? 'checking' : 'not configured (set DB_HOST, DB_USER, DB_PASSWORD, DB_NAME to use MySQL)',
+    catalogue: 'checking'
+  };
+  if (usingDatabase) {
+    try {
+      const { checkDatabase } = await import(path.join(ROOT, 'netlify', 'lib', 'mysql-store.mjs'));
+      status.database = `connected (${await checkDatabase()} saved records)`;
+    } catch (err) {
+      status.database = `ERROR: ${err.message}`;
+    }
+  }
+  try {
+    const { getCatalog } = await import(path.join(ROOT, 'netlify', 'lib', 'shop-data.mjs'));
+    status.catalogue = `ok (${Object.keys((await getCatalog()).products).length} products)`;
+  } catch (err) {
+    status.catalogue = `ERROR: ${err.message}`;
+  }
+  res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+  res.end(JSON.stringify(status, null, 2));
+}
+
 // ---------- Server ----------
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
     const pathname = decodeURIComponent(url.pathname);
 
+    if (pathname === '/api/health') return await health(res);
     const route = ROUTES.find((r) => r.match(pathname));
+    if (route && pathname === '/js/catalog.js') {
+      // The header, footer and products are built from this file, so it must always load:
+      // if the live catalogue fails, send the built-in one and log why
+      try {
+        return await runHandler(route, req, res, pathname);
+      } catch (err) {
+        console.error('Live catalogue failed, sending the built-in js/catalog.js instead:', err);
+        if (!res.headersSent) return sendFile(req, res, path.join(ROOT, 'js', 'catalog.js'));
+        return res.end();
+      }
+    }
     if (route) return await runHandler(route, req, res, pathname);
     if (pathname === '/.netlify/images') return await netlifyImageFallback(req, res, url);
 
