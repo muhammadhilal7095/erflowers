@@ -37,6 +37,12 @@
   force = true
 
 [[redirects]]
+  from = "/server.js"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
   from = "/SETUP.md"
   to = "/404.html"
   status = 404

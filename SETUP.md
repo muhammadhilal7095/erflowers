@@ -95,6 +95,33 @@ Once the dashboard is set up, change these in **Settings** and **Products** inst
 | `legal` | Your company name, number, registered office and VAT number. |
 | `payments.stripe` | Set to `true` only after finishing the card-payment steps below. |
 
+## Hosting on a Node.js host (Hostinger and similar)
+
+The site also runs on hosts that start a Node.js app from an entry file. `server.js` serves the website and runs the dashboard, orders, reviews and checkout, with the same code as Netlify.
+
+| Setting on your host | Value |
+|---|---|
+| Entry file | `server.js` |
+| Node.js version | 22 (anything from 18 works) |
+| Package manager | npm |
+| Install / build command | `npm install` |
+| Start command | `npm start` |
+
+Add these environment variables in your host's settings:
+
+| Variable | What it's for |
+|---|---|
+| `ADMIN_PASSWORD` | Your dashboard password (required for `/admin`) |
+| `DATA_DIR` | *(recommended)* A folder **outside** the app folder that survives redeploys, e.g. `/home/youruser/envie-data`. Products, orders, reviews and uploaded photos are saved here. |
+| `STRIPE_SECRET_KEY` | Only if you turn on card payments |
+
+**Back up regularly:**
+- Without `DATA_DIR`, data is saved in a `data` folder inside the app. Some hosts wipe that folder when you redeploy from GitHub.
+- Use **Dashboard → Settings → Download backup** regularly. **Restore backup** puts your products and settings back.
+- Uploaded photos live in the data folder too, so keep a copy of them as well.
+
+On a Node.js host, photos you upload aren't resized automatically, because Netlify's image service isn't available. Upload photos at a sensible size (the dashboard already crops product photos to 1080 × 1080).
+
 ## Turning on card payments (Stripe + Netlify)
 
 Card payments need a small server function, so the site has to be hosted on Netlify. A free plan is fine.

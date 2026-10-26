@@ -1,12 +1,16 @@
 // Shared server code for the Envie Roses dashboard, catalogue and orders.
-// Data lives in Netlify Blobs; js/catalog.js holds the starting defaults.
+// Data lives in Netlify Blobs on Netlify, or in files when run by server.js
+// on a normal Node.js host. js/catalog.js holds the starting defaults.
 
 import { getStore } from '@netlify/blobs';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import DEFAULTS from '../../js/catalog.js';
+import { getFileStore } from './file-store.mjs';
 
-const dataStore = () => getStore({ name: 'envie', consistency: 'strong' });
-export const imageStore = () => getStore({ name: 'envie-images', consistency: 'strong' });
+const useFiles = process.env.ENVIE_STORAGE === 'file';
+const store = (name) => (useFiles ? getFileStore(name) : getStore({ name, consistency: 'strong' }));
+const dataStore = () => store('envie');
+export const imageStore = () => store('envie-images');
 
 export const CATEGORIES = ['boxes', 'bouquets', 'exclusive'];
 export const IMAGE_KEYS = ['hero', 'blueBanner', 'bespoke', 'about', 'pageHero', 'insta1', 'insta2', 'insta3', 'insta4', 'insta5'];
