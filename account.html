@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Order History | Envie Roses</title>
+  <meta name="description" content="View your Envie Roses orders placed on this device.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Order History | Envie Roses">
+  <meta property="og:description" content="View your Envie Roses orders placed on this device.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body class="">
+  <script>EnvieLayout.top(null);</script>
+
+  <main id="main">
+    <script>EnvieLayout.pageHero({"title": "Order History", "kicker": "My Account", "intro": "Your recent Envie Roses orders."});</script>
+    <section class="section section--tight">
+      <div class="container orders">
+        <p class="orders__note">Orders placed on this device are listed below. For help with any order, <a href="contact.html">contact us</a> with your order reference.</p>
+        <div id="orderList"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+  <script>
+    (function () {
+      const list = document.getElementById('orderList');
+      const { money, esc } = EnvieLayout;
+      const orders = EnvieShop.orders();
+      if (!orders.length) {
+        list.innerHTML = `<div class="orders__empty"><svg><use href="#i-rose"/></svg><p>You haven&rsquo;t placed any orders on this device yet.</p><a href="shop.html" class="btn btn--gold">Shop the Collection</a></div>`;
+        return;
+      }
+      list.innerHTML = orders.map((o, i) => {
+        const placed = new Date(o.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        const delivery = o.quick || !o.delivery.date ? 'Arranged on WhatsApp' : new Date(o.delivery.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+        return `
+        <article class="order-card">
+          <header class="order-card__head">
+            <div><span class="order-card__label">Order</span><strong>${esc(o.id)}</strong></div>
+            <div><span class="order-card__label">Placed</span>${placed}</div>
+            <div><span class="order-card__label">Delivery</span>${delivery}</div>
+            <div><span class="order-card__label">Total</span>${money(o.total)}</div>
+            <span class="order-card__status ${o.paid ? 'is-paid' : ''}">${o.paid ? 'Paid by card' : 'Sent on WhatsApp'}</span>
+          </header>
+          <ul class="order-card__items">${o.lines.map((l) => `<li><span>${l.qty} &times; ${esc(l.name)} <small>(${esc(l.label)})</small></span><span>${money(l.total)}</span></li>`).join('')}</ul>
+          <footer class="order-card__foot">
+            <span>${o.quick ? 'Delivery details arranged on WhatsApp' : `To ${esc(o.delivery.recipient)}, ${esc(o.delivery.city)} ${esc(o.delivery.postcode)}`}</span>
+            <a href="${EnvieShop.waLink(EnvieShop.orderText(o, o.paid))}" target="_blank" rel="noopener" class="btn btn--outline btn--sm"><svg class="icon"><use href="#i-whatsapp"/></svg> Resend on WhatsApp</a>
+          </footer>
+        </article>`;
+      }).join('');
+    })();
+  </script>
+</body>
+</html>

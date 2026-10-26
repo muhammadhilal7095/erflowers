@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Shop All Roses | Envie Roses</title>
+  <meta name="description" content="Shop luxury rose boxes and hand-tied bouquets from Envie Roses. Handcrafted in London and delivered across the UK.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Shop All Roses | Envie Roses">
+  <meta property="og:description" content="Shop luxury rose boxes and hand-tied bouquets from Envie Roses. Handcrafted in London and delivered across the UK.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body class="">
+  <script>EnvieLayout.top(new URLSearchParams(location.search).get('c') === 'boxes' ? 'boxes' : 'shop');</script>
+
+  <main id="main">
+    <script>
+      (function () {
+        const P = new URLSearchParams(location.search);
+        const c = P.get('c'), o = P.get('o'), q = (P.get('q') || '').trim();
+        const titles = { boxes: 'Rose Boxes', bouquets: 'Bouquets', exclusive: 'Exclusive Roses' };
+        let title = 'Shop All Roses', intro = 'Handcrafted luxury roses, delivered across the UK.';
+        if (titles[c]) { title = titles[c]; intro = c === 'boxes' ? 'Our signature roses, arranged by hand in keepsake boxes.' : c === 'bouquets' ? 'Hand-tied bouquets, wrapped to impress.' : 'Rare and members-only roses. Enquire for availability.'; }
+        if (o) { title = 'Roses for ' + o; intro = 'Thoughtful roses for ' + o.toLowerCase() + ', delivered across the UK.'; }
+        if (q) { title = 'Search results'; intro = 'Showing roses matching “' + q + '”.'; }
+        document.title = title + ' | Envie Roses';
+        EnvieLayout.pageHero({ title, kicker: 'The Collection', intro, crumb: title });
+      })();
+    </script>
+    <section class="section shop">
+      <div class="container">
+        <div class="shop-bar">
+          <nav class="chips" aria-label="Categories">
+            <a href="shop.html" class="chip" data-cat="">All Roses</a>
+            <a href="shop.html?c=boxes" class="chip" data-cat="boxes">Rose Boxes</a>
+            <a href="shop.html?c=bouquets" class="chip" data-cat="bouquets">Bouquets</a>
+            <a href="shop.html?c=exclusive" class="chip" data-cat="exclusive">Exclusive</a>
+          </nav>
+          <div class="shop-bar__right">
+            <span class="shop-bar__count" id="shopCount"></span>
+            <label class="sort"><span>Sort by</span>
+              <select id="shopSort">
+                <option value="featured">Featured</option>
+                <option value="low">Price: low to high</option>
+                <option value="high">Price: high to low</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="product-grid" id="shopGrid"></div>
+        <div class="shop-empty" id="shopEmpty" hidden>
+          <p>We couldn&rsquo;t find roses matching your search.</p>
+          <a href="shop.html" class="btn btn--outline btn--sm">View all roses</a>
+        </div>
+        <script>
+          (function () {
+            const { products } = window.ENVIE_CATALOG;
+            const P = new URLSearchParams(location.search);
+            const c = P.get('c') || '', q = (P.get('q') || '').trim().toLowerCase();
+            document.querySelectorAll('.chip').forEach((el) => el.classList.toggle('is-active', el.dataset.cat === c && !q));
+            const minPrice = (p) => p.options.length ? Math.min(...p.options.map((o) => o.price)) : Infinity;
+            let ids = Object.keys(products).filter((id) => {
+              const p = products[id];
+              if (c && p.category !== c) return false;
+              if (q && !(p.name + ' ' + p.description + ' ' + p.category).toLowerCase().includes(q)) return false;
+              return true;
+            });
+            const featured = ids.slice();
+            const grid = document.getElementById('shopGrid');
+            function render(order) {
+              const list = order === 'low' ? ids.slice().sort((a, b) => minPrice(products[a]) - minPrice(products[b]))
+                : order === 'high' ? ids.slice().sort((a, b) => (minPrice(products[b]) === Infinity ? -1 : minPrice(products[b])) - (minPrice(products[a]) === Infinity ? -1 : minPrice(products[a])))
+                : featured;
+              grid.innerHTML = list.map(EnvieLayout.productCard).join('');
+            }
+            render('featured');
+            document.getElementById('shopCount').textContent = ids.length + (ids.length === 1 ? ' design' : ' designs');
+            document.getElementById('shopEmpty').hidden = ids.length > 0;
+            document.getElementById('shopSort').addEventListener('change', (e) => render(e.target.value));
+          })();
+        </script>
+      </div>
+    </section>
+
+    <section class="cta-band grain">
+      <div class="container cta-band__inner">
+        <div>
+          <p class="eyebrow">Bespoke Service</p>
+          <h2 class="cta-band__title">Can&rsquo;t find the perfect arrangement?</h2>
+          <p>Tell us your idea, colour or budget and our florists will design something made only for you.</p>
+        </div>
+        <div class="cta-band__actions">
+          <a href="#" class="btn btn--gold" data-enquire="a bespoke rose arrangement"><svg class="icon"><use href="#i-whatsapp"/></svg> Start on WhatsApp</a>
+          <a href="contact.html" class="btn btn--ghost">Contact Us</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Luxury Roses | Envie Roses</title>
+  <meta name="description" content="Luxury handcrafted roses from Envie Roses, delivered across the UK.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="product">
+  <meta property="og:title" content="Luxury Roses | Envie Roses">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body>
+  <script>EnvieLayout.top('shop');</script>
+
+  <main id="main">
+    <section class="pp section--tight">
+      <div class="container">
+        <nav class="crumbs crumbs--light" aria-label="Breadcrumb" id="ppCrumbs"></nav>
+
+        <div class="pp__grid" id="ppMain">
+          <!-- Gallery -->
+          <div class="gallery" id="gallery">
+            <div class="gallery__stage">
+              <div class="gallery__track" id="galleryTrack" tabindex="0" aria-label="Product photos"></div>
+              <span class="product__badge gallery__badge" id="ppBadge" hidden></span>
+              <button type="button" class="gallery__nav gallery__nav--prev" id="galPrev" aria-label="Previous photo"><svg class="icon"><use href="#i-arrow"/></svg></button>
+              <button type="button" class="gallery__nav gallery__nav--next" id="galNext" aria-label="Next photo"><svg class="icon"><use href="#i-arrow"/></svg></button>
+              <span class="gallery__count" id="galCount"></span>
+            </div>
+            <div class="gallery__thumbs" id="galleryThumbs" role="tablist" aria-label="Choose photo"></div>
+          </div>
+
+          <!-- Details -->
+          <div class="pp__info">
+            <p class="eyebrow eyebrow--dark" id="ppCategory"></p>
+            <h1 class="pp__name" id="ppName"></h1>
+            <a href="#reviews" class="pp__rating" id="ppRating"></a>
+            <div class="pp__price" id="ppPrice"></div>
+            <p class="pp__desc" id="ppDesc"></p>
+
+            <div class="offer" id="ppOffer" hidden>
+              <div class="offer__head">
+                <span class="offer__label" id="offerLabel"></span>
+                <span class="offer__ends" id="offerEnds"></span>
+              </div>
+              <div class="offer__clock" role="timer" aria-live="off">
+                <div><strong id="cdDays">00</strong><span>Days</span></div>
+                <div><strong id="cdHours">00</strong><span>Hours</span></div>
+                <div><strong id="cdMins">00</strong><span>Mins</span></div>
+                <div><strong id="cdSecs">00</strong><span>Secs</span></div>
+              </div>
+            </div>
+
+            <div id="ppBuy">
+              <fieldset class="pm__field">
+                <legend>Choose your size</legend>
+                <div class="variants" id="ppVariants"></div>
+              </fieldset>
+              <div class="pp__row">
+                <div class="qty" role="group" aria-label="Quantity">
+                  <button type="button" data-ppqty="-1" aria-label="Decrease quantity">−</button>
+                  <output id="ppQty">1</output>
+                  <button type="button" data-ppqty="1" aria-label="Increase quantity">+</button>
+                </div>
+                <button type="button" class="btn btn--outline pp__add" id="ppAdd">Add to Bag</button>
+              </div>
+              <button type="button" class="btn btn--whatsapp btn--block pp__buy" id="ppBuyNow"><svg class="icon"><use href="#i-whatsapp"/></svg> Buy Now on WhatsApp</button>
+              <p class="pp__buynote">Opens WhatsApp with your order ready to send. No forms.</p>
+            </div>
+            <div id="ppEnquire" hidden>
+              <a href="#" class="btn btn--whatsapp btn--block" id="ppEnquireBtn"><svg class="icon"><use href="#i-whatsapp"/></svg> Enquire on WhatsApp</a>
+            </div>
+
+            <ul class="pp__perks">
+              <li><svg class="icon"><use href="#i-truck"/></svg><span><strong>UK delivery</strong> on the date you choose. Same day by phone.</span></li>
+              <li><svg class="icon"><use href="#i-pen"/></svg><span><strong>Personal card message</strong> included with your order.</span></li>
+              <li><svg class="icon"><use href="#i-whatsapp"/></svg><span><strong>Order instantly on WhatsApp</strong>, or add to your bag.</span></li>
+            </ul>
+
+            <div class="pp__accordion">
+              <details class="faq" open>
+                <summary>Product details<span class="faq__icon" aria-hidden="true"></span></summary>
+                <ul class="pp__details" id="ppDetails"></ul>
+              </details>
+              <details class="faq">
+                <summary>Delivery<span class="faq__icon" aria-hidden="true"></span></summary>
+                <p>We deliver across the UK. Choose your delivery date at checkout, or call us for same day delivery. Delivery is <span data-shop="deliveryFee"></span>. See <a href="delivery.html">Delivery Information</a>.</p>
+              </details>
+              <details class="faq">
+                <summary>Rose care<span class="faq__icon" aria-hidden="true"></span></summary>
+                <p>Trim the stems at an angle, change the water every two days and keep your roses away from heat, direct sunlight and fruit bowls.</p>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="pp-missing" id="ppMissing" hidden>
+          <h1 class="section-title">Product Not Found</h1>
+          <p>This product may no longer be available.</p>
+          <a href="shop.html" class="btn btn--gold">Shop All Roses</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reviews -->
+    <section class="section reviews-section" id="reviews">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">Customer Reviews</p>
+          <h2 class="section-title section-title--sm">What Our Customers Say</h2>
+        </div>
+        <div class="rv">
+          <aside class="rv__summary" id="rvSummary"></aside>
+          <div class="rv__list" id="rvList"></div>
+        </div>
+
+        <form class="rv-form" id="rvForm" novalidate>
+          <h3 class="rv-form__title">Write a Review</h3>
+          <p class="rv-form__intro">Share your experience with other customers. Reviews are checked by our team before they appear.</p>
+          <div class="field field--full">
+            <span>Your rating *</span>
+            <div class="star-input" id="starInput" role="radiogroup" aria-label="Your rating">
+              <button type="button" role="radio" aria-checked="false" data-star="1" aria-label="1 star"><svg><use href="#i-star"/></svg></button>
+              <button type="button" role="radio" aria-checked="false" data-star="2" aria-label="2 stars"><svg><use href="#i-star"/></svg></button>
+              <button type="button" role="radio" aria-checked="false" data-star="3" aria-label="3 stars"><svg><use href="#i-star"/></svg></button>
+              <button type="button" role="radio" aria-checked="false" data-star="4" aria-label="4 stars"><svg><use href="#i-star"/></svg></button>
+              <button type="button" role="radio" aria-checked="false" data-star="5" aria-label="5 stars"><svg><use href="#i-star"/></svg></button>
+            </div>
+          </div>
+          <div class="co-grid">
+            <label class="field"><span>Your name *</span><input name="name" required maxlength="60" autocomplete="name"></label>
+            <label class="field"><span>Email <small>(not published)</small></span><input name="email" type="email" maxlength="120" autocomplete="email"></label>
+            <label class="field field--full"><span>Review title</span><input name="title" maxlength="100" placeholder="e.g. Absolutely stunning"></label>
+            <label class="field field--full"><span>Your review *</span><textarea name="text" rows="4" required minlength="10" maxlength="1500"></textarea></label>
+            <label class="rv-form__hp" aria-hidden="true">Company<input name="company" tabindex="-1" autocomplete="off"></label>
+          </div>
+          <p class="co-error" id="rvError" role="alert"></p>
+          <button type="submit" class="btn btn--gold" id="rvSubmit">Submit Review</button>
+          <p class="rv-form__note">By submitting, you confirm this is your own genuine experience. See our <a href="privacy.html">Privacy Policy</a>.</p>
+        </form>
+      </div>
+    </section>
+
+    <!-- Related -->
+    <section class="section related" id="related">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">You May Also Like</p>
+          <h2 class="section-title section-title--sm">More From The Collection</h2>
+        </div>
+        <div class="product-grid" id="relatedGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/product.js"></script>
+</body>
+</html>

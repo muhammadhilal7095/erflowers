@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Contact Us | Envie Roses</title>
+  <meta name="description" content="Contact Envie Roses on WhatsApp, by phone or email. London luxury florist delivering across the UK.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Contact Us | Envie Roses">
+  <meta property="og:description" content="Contact Envie Roses on WhatsApp, by phone or email. London luxury florist delivering across the UK.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body class="">
+  <script>EnvieLayout.top('contact');</script>
+
+  <main id="main">
+    <script>EnvieLayout.pageHero({"title": "Contact Us", "kicker": "We’re Here to Help", "intro": "Message us on WhatsApp, call or email. We’re happy to help you choose the perfect roses."});</script>
+    <section class="section">
+      <div class="container contact">
+        <div class="contact__cards">
+          <a href="#" class="contact-card" data-enquire="">
+            <svg class="icon contact-card__icon contact-card__icon--wa"><use href="#i-whatsapp"/></svg>
+            <span><strong>WhatsApp</strong><small>The quickest way to reach us</small></span>
+          </a>
+          <a href="#" class="contact-card" data-shop-href="phone">
+            <svg class="icon contact-card__icon"><use href="#i-phone"/></svg>
+            <span><strong>Call us</strong><small data-shop="phone"></small></span>
+          </a>
+          <a href="#" class="contact-card" data-shop-href="email">
+            <svg class="icon contact-card__icon"><use href="#i-mail"/></svg>
+            <span><strong>Email</strong><small data-shop="email"></small></span>
+          </a>
+          <div class="contact-card">
+            <svg class="icon contact-card__icon"><use href="#i-pin"/></svg>
+            <span><strong>Location</strong><small>London, UK &middot; Delivering across the UK</small></span>
+          </div>
+          <div class="contact-card" data-optional-wrap>
+            <svg class="icon contact-card__icon"><use href="#i-user"/></svg>
+            <span><strong>Hours</strong><small data-shop="hours" data-optional></small></span>
+          </div>
+        </div>
+
+        <form class="contact__form" id="contactForm" novalidate>
+          <h2 class="contact__title">Send Us a Message</h2>
+          <p class="contact__intro">Questions about an order, a bespoke idea or corporate gifting? We&rsquo;d love to hear from you.</p>
+          <div class="co-grid">
+            <label class="field"><span>Your name *</span><input name="name" required autocomplete="name"></label>
+            <label class="field"><span>Email *</span><input name="email" type="email" required autocomplete="email"></label>
+            <label class="field"><span>Phone</span><input name="phone" type="tel" autocomplete="tel" placeholder="07123 456789"></label>
+            <label class="field"><span>Order reference</span><input name="order" placeholder="e.g. ER-261025-AB12"></label>
+            <label class="field field--full"><span>Subject *</span>
+              <select name="subject" required>
+                <option value="">Please choose</option>
+                <option>A question about my order</option>
+                <option>Product or delivery question</option>
+                <option>Bespoke arrangement</option>
+                <option>Corporate gifting</option>
+                <option>Something else</option>
+              </select>
+            </label>
+            <label class="field field--full"><span>Message *</span><textarea name="message" rows="5" required maxlength="1000"></textarea></label>
+          </div>
+          <p class="co-error" id="contactError" role="alert"></p>
+          <div class="contact__actions">
+            <button type="submit" class="btn btn--whatsapp" value="whatsapp"><svg class="icon"><use href="#i-whatsapp"/></svg> Send on WhatsApp</button>
+            <button type="submit" class="btn btn--outline" value="email"><svg class="icon"><use href="#i-mail"/></svg> Send by Email</button>
+          </div>
+          <p class="contact__note">Your message opens in WhatsApp or your email app, ready to send. See our <a href="privacy.html">Privacy Policy</a>.</p>
+        </form>
+      </div>
+    </section>
+
+    <section class="section care">
+      <div class="container care__inner">
+        <div class="care__intro">
+          <p class="kicker kicker--left">Quick Answers</p>
+          <h2 class="section-title section-title--left">Common Questions</h2>
+          <p>Find answers about ordering, delivery and caring for your roses.</p>
+          <a href="faq.html" class="btn btn--outline btn--sm">All FAQs <svg class="icon"><use href="#i-arrow"/></svg></a>
+        </div>
+        <div class="care__list">
+          <details class="faq" open>
+            <summary>Where do you deliver?<span class="faq__icon" aria-hidden="true"></span></summary>
+            <p>We deliver to addresses across the UK. See our <a href="delivery.html">Delivery Information</a> for details.</p>
+          </details>
+          <details class="faq">
+            <summary>Can I choose the delivery date?<span class="faq__icon" aria-hidden="true"></span></summary>
+            <p>Yes. Choose your delivery date at checkout. For same day delivery, call us or message us on WhatsApp and we&rsquo;ll create a bouquet to suit your budget.</p>
+          </details>
+          <details class="faq">
+            <summary>Can I change or cancel my order?<span class="faq__icon" aria-hidden="true"></span></summary>
+            <p>Please contact us as soon as possible with your order reference. See our <a href="refunds.html">Refunds &amp; Returns</a> policy.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+  <script>
+    (function () {
+      const form = document.getElementById('contactForm');
+      const err = document.getElementById('contactError');
+      const { shop } = window.ENVIE_CATALOG;
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!form.checkValidity()) {
+          form.classList.add('was-validated');
+          err.textContent = 'Please complete the highlighted fields.';
+          form.querySelector(':invalid').focus();
+          return;
+        }
+        err.textContent = '';
+        const d = Object.fromEntries(new FormData(form).entries());
+        const lines = [
+          `*${d.subject}*`, '',
+          d.message, '',
+          `From: ${d.name}`, `Email: ${d.email}`,
+          d.phone ? `Phone: ${d.phone}` : '',
+          d.order ? `Order: ${d.order}` : ''
+        ].filter((l, i) => l !== '' || i < 4);
+        const text = lines.join('\n');
+        if (e.submitter && e.submitter.value === 'email') {
+          location.href = `mailto:${shop.email}?subject=${encodeURIComponent(d.subject + (d.order ? ' (' + d.order + ')' : ''))}&body=${encodeURIComponent(text.replace(/\*/g, ''))}`;
+        } else {
+          window.open(EnvieShop.waLink(text), '_blank', 'noopener');
+        }
+        window.envieToast && window.envieToast('Thank you. Your message is ready to send.');
+      });
+    })();
+  </script>
+</body>
+</html>

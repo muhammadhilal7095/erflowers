@@ -1,0 +1,21 @@
+Stock photos from Unsplash (https://unsplash.com/license) and Pexels (https://www.pexels.com/license/), both free for commercial use
+Replace with your own product photography when available. Keep the same filenames.
+Product photos (product-1 to product-7) are 1080 x 1080 px squares; keep new ones the same size.
+
+hero.jpg        https://unsplash.com/photos/nkJbrWFHPNc  (Nika Benedictova)
+product-1.jpg   https://www.pexels.com/photo/28973772/
+product-2.jpg   https://www.pexels.com/photo/30796343/
+product-3.jpg   https://unsplash.com/photos/YPW5RcYmCJQ  (Preillumination SeTh)
+blue-roses.jpg  https://unsplash.com/photos/9c3C2JQPl2k  (Aleyna Çatak)
+insta-1.jpg     https://unsplash.com/photos/tOe5WGDmeDo
+insta-2.jpg     https://unsplash.com/photos/iyOiIle-aI4  (Brynden)
+insta-3.jpg     https://unsplash.com/photos/yO8FVA-fiCo  (Taylor Burnfield)
+insta-4.jpg     https://www.pexels.com/photo/7383467/
+insta-5.jpg     https://unsplash.com/photos/42GQdgyuNpA  (Wyxina Tresse)
+about-rose.jpg  https://unsplash.com/photos/Pcz1Yo0680Y  (César Couto)
+bespoke.jpg     https://www.pexels.com/photo/18294717/
+product-4.jpg   https://www.pexels.com/photo/7383467/
+product-5.jpg   https://www.pexels.com/photo/18294717/
+product-6.jpg   https://www.pexels.com/photo/29400307/
+page-hero.jpg   https://www.pexels.com/photo/19376100/
+product-7.jpg   https://unsplash.com/photos/9c3C2JQPl2k  (Aleyna Çatak) - square crop of the blue roses
