@@ -29,13 +29,18 @@ export function json(status, body) {
 
 // ---------- Catalogue ----------
 
-export async function getCatalog() {
-  let saved = null;
-  try {
-    saved = await dataStore().get('catalog', { type: 'json' });
-  } catch (err) {
-    console.error('Could not read catalogue, using defaults', err);
-  }
+// On a Node.js host (one long-running server) the catalogue is kept in memory, so
+// pages never wait on the database; saving in the dashboard updates it at once.
+// Netlify runs many short-lived copies, so it always reads fresh (its CDN caches instead).
+const keepInMemory = mode === 'mysql' || mode === 'file';
+const MEMORY_MS = 60 * 1000;
+let memory = null;
+let memoryAt = 0;
+
+const withTimeout = (promise, ms) =>
+  Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(new Error(`timed out after ${ms}ms`)), ms))]);
+
+function withDefaults(saved) {
   if (!saved) return structuredClone(DEFAULTS);
   return {
     shop: { ...DEFAULTS.shop, ...saved.shop },
@@ -47,8 +52,26 @@ export async function getCatalog() {
   };
 }
 
+export async function getCatalog() {
+  if (keepInMemory && memory && Date.now() - memoryAt < MEMORY_MS) return structuredClone(memory);
+  try {
+    const saved = await withTimeout(dataStore().get('catalog', { type: 'json' }), 4000);
+    const catalog = withDefaults(saved);
+    if (keepInMemory) { memory = catalog; memoryAt = Date.now(); }
+    return structuredClone(catalog);
+  } catch (err) {
+    console.error('Could not read catalogue, using', memory ? 'the last saved copy' : 'the starting products', '-', err.message);
+    if (!keepInMemory) return structuredClone(DEFAULTS);
+    // Serve the last good copy (or the starting products) and try the database again in 15 seconds
+    if (!memory) memory = structuredClone(DEFAULTS);
+    memoryAt = Date.now() - MEMORY_MS + 15000;
+    return structuredClone(memory);
+  }
+}
+
 export async function saveCatalog(catalog) {
   await dataStore().setJSON('catalog', catalog);
+  if (keepInMemory) { memory = structuredClone(catalog); memoryAt = Date.now(); }
 }
 
 const str = (value, max, field, { required = false } = {}) => {

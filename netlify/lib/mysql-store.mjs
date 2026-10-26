@@ -30,7 +30,7 @@ let poolPromise = null;
 
 function settings() {
   const ssl = process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined;
-  const common = { waitForConnections: true, connectionLimit: 5, charset: 'utf8mb4', ssl };
+  const common = { waitForConnections: true, connectionLimit: 5, charset: 'utf8mb4', ssl, connectTimeout: 5000 };
   if (process.env.DATABASE_URL) return { uri: process.env.DATABASE_URL, ...common };
   return {
     host: process.env.DB_HOST,
