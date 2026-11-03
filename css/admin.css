@@ -458,3 +458,66 @@ svg { width: 18px; height: 18px; flex-shrink: 0; }
 /* Radio buttons must not inherit the full-width input style */
 .field .radio-row input { width: auto; padding: 0; flex-shrink: 0; }
 .radio-row label { white-space: nowrap; }
+
+/* ---------- Product tags ---------- */
+.tags { display: grid; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.tags__group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tags__title { flex-basis: 100%; margin: 0 0 2px; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.tag { position: relative; cursor: pointer; }
+.tag input { position: absolute; opacity: 0; pointer-events: none; }
+.tag span { display: inline-block; padding: 5px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); font-size: 12.5px; transition: background .15s, border-color .15s, color .15s; }
+.tag input:checked + span { background: var(--ink); border-color: var(--ink); color: var(--gold); }
+.tag input:focus-visible + span { outline: 2px solid var(--gold); outline-offset: 2px; }
+.size-row { grid-template-columns: 1fr 120px 1fr auto; }
+@media (max-width: 760px) {
+  .size-row { grid-template-columns: 1fr 100px auto; }
+  .size-row [data-size="note"] { grid-column: 1 / 3; grid-row: 2; }
+}
+
+/* ---------- Gift add-ons ---------- */
+.addon-list { display: grid; gap: 14px; }
+.addon-list .card { margin: 0; }
+.addon-edit { display: grid; grid-template-columns: 110px 1fr; gap: 18px; padding: 18px; }
+.addon-edit__img {
+  width: 110px; height: 110px; padding: 0;
+  display: grid; place-items: center; align-content: center; gap: 4px;
+  border: 1.5px dashed var(--line); border-radius: 10px; background: var(--bg);
+  color: var(--muted); overflow: hidden; cursor: pointer;
+}
+.addon-edit__img:hover { border-color: var(--gold); }
+.addon-edit__img svg { width: 22px; height: 22px; }
+.addon-edit__img img { width: 100%; height: 100%; object-fit: cover; }
+.addon-edit .field { margin-bottom: 10px; }
+.grid-addon { display: grid; grid-template-columns: 1.4fr 120px 1fr; gap: 0 12px; }
+.addon-edit__foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+.addon-edit__foot > span { display: flex; gap: 8px; }
+@media (max-width: 760px) {
+  .addon-edit { grid-template-columns: 1fr; }
+  .grid-addon { grid-template-columns: 1fr 1fr; }
+  .grid-addon .field:first-child { grid-column: 1 / -1; }
+}
+
+/* ---------- Discount codes ---------- */
+.codes td { vertical-align: middle; }
+.codes .input { min-width: 90px; padding: 8px 10px; font-size: 13px; }
+.codes td:first-child .input { min-width: 130px; font-weight: 600; letter-spacing: .04em; }
+.codes td:nth-child(7) .input { min-width: 140px; }
+.codes input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold-dark); }
+.codes .input:disabled { background: var(--bg); color: var(--muted); }
+@media (max-width: 760px) {
+  .codes thead { display: none; }
+  .codes, .codes tbody, .codes tr, .codes td { display: block; width: 100%; }
+  .codes tr { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 14px; border-bottom: 1px solid var(--line); }
+  .codes td { padding: 0 !important; border: 0 !important; }
+  .codes td:first-child, .codes td:nth-child(7) { grid-column: 1 / -1; }
+  .codes td:nth-child(6), .codes td:last-child { display: flex; align-items: center; }
+  .codes td:nth-child(6)::after { content: "Active"; margin-left: 8px; font-size: 13px; }
+}
+
+/* ---------- Blog ---------- */
+.prow--post { grid-template-columns: 56px 1fr 120px auto; }
+.prow__ph { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 8px; background: var(--bg); color: var(--muted); }
+.prow__ph svg { width: 22px; height: 22px; }
+.drop--wide { aspect-ratio: 3 / 2; }
+#postDialog code { padding: 1px 5px; border-radius: 4px; background: var(--bg); font-size: 12px; }
+@media (max-width: 760px) { .prow--post { grid-template-columns: 52px 1fr auto; } }

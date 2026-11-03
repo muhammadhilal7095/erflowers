@@ -38,6 +38,19 @@
   $('ppDesc').textContent = p.description || '';
   const details = (p.details || p.description || '').split('\n').map((l) => l.trim()).filter(Boolean);
   $('ppDetails').innerHTML = details.map((l) => `<li>${esc(l)}</li>`).join('');
+  const recipe = (p.recipe || '').split('\n').map((l) => l.trim()).filter(Boolean);
+  $('ppRecipeWrap').hidden = !recipe.length;
+  $('ppRecipe').innerHTML = recipe.map((l) => `<li>${esc(l)}</li>`).join('');
+
+  // Wishlist heart and recently viewed (saved in this browser)
+  const wish = $('ppWish');
+  wish.dataset.product = id;
+  wish.setAttribute('aria-pressed', String(L.wishlist.has(id)));
+  wish.setAttribute('aria-label', L.wishlist.has(id) ? 'Remove from wishlist' : 'Add to wishlist');
+  const seen = L.recent.ids().filter((k) => k !== id).slice(0, 3);
+  L.recent.add(id);
+  $('recent').hidden = !seen.length;
+  $('recentGrid').innerHTML = seen.map(L.productCard).join('');
 
   // ---------- Gallery ----------
   const photos = [p.image, ...(p.gallery || [])].filter(Boolean);
@@ -108,7 +121,7 @@
       const vp = L.unitPrice(p, v);
       return `<label class="variant">
         <input type="radio" name="ppVariant" value="${esc(v.id)}"${v.id === optionId ? ' checked' : ''}>
-        <span><strong>${esc(v.label)}</strong><small>${money(vp)}${vp !== v.price ? ` <s>${money(v.price)}</s>` : ''}</small></span>
+        <span><strong>${esc(v.label)}</strong>${v.note ? `<em>${esc(v.note)}</em>` : ''}<small>${money(vp)}${vp !== v.price ? ` <s>${money(v.price)}</s>` : ''}</small></span>
       </label>`;
     }).join('');
   }
@@ -121,8 +134,14 @@
     qty = Math.max(1, Math.min(20, qty + Number(b.dataset.ppqty)));
     $('ppQty').textContent = qty;
   }));
-  $('ppAdd').addEventListener('click', () => window.EnvieShop.add(id, optionId, qty));
-  $('ppBuyNow').addEventListener('click', () => window.EnvieShop.buy(id, optionId, qty));
+  // Gift add-ons
+  const gifts = window.ENVIE_RULES.activeAddons(window.ENVIE_CATALOG);
+  $('ppAddonsWrap').hidden = !gifts.length || p.enquire;
+  $('ppAddons').innerHTML = gifts.map((a) => L.addonChoice(a, false)).join('');
+  const chosenGifts = () => [...$('ppAddons').querySelectorAll('[data-addon]:checked')].map((c) => c.value);
+
+  $('ppAdd').addEventListener('click', () => window.EnvieShop.add(id, optionId, qty, chosenGifts()));
+  $('ppBuyNow').addEventListener('click', () => window.EnvieShop.buy(id, optionId, qty, chosenGifts()));
 
   if (p.enquire) {
     $('ppBuy').hidden = true;

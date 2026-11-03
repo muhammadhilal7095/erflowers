@@ -16,6 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <script src="js/catalog.js"></script>
+  <script src="js/rules.js"></script>
   <script src="js/layout.js"></script>
 </head>
 <body>
@@ -42,7 +43,10 @@
           <!-- Details -->
           <div class="pp__info">
             <p class="eyebrow eyebrow--dark" id="ppCategory"></p>
-            <h1 class="pp__name" id="ppName"></h1>
+            <div class="pp__titlerow">
+              <h1 class="pp__name" id="ppName"></h1>
+              <button type="button" class="wish pp__wish" id="ppWish" aria-label="Add to wishlist" aria-pressed="false"><svg><use href="#i-heart"/></svg></button>
+            </div>
             <a href="#reviews" class="pp__rating" id="ppRating"></a>
             <div class="pp__price" id="ppPrice"></div>
             <p class="pp__desc" id="ppDesc"></p>
@@ -65,6 +69,10 @@
                 <legend>Choose your size</legend>
                 <div class="variants" id="ppVariants"></div>
               </fieldset>
+              <fieldset class="pm__field" id="ppAddonsWrap" hidden>
+                <legend>Make it extra special</legend>
+                <div class="addons" id="ppAddons"></div>
+              </fieldset>
               <div class="pp__row">
                 <div class="qty" role="group" aria-label="Quantity">
                   <button type="button" data-ppqty="-1" aria-label="Decrease quantity">−</button>
@@ -76,12 +84,21 @@
               <button type="button" class="btn btn--whatsapp btn--block pp__buy" id="ppBuyNow"><svg class="icon"><use href="#i-whatsapp"/></svg> Buy Now on WhatsApp</button>
               <p class="pp__buynote">Opens WhatsApp with your order ready to send. No forms.</p>
             </div>
+
+            <form class="pc-check" data-postcode-check novalidate>
+              <label for="ppPostcode"><svg class="icon"><use href="#i-truck"/></svg> Check delivery to your postcode</label>
+              <div class="pc-check__row">
+                <input id="ppPostcode" placeholder="e.g. SW1A 1AA" autocomplete="postal-code" autocapitalize="characters" maxlength="10">
+                <button type="submit" class="btn btn--outline btn--sm">Check</button>
+              </div>
+              <p class="pc-check__result" role="status" aria-live="polite"></p>
+            </form>
             <div id="ppEnquire" hidden>
               <a href="#" class="btn btn--whatsapp btn--block" id="ppEnquireBtn"><svg class="icon"><use href="#i-whatsapp"/></svg> Enquire on WhatsApp</a>
             </div>
 
             <ul class="pp__perks">
-              <li><svg class="icon"><use href="#i-truck"/></svg><span><strong>UK delivery</strong> on the date you choose. Same day by phone.</span></li>
+              <li><svg class="icon"><use href="#i-truck"/></svg><span><strong>UK delivery</strong> on the date you choose. Same day in selected areas when you order by <span data-shop="sameDayCutoff"></span>.</span></li>
               <li><svg class="icon"><use href="#i-pen"/></svg><span><strong>Personal card message</strong> included with your order.</span></li>
               <li><svg class="icon"><use href="#i-whatsapp"/></svg><span><strong>Order instantly on WhatsApp</strong>, or add to your bag.</span></li>
             </ul>
@@ -91,9 +108,13 @@
                 <summary>Product details<span class="faq__icon" aria-hidden="true"></span></summary>
                 <ul class="pp__details" id="ppDetails"></ul>
               </details>
+              <details class="faq" id="ppRecipeWrap" hidden>
+                <summary>What's inside<span class="faq__icon" aria-hidden="true"></span></summary>
+                <ul class="pp__details" id="ppRecipe"></ul>
+              </details>
               <details class="faq">
                 <summary>Delivery<span class="faq__icon" aria-hidden="true"></span></summary>
-                <p>We deliver across the UK. Choose your delivery date at checkout, or call us for same day delivery. Delivery is <span data-shop="deliveryFee"></span>. See <a href="delivery.html">Delivery Information</a>.</p>
+                <p>We deliver across the UK. Choose your delivery date at checkout. Same-day delivery is available in selected areas when you order by <span data-shop="sameDayCutoff"></span>; check your postcode above. Delivery is <span data-shop="deliveryFee"></span>. See <a href="delivery.html">Delivery Information</a>.</p>
               </details>
               <details class="faq">
                 <summary>Rose care<span class="faq__icon" aria-hidden="true"></span></summary>
@@ -147,6 +168,17 @@
           <button type="submit" class="btn btn--gold" id="rvSubmit">Submit Review</button>
           <p class="rv-form__note">By submitting, you confirm this is your own genuine experience. See our <a href="privacy.html">Privacy Policy</a>.</p>
         </form>
+      </div>
+    </section>
+
+    <!-- Recently viewed -->
+    <section class="section recent" id="recent" hidden>
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">Recently Viewed</p>
+          <h2 class="section-title section-title--sm">Pick Up Where You Left Off</h2>
+        </div>
+        <div class="product-grid" id="recentGrid"></div>
       </div>
     </section>
 

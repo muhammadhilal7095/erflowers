@@ -51,6 +51,30 @@
       whatsapp: true
     },
 
+    // Delivery rules (all times UK). Postcode areas: "SW" = the whole SW area, "KW15" = that district only.
+    delivery: {
+      sameDayEnabled: true,
+      sameDayCutoff: '14:00',          // order before this time for same-day delivery
+      sameDayFee: null,                // pence; null = same as the normal delivery charge
+      sameDayAreas: ['E', 'EC', 'N', 'NW', 'SE', 'SW', 'W', 'WC'],
+      slots: ['Morning (9am – 1pm)', 'Afternoon (1pm – 5pm)', 'Evening (5pm – 9pm)'],
+      // Areas where customers must message us instead of ordering online
+      noDeliveryAreas: ['IM', 'JE', 'GY', 'HS', 'ZE', 'KW15', 'KW16', 'KW17', 'TR21', 'TR22', 'TR23', 'TR24', 'TR25'],
+      closedDates: ['2026-12-25', '2026-12-26', '2027-01-01']
+    },
+
+    // Gifts customers can add to an order. price in pence (0 = free). icon is used until you upload a photo.
+    addons: {
+      'glass-vase': { name: 'Glass Vase', price: 0, icon: 'vase', image: '', description: 'A clear glass vase, so your roses are ready to display.', active: true },
+      'luxury-chocolates': { name: 'Luxury Chocolates', price: 1299, icon: 'chocolate', image: '', description: 'A box of assorted luxury chocolates.', active: true },
+      'teddy-bear': { name: 'Teddy Bear', price: 1499, icon: 'teddy', image: '', description: 'A soft, cuddly teddy bear.', active: true },
+      'love-balloon': { name: 'Balloon', price: 999, icon: 'balloon', image: '', description: 'A helium heart balloon.', active: true },
+      'scented-candle': { name: 'Scented Candle', price: 1699, icon: 'candle', image: '', description: 'A scented candle in a glass jar.', active: true }
+    },
+
+    // Towns and cities with their own delivery page (delivery-to.html?city=london)
+    cities: ['London', 'Manchester', 'Birmingham', 'Leeds', 'Liverpool', 'Bristol', 'Sheffield', 'Leicester', 'Nottingham', 'Glasgow', 'Edinburgh', 'Cardiff'],
+
     // Site photos you can replace from the dashboard. '' = use the built-in photo.
     images: {
       hero: '',
@@ -69,8 +93,15 @@
     // featured: true = shown in The Signature Line on the homepage
     // gallery: extra photos on the product page; details: one point per line
     // sale: { percent, label, endsAt } = a time-limited discount with a countdown
+    // colours / flowers / occasions / recipients: tags used by the menus, filters and bouquet finder (see js/rules.js)
+    // recipe: what's in the bouquet, one item per line. Size note: e.g. '30cm wide'
     products: {
       'red-50-boxed': {
+        colours: ['red'],
+        flowers: ['roses'],
+        occasions: ['anniversary', 'love', 'valentines', 'birthday'],
+        recipients: ['her', 'wife', 'girlfriend'],
+        recipe: 'Red roses × 50',
         featured: true,
         name: '50 Luxury Red Roses Boxed',
         category: 'boxes',
@@ -86,6 +117,10 @@
         ]
       },
       'grand-couture': {
+        colours: ['red'],
+        flowers: ['roses'],
+        occasions: ['anniversary', 'love', 'birthday', 'congratulations'],
+        recipients: ['her', 'wife', 'girlfriend'],
         featured: true,
         name: 'The Grand Couture Roses',
         category: 'boxes',
@@ -99,6 +134,10 @@
         ]
       },
       'imperial-romance': {
+        colours: ['red'],
+        flowers: ['roses'],
+        occasions: ['love', 'anniversary', 'valentines', 'just-because'],
+        recipients: ['her', 'girlfriend', 'wife'],
         featured: true,
         name: 'The Imperial Romance Bouquet',
         category: 'bouquets',
@@ -112,6 +151,10 @@
         ]
       },
       'signature-square': {
+        colours: ['red'],
+        flowers: ['roses'],
+        occasions: ['birthday', 'thank-you', 'just-because', 'congratulations'],
+        recipients: ['her', 'mum', 'friend'],
         name: 'The Signature Square Box',
         category: 'boxes',
         image: 'images/product-4.jpg',
@@ -124,6 +167,10 @@
         ]
       },
       'heart-of-roses': {
+        colours: ['red'],
+        flowers: ['roses'],
+        occasions: ['love', 'anniversary', 'valentines', 'wedding'],
+        recipients: ['her', 'wife', 'girlfriend'],
         name: 'Heart of Roses',
         category: 'boxes',
         image: 'images/product-5.jpg',
@@ -136,6 +183,10 @@
         ]
       },
       'ivory-hatbox': {
+        colours: ['red', 'white'],
+        flowers: ['roses', 'gypsophila'],
+        occasions: ['birthday', 'mothers-day', 'thank-you', 'just-because'],
+        recipients: ['her', 'mum', 'friend'],
         name: 'The Ivory Hatbox',
         category: 'boxes',
         image: 'images/product-6.jpg',
@@ -148,6 +199,10 @@
         ]
       },
       'blue-roses': {
+        colours: ['blue'],
+        flowers: ['roses'],
+        occasions: ['just-because', 'congratulations'],
+        recipients: ['her', 'him', 'friend'],
         name: 'Quintessential Blue Roses',
         category: 'exclusive',
         image: 'images/product-7.jpg',

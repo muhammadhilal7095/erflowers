@@ -52,6 +52,8 @@ const ROUTES = [
   { match: (p) => p === '/api/checkout', load: () => fn('checkout.mjs') },
   { match: (p) => p === '/api/orders', load: () => fn('orders.mjs') },
   { match: (p) => p === '/api/reviews', load: () => fn('reviews.mjs') },
+  { match: (p) => p === '/api/discount', load: () => fn('discount.mjs') },
+  { match: (p) => p === '/api/posts', load: () => fn('posts.mjs') },
   { match: (p) => p.startsWith('/api/admin/'), load: () => fn('admin.mjs') },
   { match: (p) => /^\/api\/image\/[\w-]+$/.test(p), load: () => fn('image.mjs'), params: (p) => ({ key: p.split('/').pop() }) }
 ];

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Bouquet Finder | Envie Roses</title>
+  <meta name="description" content="Answer four quick questions and we will suggest the perfect roses for them.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Bouquet Finder | Envie Roses">
+  <meta property="og:description" content="Answer four quick questions and we will suggest the perfect roses for them.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body>
+  <script>EnvieLayout.top("finder");</script>
+
+  <main id="main">
+    <script>EnvieLayout.pageHero({"title": "Bouquet Finder", "kicker": "Not Sure What to Choose?", "intro": "Four quick questions, and we’ll suggest the roses they’ll love."});</script>
+    <section class="section finder">
+      <div class="container">
+        <form class="quiz" id="quiz" novalidate>
+          <ol class="quiz__progress" aria-hidden="true"><li class="is-on"></li><li></li><li></li><li></li></ol>
+          <fieldset class="quiz__step is-on" data-step="0">
+            <legend>Who are the flowers for?</legend>
+            <div class="quiz__options" data-name="for"></div>
+          </fieldset>
+          <fieldset class="quiz__step" data-step="1">
+            <legend>What's the occasion?</legend>
+            <div class="quiz__options" data-name="o"></div>
+          </fieldset>
+          <fieldset class="quiz__step" data-step="2">
+            <legend>Which colours do they love?</legend>
+            <div class="quiz__options" data-name="colour"></div>
+          </fieldset>
+          <fieldset class="quiz__step" data-step="3">
+            <legend>What's your budget?</legend>
+            <div class="quiz__options" data-name="price"></div>
+          </fieldset>
+          <div class="quiz__nav">
+            <button type="button" class="btn btn--ghost btn--sm" id="quizBack" hidden>Back</button>
+            <button type="button" class="btn btn--link" id="quizSkip">Skip this question</button>
+          </div>
+        </form>
+
+        <div class="finder__results" id="finderResults" hidden>
+          <div class="section-head">
+            <p class="kicker">Your Matches</p>
+            <h2 class="section-title section-title--sm" id="finderTitle">We Think They'll Love These</h2>
+            <p class="finder__summary" id="finderSummary"></p>
+          </div>
+          <div class="product-grid" id="finderGrid"></div>
+          <div class="finder__again">
+            <button type="button" class="btn btn--outline btn--sm" id="quizRestart">Start again</button>
+            <a href="#" class="btn btn--ghost btn--sm" data-enquire="help choosing a bouquet"><svg class="icon"><use href="#i-whatsapp"/></svg> Ask our florists</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+  <script>
+    (function () {
+      const { products } = window.ENVIE_CATALOG;
+      const { TAGS, PRICE_BANDS, fromPrice } = window.ENVIE_RULES;
+      const esc = EnvieLayout.esc;
+      const LISTS = {
+        for: TAGS.recipients,
+        o: TAGS.occasions,
+        colour: TAGS.colours,
+        price: Object.fromEntries(Object.entries(PRICE_BANDS).map(([k, v]) => [k, v.label]))
+      };
+      const answers = { for: '', o: '', colour: '', price: '' };
+      const steps = [...document.querySelectorAll('.quiz__step')];
+      const dots = [...document.querySelectorAll('.quiz__progress li')];
+      let step = 0;
+
+      steps.forEach((fs) => {
+        const name = fs.querySelector('.quiz__options').dataset.name;
+        fs.querySelector('.quiz__options').innerHTML = Object.entries(LISTS[name]).map(([k, v]) =>
+          `<button type="button" class="quiz__choice" data-name="${name}" data-value="${k}">${esc(v)}</button>`).join('');
+      });
+
+      function show(n) {
+        step = n;
+        steps.forEach((fs, i) => fs.classList.toggle('is-on', i === n));
+        dots.forEach((d, i) => d.classList.toggle('is-on', i <= n));
+        document.getElementById('quizBack').hidden = n === 0;
+        const first = steps[n] && steps[n].querySelector('.quiz__choice');
+        if (first) first.focus({ preventScroll: true });
+      }
+
+      // Score every product: more matching answers = better match; never show nothing
+      function results() {
+        const scored = Object.keys(products).map((id) => {
+          const p = products[id];
+          let score = 0;
+          if (answers.for && (p.recipients || []).includes(answers.for)) score += 3;
+          if (answers.o && (p.occasions || []).includes(answers.o)) score += 3;
+          if (answers.colour && (p.colours || []).includes(answers.colour)) score += 2;
+          if (answers.price) {
+            const f = fromPrice(p), b = PRICE_BANDS[answers.price];
+            if (f !== null && f >= b.min && f <= b.max) score += 2;
+            else if (f !== null) score -= 1;
+          }
+          return { id, score };
+        }).sort((a, b) => b.score - a.score);
+        const best = scored.filter((s) => s.score > 0);
+        return (best.length ? best : scored).slice(0, 6).map((s) => s.id);
+      }
+
+      function finish() {
+        document.getElementById('quiz').hidden = true;
+        const box = document.getElementById('finderResults');
+        box.hidden = false;
+        const picked = Object.entries(answers).filter(([, v]) => v).map(([k, v]) => LISTS[k][v]);
+        document.getElementById('finderSummary').textContent = picked.length ? 'Based on: ' + picked.join(' · ') : 'Here are some of our favourites.';
+        document.getElementById('finderGrid').innerHTML = results().map(EnvieLayout.productCard).join('');
+        box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      document.getElementById('quiz').addEventListener('click', (e) => {
+        const b = e.target.closest('.quiz__choice');
+        if (!b) return;
+        answers[b.dataset.name] = b.dataset.value;
+        b.parentElement.querySelectorAll('.quiz__choice').forEach((x) => x.classList.toggle('is-picked', x === b));
+        step < steps.length - 1 ? show(step + 1) : finish();
+      });
+      document.getElementById('quizSkip').addEventListener('click', () => {
+        answers[steps[step].querySelector('.quiz__options').dataset.name] = '';
+        step < steps.length - 1 ? show(step + 1) : finish();
+      });
+      document.getElementById('quizBack').addEventListener('click', () => show(Math.max(0, step - 1)));
+      document.getElementById('quizRestart').addEventListener('click', () => {
+        Object.keys(answers).forEach((k) => { answers[k] = ''; });
+        document.querySelectorAll('.quiz__choice').forEach((x) => x.classList.remove('is-picked'));
+        document.getElementById('finderResults').hidden = true;
+        document.getElementById('quiz').hidden = false;
+        show(0);
+      });
+    })();
+  </script>
+</body>
+</html>

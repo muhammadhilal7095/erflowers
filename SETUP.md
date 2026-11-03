@@ -18,7 +18,11 @@ Manage the website without touching any code. Log in at **yourdomain.co.uk/admin
 |---|---|
 | **Overview** | See new orders, open orders, and this month's orders and sales at a glance |
 | **Orders** | See every website order, both WhatsApp and card. Change its status (New, Confirmed, Paid, Out for delivery, Delivered, Cancelled), open its full details, and message the customer on WhatsApp, call them or email them. |
-| **Products** | Add, edit, delete and reorder products. Set sizes and prices, or mark a product as price on request. Star products to show them on the homepage. Upload the main photo plus up to 8 gallery photos, write product details, and run a time-limited offer with a countdown. |
+| **Products** | Add, edit, delete and reorder products. Set sizes and prices (with an optional note such as "Most popular"), or mark a product as price on request. Star products to show them on the homepage. Upload the main photo plus up to 8 gallery photos, write product details and "What's inside", and run a time-limited offer with a countdown. Tick the occasions, colours, flowers and "who for" tags that control where the product appears in the Shop menu, the shop filters and the Bouquet Finder. |
+| **Gift Add-ons** | Gifts customers can add to an order (vase, chocolates, teddy, balloon, candle…). Set the name, price (0 = free), photo or icon, and show or hide each one. |
+| **Delivery** | Same-day delivery: on/off, the order-by time (UK time), an optional same-day charge and the postcode areas it covers. Also delivery time slots, closed days (e.g. Christmas), postcode areas you can't deliver to online, and the towns/cities that get their own delivery page. |
+| **Discount Codes** | Create codes for % off, £ off or free delivery, with an optional minimum spend and expiry date. Codes are checked on the server and never appear in the website's code. |
+| **Blog** | Write, edit, publish or delete blog posts with a cover photo. Drafts stay hidden until you publish them. |
 | **Reviews** | Approve (publish), reject or delete customer reviews. New reviews never appear on the website until you publish them. |
 | **Site Images** | Replace the homepage hero, banners, About photo, page banner and Instagram photos, or reset any of them to the original |
 | **Settings** | Change your contact details, WhatsApp number, opening hours, delivery charge and earliest delivery date, turn payment methods on or off, add social links and legal details, and download or restore a backup |
@@ -55,7 +59,12 @@ Run `npm install`, then `ADMIN_PASSWORD=yourpassword npx netlify dev`. Open http
 | Page | File |
 |---|---|
 | Home | `index.html` |
-| Shop (all products, with filters and search) | `shop.html` (`?c=boxes`, `?c=bouquets`, `?c=exclusive`, `?q=search`, `?o=Occasion`) |
+| Shop (all products, with filters and search) | `shop.html` (`?c=boxes`, `?q=search`, and filters `?o=birthday`, `?colour=red`, `?flower=roses`, `?for=her`, `?price=50-100`) |
+| Bouquet Finder (4-question quiz) | `finder.html` |
+| Blog and blog posts | `blog.html`, `post.html?slug=...` |
+| Flower delivery by city | `delivery-to.html?city=london` (cities are set in Dashboard → Delivery) |
+| Freshness Guarantee | `guarantee.html` |
+| Wishlist (saved on that device) | `wishlist.html` |
 | Gifts & Occasions | `gifts.html` |
 | About Us | `about.html` |
 | Contact | `contact.html` |
@@ -67,6 +76,10 @@ Run `npm install`, then `ADMIN_PASSWORD=yourpassword npx netlify dev`. Open http
 | Page not found | `404.html` |
 
 The header, footer, bag and checkout are shared by every page and live in `js/layout.js`, so you only need to change them once.
+
+Prices, gift add-ons, UK postcode checks, same-day delivery and discount maths live in `js/rules.js`. The website and the server both use this file, so the price a customer sees is exactly what the server charges.
+
+**Before launch, check:** the gift add-on prices (the starting prices are examples), the same-day areas and order-by time (the starting setting is central London postcodes, order by 2pm), and your closed days.
 
 ## Before going live: UK legal details
 

@@ -72,14 +72,75 @@
   }
   window.envieToast = showToast;
 
-  // Wishlist
+  // Wishlist (saved in this browser; every heart for the same product stays in step)
+  const W = window.EnvieLayout && window.EnvieLayout.wishlist;
+  function renderWishCount() {
+    const el = document.getElementById('wishCount');
+    if (!el || !W) return;
+    const n = W.ids().length;
+    el.textContent = n;
+    el.hidden = !n;
+  }
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.wish');
-    if (!btn) return;
-    const on = btn.getAttribute('aria-pressed') !== 'true';
-    btn.setAttribute('aria-pressed', String(on));
-    btn.setAttribute('aria-label', on ? 'Remove from wishlist' : 'Add to wishlist');
+    if (!btn || !W) return;
+    const holder = btn.closest('[data-product]');
+    const id = btn.dataset.product || (holder && holder.dataset.product);
+    if (!id) return;
+    const on = W.toggle(id);
+    document.querySelectorAll(`[data-product="${CSS.escape(id)}"] .wish, .wish[data-product="${CSS.escape(id)}"]`).forEach((b) => {
+      b.setAttribute('aria-pressed', String(on));
+      b.setAttribute('aria-label', on ? 'Remove from wishlist' : 'Add to wishlist');
+    });
+    renderWishCount();
     showToast(on ? 'Saved to your wishlist' : 'Removed from your wishlist');
+    document.dispatchEvent(new CustomEvent('envie:wishlist', { detail: { id, on } }));
+  });
+  renderWishCount();
+
+  // Postcode checker (product and delivery pages): same rules as checkout
+  const R = window.ENVIE_RULES;
+  const CAT = window.ENVIE_CATALOG;
+  const niceDay = (ymd, today) => {
+    const label = new Date(ymd + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    return ymd === R.addDays(today, 1) ? `tomorrow, ${label}` : label;
+  };
+  document.querySelectorAll('form[data-postcode-check]').forEach((form) => {
+    const input = form.querySelector('input');
+    const out = form.querySelector('.pc-check__result');
+    try { input.value = localStorage.getItem('envie_postcode') || ''; } catch (e) { /* ignore */ }
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const q = R.deliveryQuote(CAT, { postcode: input.value });
+      out.className = 'pc-check__result';
+      if (!q.ok) { out.textContent = q.error; out.classList.add('is-error'); return; }
+      try { localStorage.setItem('envie_postcode', q.postcode); } catch (err) { /* ignore */ }
+      const fee = typeof CAT.shop.deliveryFee === 'number' ? (CAT.shop.deliveryFee === 0 ? ' Delivery is free.' : ` Delivery is £${(CAT.shop.deliveryFee / 100).toFixed(2)}.`) : '';
+      const left = q.cutoffMinutesLeft >= 60 ? `${Math.floor(q.cutoffMinutesLeft / 60)}h ${q.cutoffMinutesLeft % 60}m` : `${q.cutoffMinutesLeft} minutes`;
+      if (q.sameDayPossible) {
+        out.textContent = `Good news! Same-day delivery to ${q.outward} is available. Order within ${left} for delivery today.${fee}`;
+        out.classList.add('is-good');
+      } else if (q.sameDayArea) {
+        out.textContent = `Same-day orders for ${q.outward} have closed for today (order by ${CAT.delivery.sameDayCutoff}). Earliest delivery: ${niceDay(q.earliest, q.today)}.${fee}`;
+      } else {
+        out.textContent = `We deliver to ${q.outward}. Earliest delivery: ${niceDay(q.earliest, q.today)}.${fee}`;
+        out.classList.add('is-good');
+      }
+    });
+  });
+
+  // Shop menu: hover/focus opens it on desktop; the arrow button opens it in the phone menu
+  document.querySelectorAll('.mega-toggle').forEach((t) => t.addEventListener('click', () => {
+    const open = t.getAttribute('aria-expanded') !== 'true';
+    t.setAttribute('aria-expanded', String(open));
+    t.closest('.has-mega').classList.toggle('is-open', open);
+  }));
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    document.querySelectorAll('.has-mega.is-open').forEach((li) => {
+      li.classList.remove('is-open');
+      li.querySelector('.mega-toggle').setAttribute('aria-expanded', 'false');
+    });
   });
 
   // Search overlay

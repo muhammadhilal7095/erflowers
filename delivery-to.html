@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Flower Delivery | Envie Roses</title>
+  <meta name="description" content="Luxury roses and rose boxes delivered across the UK.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Flower Delivery | Envie Roses">
+  <meta property="og:description" content="Luxury roses and rose boxes delivered across the UK.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body>
+  <script>EnvieLayout.top(null);</script>
+
+  <main id="main">
+    <script>
+      (function () {
+        const cities = window.ENVIE_CATALOG.cities || [];
+        const slug = (c) => c.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const wanted = new URLSearchParams(location.search).get('city') || '';
+        const city = cities.find((c) => slug(c) === wanted.toLowerCase()) || null;
+        window.ENVIE_CITY = city;
+        const title = city ? `Flower Delivery ${city}` : 'Flower Delivery Across the UK';
+        document.title = `${title} | Envie Roses`;
+        const meta = document.querySelector('meta[name="description"]');
+        if (meta && city) meta.content = `Luxury roses and rose boxes delivered in ${city}. Choose your delivery date, add a card message, and order online or on WhatsApp.`;
+        EnvieLayout.pageHero({ title, kicker: 'Delivery Areas', intro: city ? `Handcrafted luxury roses, delivered to your door in ${city}.` : 'Handcrafted luxury roses, delivered across the UK.', crumb: title });
+      })();
+    </script>
+    <section class="section">
+      <div class="container city">
+        <div class="city__intro prose">
+          <h2 id="cityHeading">Luxury roses, delivered</h2>
+          <p id="cityText"></p>
+          <p>Choose a delivery date at checkout and add a personal card message. Same-day delivery is available in selected areas when you order by <span data-shop="sameDayCutoff"></span>; check your postcode below.</p>
+        </div>
+        <form class="pc-check pc-check--card" data-postcode-check novalidate>
+          <label for="cityPostcode"><svg class="icon"><use href="#i-truck"/></svg> Check delivery to your postcode</label>
+          <div class="pc-check__row">
+            <input id="cityPostcode" placeholder="e.g. SW1A 1AA" autocomplete="postal-code" autocapitalize="characters" maxlength="10">
+            <button type="submit" class="btn btn--gold btn--sm">Check</button>
+          </div>
+          <p class="pc-check__result" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+    <section class="section related">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">Popular Right Now</p>
+          <h2 class="section-title section-title--sm" id="cityPopular">Our Most-Loved Roses</h2>
+        </div>
+        <div class="product-grid" id="cityGrid"></div>
+        <div class="center view-all"><a href="shop.html" class="btn btn--outline">View All Roses <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+      </div>
+    </section>
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">We Also Deliver To</p>
+          <h2 class="section-title section-title--sm">Other Delivery Areas</h2>
+        </div>
+        <ul class="city-list" id="cityList"></ul>
+      </div>
+    </section>
+    <script>
+      (function () {
+        const { products, cities = [] } = window.ENVIE_CATALOG;
+        const city = window.ENVIE_CITY;
+        const slug = (c) => c.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        document.getElementById('cityHeading').textContent = city ? `Luxury roses delivered in ${city}` : 'Luxury roses, delivered across the UK';
+        document.getElementById('cityText').textContent = city
+          ? `Looking for flower delivery in ${city}? Our roses are hand-selected and arranged by hand, then delivered to homes and workplaces across ${city} on the date you choose.`
+          : 'Our roses are hand-selected and arranged by hand, then delivered across the UK on the date you choose.';
+        if (city) document.getElementById('cityPopular').textContent = `Popular in ${city}`;
+        const featured = Object.keys(products).filter((id) => products[id].featured);
+        document.getElementById('cityGrid').innerHTML = (featured.length ? featured : Object.keys(products).slice(0, 3)).map(EnvieLayout.productCard).join('');
+        document.getElementById('cityList').innerHTML = cities.filter((c) => c !== city)
+          .map((c) => `<li><a href="delivery-to.html?city=${slug(c)}">Flower delivery ${EnvieLayout.esc(c)}</a></li>`).join('');
+      })();
+    </script>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+</body>
+</html>

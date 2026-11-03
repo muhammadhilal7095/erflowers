@@ -3,7 +3,7 @@
 //
 // Needs the environment variable STRIPE_SECRET_KEY (Netlify: Site configuration → Environment variables).
 
-import { cleanOrderDetails, getCatalog, json, priceOrder, saveOrder, validOrderId } from '../lib/shop-data.mjs';
+import { cleanOrderDetails, findDiscount, getCatalog, json, priceOrder, saveOrder, validOrderId } from '../lib/shop-data.mjs';
 
 // Stripe metadata values are limited to 500 characters
 const clip = (value, max = 490) => String(value || '').trim().slice(0, max);
@@ -38,18 +38,39 @@ export default async (req) => {
 
   let priced, details;
   try {
-    priced = priceOrder(catalog, body.items);
     details = cleanOrderDetails(body);
+    const discount = body.discountCode ? await findDiscount(body.discountCode) : null;
+    if (body.discountCode && !discount) throw new Error('That discount code is not valid.');
+    priced = priceOrder(catalog, body.items, { delivery: details.delivery, discount });
   } catch (err) {
     return json(400, { error: err.message });
   }
 
-  const lineItems = priced.lines.map((l) => ({
+  // Free gifts (e.g. a free vase) are listed in the order details, not as £0 Stripe lines
+  const lineItems = priced.lines.filter((l) => l.price > 0).map((l) => ({
     price_data: { currency: catalog.shop.currency, unit_amount: l.price, product_data: { name: `${l.name} (${l.label})` } },
     quantity: l.qty
   }));
   if (priced.deliveryFee > 0) {
     lineItems.push({ price_data: { currency: catalog.shop.currency, unit_amount: priced.deliveryFee, product_data: { name: 'Delivery' } }, quantity: 1 });
+  }
+
+  // A discount becomes a one-off Stripe coupon, so Stripe charges exactly our total
+  let coupon = null;
+  if (priced.discount && priced.discount.amount > 0) {
+    try {
+      const res = await fetch('https://api.stripe.com/v1/coupons', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${secret}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encode({ amount_off: priced.discount.amount, currency: catalog.shop.currency, duration: 'once', max_redemptions: 1, name: `${priced.discount.code} (${body.orderId})` })
+      });
+      const c = await res.json();
+      if (!res.ok) throw new Error(c.error && c.error.message);
+      coupon = c.id;
+    } catch (err) {
+      console.error('Stripe coupon error', err);
+      return json(502, { error: 'We could not apply your discount. Please try again.' });
+    }
   }
 
   const site = process.env.URL || new URL(req.url).origin;
@@ -61,6 +82,7 @@ export default async (req) => {
     client_reference_id: body.orderId,
     customer_email: details.customer.email || undefined,
     line_items: lineItems,
+    ...(coupon ? { discounts: [{ coupon }] } : {}),
     payment_intent_data: { description: `${catalog.shop.name} order ${body.orderId}` },
     metadata: {
       order_id: body.orderId,
@@ -69,7 +91,8 @@ export default async (req) => {
       customer_phone: clip(details.customer.phone),
       recipient: clip(`${d.recipient}${d.phone ? ` (${d.phone})` : ''}`),
       delivery_address: clip([d.address1, d.address2, d.city, d.postcode].filter(Boolean).join(', ')),
-      delivery_date: clip(d.date),
+      delivery_date: clip(d.date + (d.slot ? ` (${d.slot})` : '') + (priced.sameDay ? ' SAME DAY' : '')),
+      discount: clip(priced.discount ? `${priced.discount.code}: ${priced.discount.label}` : ''),
       card_message: clip(details.message),
       notes: clip(details.notes)
     }

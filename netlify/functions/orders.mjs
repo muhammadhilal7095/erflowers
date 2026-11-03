@@ -1,7 +1,7 @@
 // Records a WhatsApp order (full checkout or quick "Buy Now on WhatsApp") so it appears in the dashboard.
 // Prices are recalculated from the live catalogue, never taken from the browser.
 
-import { cleanOrderDetails, getCatalog, json, priceOrder, saveOrder, validOrderId } from '../lib/shop-data.mjs';
+import { cleanOrderDetails, findDiscount, getCatalog, json, priceOrder, saveOrder, validOrderId } from '../lib/shop-data.mjs';
 
 export default async (req) => {
   if (req.method !== 'POST') return json(405, { error: 'Method not allowed.' });
@@ -22,13 +22,19 @@ export default async (req) => {
     // Quick orders come straight from "Buy Now on WhatsApp": the customer's
     // name and address are collected in the WhatsApp chat instead of a form
     const quick = body.quick === true;
+    const details = quick ? { quick: true, customer: {}, delivery: {}, message: '', notes: '' } : cleanOrderDetails(body);
+    let discount = null;
+    if (!quick && body.discountCode) {
+      discount = await findDiscount(body.discountCode);
+      if (!discount) return json(400, { error: 'That discount code is not valid.' });
+    }
     const order = await saveOrder({
       id: body.orderId,
       createdAt: new Date().toISOString(),
       status: 'new',
       payment: 'whatsapp',
-      ...(quick ? { quick: true, customer: {}, delivery: {}, message: '', notes: '' } : cleanOrderDetails(body)),
-      ...priceOrder(catalog, body.items)
+      ...details,
+      ...priceOrder(catalog, body.items, { delivery: quick ? null : details.delivery, discount })
     });
     return json(200, { ok: true, id: order.id });
   } catch (err) {

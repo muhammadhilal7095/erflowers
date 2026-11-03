@@ -39,7 +39,14 @@
     ['insta4', 'Instagram photo 4', 'Square, cropped to 1080 × 1080', 'images/insta-4.jpg', true],
     ['insta5', 'Instagram photo 5', 'Square, cropped to 1080 × 1080', 'images/insta-5.jpg', true]
   ];
-  const VIEWS = { overview: 'Overview', orders: 'Orders', products: 'Products', reviews: 'Reviews', images: 'Site Images', settings: 'Settings' };
+  const VIEWS = {
+    overview: 'Overview', orders: 'Orders', products: 'Products', reviews: 'Reviews',
+    addons: 'Gift Add-ons', delivery: 'Delivery', discounts: 'Discount Codes', blog: 'Blog',
+    images: 'Site Images', settings: 'Settings'
+  };
+  const RULES = window.ENVIE_RULES;
+  const TAG_GROUPS = [['occasions', 'Occasion'], ['colours', 'Colour'], ['flowers', 'Flowers'], ['recipients', 'Who for']];
+  const ADDON_ICONS = { vase: 'Vase', chocolate: 'Chocolates', teddy: 'Teddy bear', balloon: 'Balloon', candle: 'Candle', gift: 'Gift box' };
   const REVIEW_LABELS = { pending: 'Waiting for approval', approved: 'Published', rejected: 'Rejected' };
 
   // ---------- Feedback ----------
@@ -157,6 +164,7 @@
 
   function go(next) {
     view = VIEWS[next] ? next : 'overview';
+    addonDraft = null;
     if (location.hash !== `#${view}`) history.replaceState(null, '', `#${view}`);
     document.querySelectorAll('.side__nav [data-view]').forEach((b) => b.classList.toggle('is-active', b.dataset.view === view));
     $('viewTitle').textContent = VIEWS[view];
@@ -166,7 +174,11 @@
   }
 
   function render() {
-    ({ overview: renderOverview, orders: renderOrders, products: renderProducts, reviews: renderReviews, images: renderImages, settings: renderSettings })[view]();
+    ({
+      overview: renderOverview, orders: renderOrders, products: renderProducts, reviews: renderReviews,
+      addons: renderAddons, delivery: renderDelivery, discounts: renderDiscounts, blog: renderBlog,
+      images: renderImages, settings: renderSettings
+    })[view]();
   }
 
   // ---------- Overview ----------
@@ -215,7 +227,7 @@
         <tr data-order="${esc(o.id)}">
           <td class="ref">${esc(o.id)}<small>${fmtDate(o.createdAt)} ${fmtTime(o.createdAt)}</small></td>
           <td data-label="Customer">${o.quick ? 'WhatsApp quick order<small>Details in your WhatsApp chat</small>' : `${esc(o.customer?.name)}<small>${esc(o.customer?.phone)}</small>`}</td>
-          <td data-label="Delivery">${o.quick ? 'On WhatsApp' : `${fmtDate(o.delivery?.date, { weekday: 'short', day: 'numeric', month: 'short' })}<small>${esc(o.delivery?.postcode)}</small>`}</td>
+          <td data-label="Delivery">${o.quick ? 'On WhatsApp' : `${fmtDate(o.delivery?.date, { weekday: 'short', day: 'numeric', month: 'short' })}${o.sameDay ? ' · same day' : ''}<small>${esc(o.delivery?.postcode)}${o.delivery?.slot ? ` · ${esc(o.delivery.slot)}` : ''}</small>`}</td>
           <td data-label="Total">${money(o.total || 0)}</td>
           <td data-label="Payment">${paymentLabel(o)}</td>
           <td>${statusSelect(o)}</td>
@@ -302,7 +314,8 @@
       <div class="od-section">
         <h3>Items</h3>
         <ul class="od-lines">${(o.lines || []).map((l) => `<li><span>${l.qty} × ${esc(l.name)} <span class="help">(${esc(l.label)})</span></span><span>${money(l.total)}</span></li>`).join('')}</ul>
-        <div class="od-lines"><li style="display:flex;justify-content:space-between"><span>Delivery</span><span>${typeof o.deliveryFee === 'number' ? money(o.deliveryFee) : 'To confirm'}</span></li></div>
+        <div class="od-lines"><li style="display:flex;justify-content:space-between"><span>Delivery${o.sameDay ? ' (same day)' : ''}</span><span>${typeof o.deliveryFee === 'number' ? money(o.deliveryFee) : 'To confirm'}</span></li>
+        ${o.discount ? `<li style="display:flex;justify-content:space-between"><span>Discount ${esc(o.discount.code)} <span class="help">(${esc(o.discount.label)})</span></span><span>−${money(o.discount.amount)}</span></li>` : ''}</div>
         <div class="od-total"><span>Total</span><span>${money(o.total || 0)}</span></div>
       </div>
       ${o.quick ? `<div class="od-section"><p class="notice" style="margin:0">Quick order from <strong>Buy Now on WhatsApp</strong>. The customer sends their name, delivery address, date and card message in your WhatsApp chat. Search WhatsApp for <strong>${esc(o.id)}</strong> to find it.</p></div>` : `
@@ -320,7 +333,7 @@
         <h3>Deliver to</h3>
         <p><strong>${esc(d.recipient)}</strong>${d.phone ? ` · ${esc(d.phone)}` : ''}</p>
         <p>${[d.address1, d.address2, d.city, d.postcode].filter(Boolean).map(esc).join(', ')}</p>
-        <p><strong>${fmtDate(d.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</strong></p>
+        <p><strong>${fmtDate(d.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</strong>${d.slot ? ` · ${esc(d.slot)}` : ''}${o.sameDay ? ' <span class="badge st-new">Same day</span>' : ''}</p>
       </div>`}
       ${o.message ? `<div class="od-section"><h3>Card message</h3><p class="od-quote">${esc(o.message)}</p></div>` : ''}
       ${o.notes ? `<div class="od-section"><h3>Notes</h3><p>${esc(o.notes)}</p></div>` : ''}
@@ -428,15 +441,29 @@
   const pd = { id: null, image: '', gallery: [] };
   const form = $('productForm');
 
-  function sizeRow(label = '', price = '') {
+  function sizeRow(label = '', price = '', note = '') {
     const row = document.createElement('div');
     row.className = 'size-row';
     row.innerHTML = `
       <input class="input" data-size="label" placeholder="e.g. Standard" maxlength="40" value="${esc(label)}" aria-label="Size name">
       <div class="money"><input class="input" data-size="price" inputmode="decimal" placeholder="0.00" value="${esc(price)}" aria-label="Price in pounds"></div>
+      <input class="input" data-size="note" placeholder="Note (optional)" maxlength="60" value="${esc(note)}" aria-label="Size note">
       <button type="button" class="icon-btn icon-btn--danger" aria-label="Remove size">${icon('trash')}</button>`;
     row.querySelector('button').addEventListener('click', () => row.remove());
     $('pdSizes').appendChild(row);
+  }
+
+  // Tag checkboxes (occasion, colour, flowers, who for)
+  function renderTags(p) {
+    $('pdTags').innerHTML = TAG_GROUPS.map(([group, label]) => `
+      <div class="tags__group"><p class="tags__title">${label}</p>
+        ${Object.entries(RULES.TAGS[group]).map(([k, v]) => `<label class="tag"><input type="checkbox" data-tag="${group}" value="${k}"${(p[group] || []).includes(k) ? ' checked' : ''}><span>${esc(v)}</span></label>`).join('')}
+      </div>`).join('');
+  }
+  function readTags() {
+    const out = {};
+    TAG_GROUPS.forEach(([group]) => { out[group] = [...$('pdTags').querySelectorAll(`[data-tag="${group}"]:checked`)].map((x) => x.value); });
+    return out;
   }
 
   function setPdImage(url) {
@@ -517,7 +544,8 @@
     form.elements.details.value = p.details || '';
     pd.gallery = [...(p.gallery || [])];
     renderGallery();
-    form.elements.saleOn.checked = Boolean(p.sale);
+    // An offer that has already ended starts unticked, so the product can still be saved
+    form.elements.saleOn.checked = saleLive(p);
     form.elements.saleLabel.value = p.sale ? p.sale.label || '' : '';
     form.elements.salePercent.value = p.sale ? p.sale.percent : '';
     form.elements.saleEnds.value = p.sale ? toLocalInput(p.sale.endsAt) : '';
@@ -525,7 +553,9 @@
     form.elements.featured.checked = Boolean(p.featured);
     form.elements.enquire.checked = Boolean(p.enquire);
     $('pdSizes').innerHTML = '';
-    (p.options.length ? p.options : [{ label: 'Standard', price: '' }]).forEach((o) => sizeRow(o.label, o.price === '' ? '' : (o.price / 100).toFixed(2)));
+    (p.options.length ? p.options : [{ label: 'Standard', price: '' }]).forEach((o) => sizeRow(o.label, o.price === '' ? '' : (o.price / 100).toFixed(2), o.note || ''));
+    form.elements.recipe.value = p.recipe || '';
+    renderTags(p);
     setPdImage(p.image);
     syncEnquire();
     $('pdError').textContent = '';
@@ -576,7 +606,8 @@
         const price = toPence(priceText);
         if (!label) { err.textContent = 'Every size needs a name, e.g. Standard.'; return; }
         if (!Number.isInteger(price) || price <= 0) { err.textContent = `Enter a price for "${label}", e.g. 119.00`; return; }
-        options.push({ id: slugify(label), label, price });
+        const note = row.querySelector('[data-size="note"]').value.trim();
+        options.push({ id: slugify(label), label, price, ...(note ? { note } : {}) });
       }
       if (!options.length) { err.textContent = 'Add at least one size and price, or tick "Price on request".'; return; }
     }
@@ -605,6 +636,8 @@
       description: form.elements.description.value.trim(),
       details: form.elements.details.value.trim(),
       gallery: pd.gallery,
+      recipe: form.elements.recipe.value.trim(),
+      ...readTags(),
       ...(sale ? { sale } : {}),
       ...(enquire ? { enquire: true } : {}),
       options
@@ -729,6 +762,362 @@
       if (err.message !== 'Session ended') toast(err.message, true);
     }
     render();
+  });
+
+
+  // ---------- Gift add-ons ----------
+  let addonDraft = null;
+  function renderAddons() {
+    if (!addonDraft) addonDraft = Object.entries(catalog.addons || {}).map(([id, a]) => ({ id, ...a }));
+    setBar(`<button type="button" class="btn btn--gold btn--sm" id="saveAddonsTop">Save add-ons</button>`);
+    $('content').innerHTML = `
+      <div class="notice">${icon('gift')}<span>Gifts customers can add to their order: on the product page, in the quick view and in the bag. Set the price to <strong>0</strong> for a free gift, e.g. a free glass vase. Untick <strong>Show on website</strong> to hide one without deleting it.</span></div>
+      <div class="addon-list">${addonDraft.map((a, i) => `
+        <div class="card addon-edit" data-i="${i}">
+          <button type="button" class="addon-edit__img" data-aimg="${i}" aria-label="Upload photo for ${esc(a.name || 'gift')}">
+            ${a.image ? `<img src="${esc(a.image)}" alt="">` : `${icon('upload')}<small>Photo</small>`}
+          </button>
+          <div class="addon-edit__fields">
+            <div class="grid-addon">
+              <label class="field"><span>Name</span><input class="input" data-af="name" value="${esc(a.name)}" maxlength="60"></label>
+              <label class="field"><span>Price</span><div class="money"><input class="input" data-af="price" inputmode="decimal" value="${a.price === '' ? '' : (a.price / 100).toFixed(2)}" placeholder="0.00"></div></label>
+              <label class="field"><span>Icon <small>when there is no photo</small></span><select class="input" data-af="icon">${Object.entries(ADDON_ICONS).map(([k, v]) => `<option value="${k}"${a.icon === k ? ' selected' : ''}>${v}</option>`).join('')}</select></label>
+            </div>
+            <label class="field"><span>Description</span><input class="input" data-af="description" value="${esc(a.description)}" maxlength="200"></label>
+            <div class="addon-edit__foot">
+              <label class="check"><input type="checkbox" data-af="active"${a.active !== false ? ' checked' : ''}> Show on website</label>
+              <span>
+                ${a.image ? `<button type="button" class="btn btn--ghost btn--sm" data-anoimg="${i}">Remove photo</button>` : ''}
+                <button type="button" class="btn btn--danger btn--sm" data-adel="${i}">${icon('trash')} Delete</button>
+              </span>
+            </div>
+          </div>
+        </div>`).join('') || `<div class="card"><div class="empty">${icon('gift')}<strong>No gift add-ons</strong>Add chocolates, a teddy or a free vase.</div></div>`}
+      </div>
+      <div class="od-actions" style="margin-top:16px">
+        <button type="button" class="btn btn--outline btn--sm" id="addAddon">${icon('plus')} Add a gift</button>
+        <button type="button" class="btn btn--gold btn--sm" id="saveAddons">Save add-ons</button>
+      </div>
+      <p class="form-error" id="addonError" role="alert"></p>
+      <input type="file" id="addonFile" accept="image/jpeg,image/png,image/webp" hidden>`;
+
+    const syncDraft = () => {
+      document.querySelectorAll('.addon-edit').forEach((card) => {
+        const a = addonDraft[Number(card.dataset.i)];
+        card.querySelectorAll('[data-af]').forEach((el) => {
+          const k = el.dataset.af;
+          if (k === 'active') a.active = el.checked;
+          else if (k === 'price') a.price = el.value.trim() === '' ? '' : toPence(el.value);
+          else a[k] = el.value;
+        });
+      });
+    };
+    let target = null;
+    document.querySelectorAll('[data-aimg]').forEach((b) => b.addEventListener('click', () => { syncDraft(); target = Number(b.dataset.aimg); $('addonFile').click(); }));
+    $('addonFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file || target === null) return;
+      const b = document.querySelector(`[data-aimg="${target}"]`);
+      b.innerHTML = '<small>Uploading…</small>';
+      try { addonDraft[target].image = await uploadImage(file, true); } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+      renderAddons();
+    });
+    document.querySelectorAll('[data-anoimg]').forEach((b) => b.addEventListener('click', () => { syncDraft(); addonDraft[Number(b.dataset.anoimg)].image = ''; renderAddons(); }));
+    document.querySelectorAll('[data-adel]').forEach((b) => b.addEventListener('click', () => {
+      syncDraft();
+      const a = addonDraft[Number(b.dataset.adel)];
+      if (!confirm(`Delete "${a.name || 'this gift'}"? Click Save to update the website.`)) return;
+      addonDraft.splice(Number(b.dataset.adel), 1);
+      renderAddons();
+    }));
+    $('addAddon').addEventListener('click', () => {
+      syncDraft();
+      addonDraft.push({ id: '', name: '', price: '', icon: 'gift', image: '', description: '', active: true });
+      renderAddons();
+      const last = document.querySelector('.addon-edit:last-child [data-af="name"]');
+      if (last) last.focus();
+    });
+    const save = async () => {
+      syncDraft();
+      const err = $('addonError');
+      err.textContent = '';
+      const next = clone(catalog);
+      next.addons = {};
+      for (const a of addonDraft) {
+        const name = String(a.name || '').trim();
+        if (!name) { err.textContent = 'Every gift needs a name.'; return; }
+        if (!Number.isInteger(a.price) || a.price < 0) { err.textContent = `Enter a price for "${name}" (0 for free).`; return; }
+        let id = a.id;
+        if (!id) { const base = slugify(name); id = base; for (let n = 2; next.addons[id] || addonDraft.some((x) => x !== a && x.id === id); n++) id = `${base}-${n}`; a.id = id; }
+        next.addons[id] = { name, price: a.price, icon: a.icon, image: a.image || '', description: String(a.description || '').trim(), active: a.active !== false };
+      }
+      if (await publish(next, 'Gift add-ons saved. Your website is updated.')) { addonDraft = null; renderAddons(); }
+    };
+    $('saveAddons').addEventListener('click', save);
+    $('saveAddonsTop').addEventListener('click', save);
+  }
+
+  // ---------- Delivery ----------
+  const lines = (text) => String(text || '').split(/[\n,]+/).map((x) => x.trim()).filter(Boolean);
+  function renderDelivery() {
+    setBar(`<button type="button" class="btn btn--gold btn--sm" id="saveDeliveryTop">Save delivery</button>`);
+    const d = catalog.delivery || {};
+    const shop = catalog.shop;
+    $('content').innerHTML = `
+      <form id="deliveryForm" novalidate>
+        <div class="settings-grid">
+          <div class="card">
+            <div class="card__head"><h2>Same-day delivery</h2></div>
+            <div class="card__body">
+              <label class="check"><input type="checkbox" name="sameDayEnabled"${d.sameDayEnabled ? ' checked' : ''}> Offer same-day delivery online</label>
+              <div class="grid2" style="margin-top:12px">
+                <label class="field"><span>Order by (UK time)</span><input class="input" type="time" name="sameDayCutoff" value="${esc(d.sameDayCutoff || '14:00')}"></label>
+                <label class="field"><span>Same-day charge <small>empty = normal charge</small></span><div class="money"><input class="input" name="sameDayFee" inputmode="decimal" value="${typeof d.sameDayFee === 'number' ? (d.sameDayFee / 100).toFixed(2) : ''}" placeholder="e.g. 14.95"></div></label>
+              </div>
+              <label class="field"><span>Same-day postcode areas <small>separate with commas. "SW" covers all SW postcodes; "SW1" covers only SW1.</small></span><textarea class="input" name="sameDayAreas" rows="3">${esc((d.sameDayAreas || []).join(', '))}</textarea></label>
+              <p class="help">Customers in these areas can choose today at checkout until the cut-off time.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__head"><h2>Time slots</h2></div>
+            <div class="card__body">
+              <label class="field"><span>Delivery time slots <small>one per line; leave empty to hide the time choice</small></span><textarea class="input" name="slots" rows="4">${esc((d.slots || []).join('\n'))}</textarea></label>
+              <p class="help">Customers pick one at checkout. Earliest date online: <strong>${[['0', 'same day'], ['1', 'next day'], ['2', 'in 2 days'], ['3', 'in 3 days']].find(([n]) => Number(n) === Number(shop.minDeliveryDays))?.[1] || shop.minDeliveryDays + ' days'}</strong> (change it in <a href="#settings" data-go="settings">Settings</a>).</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__head"><h2>Closed days</h2></div>
+            <div class="card__body">
+              <label class="field"><span>Dates you don't deliver <small>one per line, like 2026-12-25</small></span><textarea class="input" name="closedDates" rows="4">${esc((d.closedDates || []).join('\n'))}</textarea></label>
+              <div class="od-actions"><input class="input" type="date" id="addClosed" aria-label="Pick a date to close" style="max-width:200px"><button type="button" class="btn btn--outline btn--sm" id="addClosedBtn">${icon('plus')} Add date</button></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__head"><h2>Areas we can't deliver to online</h2></div>
+            <div class="card__body">
+              <label class="field"><span>Postcode areas <small>separate with commas</small></span><textarea class="input" name="noDeliveryAreas" rows="3">${esc((d.noDeliveryAreas || []).join(', '))}</textarea></label>
+              <p class="help">Customers with these postcodes are asked to message you on WhatsApp instead (e.g. islands).</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__head"><h2>City delivery pages</h2></div>
+            <div class="card__body">
+              <label class="field"><span>Towns and cities <small>one per line; each gets its own page, listed on the Delivery page</small></span><textarea class="input" name="cities" rows="6">${esc((catalog.cities || []).join('\n'))}</textarea></label>
+            </div>
+          </div>
+        </div>
+        <p class="form-error" id="deliveryError" role="alert" style="margin-top:16px"></p>
+        <button type="submit" class="btn btn--gold" id="saveDelivery">Save delivery</button>
+      </form>`;
+    const f = $('deliveryForm');
+    $('addClosedBtn').addEventListener('click', () => {
+      const v = $('addClosed').value;
+      if (!v) return;
+      const list = new Set(lines(f.elements.closedDates.value));
+      list.add(v);
+      f.elements.closedDates.value = [...list].sort().join('\n');
+      $('addClosed').value = '';
+    });
+    $('saveDeliveryTop').addEventListener('click', () => f.requestSubmit());
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = $('deliveryError');
+      err.textContent = '';
+      const feeText = f.elements.sameDayFee.value.trim();
+      const fee = feeText === '' ? null : toPence(feeText);
+      if (fee !== null && (!Number.isInteger(fee) || fee < 0)) { err.textContent = 'Enter the same-day charge, e.g. 14.95, or leave it empty.'; return; }
+      const area = (x) => x.toUpperCase().replace(/\s+/g, '');
+      const next = clone(catalog);
+      next.delivery = {
+        sameDayEnabled: f.elements.sameDayEnabled.checked,
+        sameDayCutoff: f.elements.sameDayCutoff.value || '14:00',
+        sameDayFee: fee,
+        sameDayAreas: lines(f.elements.sameDayAreas.value).map(area),
+        slots: f.elements.slots.value.split('\n').map((x) => x.trim()).filter(Boolean),
+        noDeliveryAreas: lines(f.elements.noDeliveryAreas.value).map(area),
+        closedDates: lines(f.elements.closedDates.value)
+      };
+      next.cities = f.elements.cities.value.split('\n').map((x) => x.trim()).filter(Boolean);
+      $('saveDelivery').disabled = true;
+      const ok = await publish(next, 'Delivery settings saved. Your website is updated.');
+      $('saveDelivery').disabled = false;
+      if (ok) renderDelivery(); else err.textContent = 'Not saved. Please check the details above.';
+    });
+  }
+
+  // ---------- Discount codes ----------
+  let discounts = null;
+  const DISCOUNT_TYPES = { percent: '% off', fixed: '£ off', 'free-delivery': 'Free delivery' };
+  async function renderDiscounts() {
+    setBar(`<button type="button" class="btn btn--gold btn--sm" id="saveCodesTop">Save codes</button>`);
+    if (!discounts) {
+      $('content').innerHTML = '<div class="card"><div class="empty">Loading codes…</div></div>';
+      try { discounts = (await api('discounts')).discounts || []; } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); return; }
+      if (view !== 'discounts') return;
+    }
+    const ukDate = (iso) => (iso ? toLocalInput(iso).slice(0, 10) : '');
+    $('content').innerHTML = `
+      <div class="notice">${icon('tag')}<span>Customers type a code at checkout. Codes are checked on the server, so they never appear in your website's code. Leave <strong>Expires</strong> empty for no end date; a code works until the end of that day (UK time).</span></div>
+      <div class="card">
+        <div class="table-wrap"><table class="table codes">
+          <thead><tr><th>Code</th><th>Type</th><th>Amount</th><th>Min. spend</th><th>Expires</th><th>On</th><th>Note</th><th></th></tr></thead>
+          <tbody>${discounts.map((d, i) => `
+            <tr data-i="${i}">
+              <td><input class="input" data-df="code" value="${esc(d.code)}" maxlength="30" aria-label="Code" style="text-transform:uppercase"></td>
+              <td><select class="input" data-df="type" aria-label="Type">${Object.entries(DISCOUNT_TYPES).map(([k, v]) => `<option value="${k}"${d.type === k ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
+              <td><input class="input" data-df="value" inputmode="decimal" value="${d.type === 'fixed' ? (d.value / 100).toFixed(2) : d.type === 'percent' ? d.value : ''}" aria-label="Amount"${d.type === 'free-delivery' ? ' disabled' : ''} placeholder="${d.type === 'percent' ? '10' : '5.00'}"></td>
+              <td><div class="money"><input class="input" data-df="minSpend" inputmode="decimal" value="${d.minSpend ? (d.minSpend / 100).toFixed(2) : ''}" placeholder="0.00" aria-label="Minimum spend"></div></td>
+              <td><input class="input" type="date" data-df="endsAt" value="${esc(ukDate(d.endsAt))}" aria-label="Expires"></td>
+              <td><input type="checkbox" data-df="active"${d.active !== false ? ' checked' : ''} aria-label="Active"></td>
+              <td><input class="input" data-df="note" value="${esc(d.note)}" maxlength="100" placeholder="e.g. Instagram" aria-label="Note"></td>
+              <td><button type="button" class="icon-btn icon-btn--danger" data-ddel="${i}" aria-label="Delete code">${icon('trash')}</button></td>
+            </tr>`).join('')}</tbody>
+        </table></div>
+        ${discounts.length ? '' : `<div class="empty">${icon('tag')}<strong>No discount codes yet</strong>Add one, e.g. WELCOME10 for 10% off.</div>`}
+      </div>
+      <div class="od-actions" style="margin-top:16px">
+        <button type="button" class="btn btn--outline btn--sm" id="addCode">${icon('plus')} Add code</button>
+        <button type="button" class="btn btn--gold btn--sm" id="saveCodes">Save codes</button>
+      </div>
+      <p class="form-error" id="codeError" role="alert"></p>`;
+
+    const read = () => [...document.querySelectorAll('.codes tbody tr')].map((row) => {
+      const g = (k) => row.querySelector(`[data-df="${k}"]`);
+      const type = g('type').value;
+      const raw = g('value').value.trim();
+      const ends = g('endsAt').value;
+      return {
+        code: g('code').value.trim().toUpperCase(), type,
+        value: type === 'percent' ? Number(raw) : type === 'fixed' ? toPence(raw) : 0,
+        minSpend: g('minSpend').value.trim() ? toPence(g('minSpend').value) : 0,
+        endsAt: ends ? new Date(fromUkInput(`${ends}T23:59`) + 59000).toISOString() : '',
+        active: g('active').checked,
+        note: g('note').value.trim()
+      };
+    });
+    document.querySelectorAll('[data-df="type"]').forEach((sel) => sel.addEventListener('change', () => { discounts = read(); renderDiscounts(); }));
+    document.querySelectorAll('[data-ddel]').forEach((b) => b.addEventListener('click', () => { discounts = read(); discounts.splice(Number(b.dataset.ddel), 1); renderDiscounts(); }));
+    $('addCode').addEventListener('click', () => {
+      discounts = read();
+      discounts.push({ code: '', type: 'percent', value: '', minSpend: 0, endsAt: '', active: true, note: '' });
+      renderDiscounts();
+      const rows = document.querySelectorAll('.codes [data-df="code"]');
+      rows[rows.length - 1].focus();
+    });
+    const save = async () => {
+      const err = $('codeError');
+      err.textContent = '';
+      const list = read();
+      for (const d of list) {
+        if (d.type !== 'free-delivery' && !(Number.isFinite(d.value) && d.value > 0)) { err.textContent = `Enter an amount for ${d.code || 'each code'}.`; return; }
+        if (!Number.isFinite(d.minSpend)) { err.textContent = `Check the minimum spend for ${d.code}.`; return; }
+      }
+      try {
+        discounts = (await api('discounts', { method: 'PUT', body: list })).discounts;
+        toast('Discount codes saved.');
+        renderDiscounts();
+      } catch (e2) {
+        if (e2.message !== 'Session ended') err.textContent = e2.message;
+      }
+    };
+    $('saveCodes').addEventListener('click', save);
+    $('saveCodesTop').addEventListener('click', save);
+  }
+
+  // ---------- Blog ----------
+  let posts = null;
+  async function renderBlog() {
+    setBar(`<button type="button" class="btn btn--gold btn--sm" id="newPost">${icon('plus')}<span>New post</span></button>`);
+    $('newPost').addEventListener('click', () => openPost(null));
+    if (!posts) {
+      $('content').innerHTML = '<div class="card"><div class="empty">Loading posts…</div></div>';
+      try { posts = (await api('posts')).posts || []; } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); return; }
+      if (view !== 'blog') return;
+    }
+    $('content').innerHTML = `
+      <div class="notice">${icon('pen')}<span>Posts appear on your <a href="blog.html" target="_blank" rel="noopener">Blog</a> page once published. Drafts are only visible here.</span></div>
+      <div class="card">${posts.length ? `<ul class="plist">${posts.map((p) => `
+        <li class="prow prow--post" data-slug="${esc(p.slug)}">
+          ${p.cover ? `<img src="${esc(p.cover)}" alt="" loading="lazy">` : `<span class="prow__ph">${icon('pen')}</span>`}
+          <div><p class="prow__name">${esc(p.title)}</p><p class="prow__id">${fmtDate(p.date)} · /post.html?slug=${esc(p.slug)}</p></div>
+          <span class="prow__cat"><span class="badge ${p.status === 'published' ? 'st-delivered' : 'st-awaiting-payment'}">${p.status === 'published' ? 'Published' : 'Draft'}</span></span>
+          <div class="prow__actions">
+            ${p.status === 'published' ? `<a class="icon-btn" href="post.html?slug=${encodeURIComponent(p.slug)}" target="_blank" rel="noopener" title="View" aria-label="View post">${icon('ext')}</a>` : ''}
+            <button type="button" class="icon-btn" data-bact="edit" title="Edit" aria-label="Edit">${icon('edit')}</button>
+            <button type="button" class="icon-btn icon-btn--danger" data-bact="delete" title="Delete" aria-label="Delete">${icon('trash')}</button>
+          </div>
+        </li>`).join('')}</ul>` : `<div class="empty">${icon('pen')}<strong>No posts yet</strong>Write about rose care, gift ideas or your latest designs.</div>`}
+      </div>`;
+    document.querySelectorAll('[data-bact]').forEach((b) => b.addEventListener('click', async () => {
+      const slug = b.closest('[data-slug]').dataset.slug;
+      if (b.dataset.bact === 'edit') return openPost(slug);
+      const p = posts.find((x) => x.slug === slug);
+      if (!confirm(`Delete "${p.title}"? This cannot be undone.`)) return;
+      try {
+        await api(`posts/${encodeURIComponent(slug)}`, { method: 'DELETE' });
+        posts = posts.filter((x) => x.slug !== slug);
+        toast('Post deleted.');
+        renderBlog();
+      } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    }));
+  }
+
+  const bp = { slug: null, cover: '' };
+  const postForm = $('postForm');
+  function setCover(url) {
+    bp.cover = url || '';
+    if (url) $('bpImg').src = url; else $('bpImg').removeAttribute('src');
+    $('bpDrop').classList.toggle('has-img', Boolean(url));
+    $('bpRemoveCover').hidden = !url;
+  }
+  function openPost(slug) {
+    const p = slug ? posts.find((x) => x.slug === slug) : { title: '', slug: '', date: new Date().toISOString().slice(0, 10), status: 'draft', cover: '', excerpt: '', body: '' };
+    bp.slug = slug;
+    $('bpTitle').textContent = slug ? 'Edit post' : 'New post';
+    postForm.reset();
+    ['title', 'slug', 'date', 'status', 'excerpt', 'body'].forEach((k) => { postForm.elements[k].value = p[k] || ''; });
+    setCover(p.cover);
+    $('bpError').textContent = '';
+    $('postDialog').showModal();
+    postForm.elements.title.focus();
+  }
+  async function handleCover(file) {
+    if (!file) return;
+    $('bpBusy').hidden = false;
+    try { setCover(await uploadImage(file, false)); } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    finally { $('bpBusy').hidden = true; $('bpFile').value = ''; }
+  }
+  $('bpDrop').addEventListener('click', () => $('bpFile').click());
+  $('bpDrop').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('bpFile').click(); } });
+  $('bpFile').addEventListener('change', (e) => handleCover(e.target.files[0]));
+  $('bpRemoveCover').addEventListener('click', () => setCover(''));
+  postForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const err = $('bpError');
+    err.textContent = '';
+    const post = {};
+    ['title', 'slug', 'date', 'status', 'excerpt', 'body'].forEach((k) => { post[k] = postForm.elements[k].value.trim(); });
+    post.cover = bp.cover;
+    if (!post.title) { err.textContent = 'Please add a title.'; return postForm.elements.title.focus(); }
+    if (!post.body) { err.textContent = 'Please write the post text.'; return postForm.elements.body.focus(); }
+    const newSlug = slugify(post.slug || post.title);
+    if (newSlug !== bp.slug && posts.some((x) => x.slug === newSlug)) { err.textContent = 'Another post already uses that web address. Change the title or web address.'; return; }
+    $('bpSave').disabled = true;
+    try {
+      const saved = await api('posts', { method: 'PUT', body: { post, previousSlug: bp.slug } });
+      posts = [saved, ...posts.filter((x) => x.slug !== bp.slug && x.slug !== saved.slug)].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+      $('postDialog').close();
+      toast(saved.status === 'published' ? 'Post published.' : 'Draft saved.');
+      if (view === 'blog') renderBlog();
+    } catch (e2) {
+      if (e2.message !== 'Session ended') err.textContent = e2.message;
+    } finally {
+      $('bpSave').disabled = false;
+    }
   });
 
   // ---------- Settings ----------
@@ -903,6 +1292,8 @@
     try { sessionStorage.removeItem(TOKEN_KEY); } catch (e) { /* ignore */ }
     catalog = null;
     orders = [];
+    discounts = null;
+    posts = null;
     document.querySelectorAll('dialog[open]').forEach((d) => d.close());
     $('app').hidden = true;
     $('login').hidden = false;

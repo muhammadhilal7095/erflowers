@@ -17,6 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <script src="js/catalog.js"></script>
+  <script src="js/rules.js"></script>
   <script src="js/layout.js"></script>
 </head>
 <body class="">
@@ -35,7 +36,7 @@
           <div class="info-card">
             <svg class="info-card__icon"><use href="#i-clock"/></svg>
             <h3>Your Chosen Date</h3>
-            <p>Select a date at checkout, or call us for same day delivery.</p>
+            <p>Choose a date and time slot at checkout. Same-day delivery in selected areas when you order by <span data-shop="sameDayCutoff"></span>.</p>
           </div>
           <div class="info-card">
             <svg class="info-card__icon"><use href="#i-gift"/></svg>
@@ -52,14 +53,27 @@
     </section>
 
     <section class="section section--tight">
+      <div class="container">
+        <form class="pc-check pc-check--card delivery-check" data-postcode-check novalidate>
+          <label for="delPostcode"><svg class="icon"><use href="#i-truck"/></svg> Check delivery to your postcode</label>
+          <div class="pc-check__row">
+            <input id="delPostcode" placeholder="e.g. SW1A 1AA" autocomplete="postal-code" autocapitalize="characters" maxlength="10">
+            <button type="submit" class="btn btn--gold btn--sm">Check</button>
+          </div>
+          <p class="pc-check__result" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <section class="section section--tight">
       <div class="container prose">
         <h2>Where we deliver</h2>
         <p>We deliver to addresses across the UK, including England, Scotland, Wales and Northern Ireland. For the Scottish Highlands and Islands, the Isle of Man, the Isles of Scilly and the Channel Islands, please message us before ordering so we can confirm availability and timings.</p>
 
         <h2>Choosing your delivery date</h2>
-        <p>Choose your preferred delivery date at checkout. The earliest date you can select online is the next day.</p>
-        <p><strong>Need them today?</strong> For same day delivery, call us on <a href="#" data-shop-href="phone"><span data-shop="phone"></span></a> or <a href="#" data-enquire="same day delivery">message us on WhatsApp</a>. We&rsquo;ll create a bouquet to suit your budget and deliver it today.</p>
-        <p>Deliveries are made during the day. We are unable to guarantee a specific time unless we have agreed it with you in advance. If timing is important (for example a surprise or a proposal), please tell us in the notes at checkout or message us first.</p>
+        <p>Choose your preferred delivery date and time slot at checkout. Enter the delivery postcode first and we&rsquo;ll show the earliest date available for that address.</p>
+        <p><strong>Need them today?</strong> Same-day delivery is available in selected areas when you order by <span data-shop="sameDayCutoff"></span> (UK time). Use the postcode checker above to see if it&rsquo;s available. For anywhere else, call us on <a href="#" data-shop-href="phone"><span data-shop="phone"></span></a> or <a href="#" data-enquire="same day delivery">message us on WhatsApp</a> and we&rsquo;ll do our best.</p>
+        <p>Time slots are a preference, and we aim to deliver within the slot you choose. We are unable to guarantee an exact time unless we have agreed it with you in advance. If timing is important (for example a surprise or a proposal), please tell us in the notes at checkout or message us first.</p>
 
         <h2>Delivery charges</h2>
         <p>Delivery is <span data-shop="deliveryFee"></span>. The final amount is always confirmed before you pay.</p>
@@ -77,6 +91,23 @@
         <p>If your roses arrive damaged, late or not as expected, contact us within 24 hours of delivery with your order reference and a photo. See our <a href="refunds.html">Refunds &amp; Returns</a> policy for how we put things right.</p>
       </div>
     </section>
+
+    <section class="section" id="areas">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">Delivery Areas</p>
+          <h2 class="section-title section-title--sm">Flower Delivery Near You</h2>
+        </div>
+        <ul class="city-list" id="cityList"></ul>
+      </div>
+    </section>
+    <script>
+      (function () {
+        const slug = (c) => c.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        document.getElementById('cityList').innerHTML = (window.ENVIE_CATALOG.cities || [])
+          .map((c) => `<li><a href="delivery-to.html?city=${slug(c)}">Flower delivery ${EnvieLayout.esc(c)}</a></li>`).join('');
+      })();
+    </script>
   </main>
 
   <script>EnvieLayout.bottom();</script>

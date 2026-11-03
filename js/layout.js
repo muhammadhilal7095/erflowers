@@ -4,6 +4,8 @@
 
 (function () {
   const { shop, legal, social, products } = window.ENVIE_CATALOG;
+  const RULES = window.ENVIE_RULES;
+  const { TAGS, PRICE_BANDS } = RULES;
   const images = window.ENVIE_CATALOG.images || {};
   const money = (pence) => '£' + (pence / 100).toFixed(2);
   const esc = (str) => String(str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -46,17 +48,51 @@
     <symbol id="i-whatsapp" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.6-.3z"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></symbol>
     <symbol id="i-lock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></g></symbol>
+    <symbol id="i-vase" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M9 3h6M10 3v3c0 1.2-3.5 3-3.5 7.5S8.5 21 12 21s5.5-3 5.5-7.5S14 7.2 14 6V3"/></symbol>
+    <symbol id="i-chocolate" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="12" rx="1.5"/><path d="M3.5 12h17M9.2 6v12M14.8 6v12"/></g></symbol>
+    <symbol id="i-teddy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="5.5" r="2"/><circle cx="16.5" cy="5.5" r="2"/><circle cx="12" cy="9" r="4.2"/><ellipse cx="12" cy="17.5" rx="5" ry="4"/><circle cx="12" cy="17.5" r="1.6"/></g></symbol>
+    <symbol id="i-balloon" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.5C8 15.5 5.5 12 5.5 8.5a6.5 6.5 0 0 1 13 0c0 3.5-2.5 7-6.5 7z"/><path d="m11 17.5 1-2 1 2zM12 17.5c-1 1.5 1 2.5 0 4"/></g></symbol>
+    <symbol id="i-candle" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="7" y="10" width="10" height="11" rx="1.5"/><path d="M12 3c1.6 2 2 3.3 0 5.2C10 6.3 10.4 5 12 3zM12 8.2V10"/></g></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></symbol>
     <symbol id="i-star" viewBox="0 0 24 24"><path fill="currentColor" d="m12 2 3 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.5l-6.4 3.7 1.6-7.1L1.8 9.3 9 8.6z"/></symbol>
   </svg>`;
 
   const NAV = [
     ['home', 'index.html', 'Home'],
-    ['shop', 'shop.html', 'Shop All Roses'],
-    ['boxes', 'shop.html?c=boxes', 'Rose Boxes'],
+    ['shop', 'shop.html', 'Shop'],
     ['gifts', 'gifts.html', 'Gifts'],
+    ['finder', 'finder.html', 'Bouquet Finder'],
+    ['blog', 'blog.html', 'Blog'],
     ['about', 'about.html', 'About Us'],
     ['contact', 'contact.html', 'Contact']
   ];
+
+  // Big "Shop" menu: built from the product tags, so new tags appear automatically
+  const megaCol = (title, links) => `
+            <div class="mega__col">
+              <p class="mega__title">${title}</p>
+              <ul>${links.map(([href, label]) => `<li><a href="${href}">${esc(label)}</a></li>`).join('')}</ul>
+            </div>`;
+  function megaMenu() {
+    const occ = Object.entries(TAGS.occasions).slice(0, 8);
+    return `
+          <div class="mega" id="megaShop">
+            <div class="container mega__inner">
+            ${megaCol('Shop', [['shop.html', 'All Roses'], ['shop.html?c=boxes', 'Rose Boxes'], ['shop.html?c=bouquets', 'Bouquets'], ['shop.html?c=exclusive', 'Exclusive'], ['finder.html', 'Bouquet Finder'], ['wishlist.html', 'Your Wishlist']])}
+            ${megaCol('By Occasion', [...occ.map(([k, v]) => [`shop.html?o=${k}`, v]), ['gifts.html', 'All occasions →']])}
+            ${megaCol('By Colour', Object.entries(TAGS.colours).map(([k, v]) => [`shop.html?colour=${k}`, v]))}
+            ${megaCol('By Flower', Object.entries(TAGS.flowers).map(([k, v]) => [`shop.html?flower=${k}`, v]))}
+            ${megaCol('By Price', Object.entries(PRICE_BANDS).map(([k, v]) => [`shop.html?price=${k}`, v.label]))}
+            ${megaCol('Who For', Object.entries(TAGS.recipients).map(([k, v]) => [`shop.html?for=${k}`, v]))}
+            </div>
+          </div>`;
+  }
+  const navItem = ([key, href, label], active) => {
+    const isActive = key === active || (key === 'shop' && active === 'boxes');
+    const a = `<a href="${href}"${isActive ? ' class="active" aria-current="page"' : ''}>${label}</a>`;
+    if (key !== 'shop') return `<li>${a}</li>`;
+    return `<li class="has-mega">${a}<button type="button" class="mega-toggle" aria-expanded="false" aria-controls="megaShop" aria-label="Show shop categories"><svg class="icon"><use href="#i-chevron"/></svg></button>${megaMenu()}</li>`;
+  };
 
   const SOCIAL = [
     ['facebook', 'Facebook'],
@@ -108,7 +144,7 @@
       ${logo}
       <nav class="nav" id="nav" aria-label="Main">
         <ul>
-          ${NAV.map(([key, href, label]) => `<li><a href="${href}"${key === active ? ' class="active" aria-current="page"' : ''}>${label}</a></li>`).join('')}
+          ${NAV.map((item) => navItem(item, active)).join('')}
         </ul>
         <div class="nav__extra">
           <a href="tel:${tel}"><svg class="icon"><use href="#i-phone"/></svg>${esc(shop.phone)}</a>
@@ -118,6 +154,7 @@
       </nav>
       <div class="header__actions">
         <button type="button" aria-label="Search" class="icon-btn" id="searchOpen"><svg class="icon"><use href="#i-search"/></svg></button>
+        <a href="wishlist.html" aria-label="Wishlist" class="wish-link" id="wishLink"><svg class="icon"><use href="#i-heart"/></svg><span class="cart__count wish-count" id="wishCount" hidden>0</span></a>
         <a href="account.html" aria-label="Order history" class="hide-sm"><svg class="icon"><use href="#i-user"/></svg></a>
         <button type="button" aria-label="Bag, 0 items" class="cart icon-btn" id="cart"><svg class="icon"><use href="#i-cart"/></svg><span class="cart__count" id="cartCount">0</span></button>
       </div>
@@ -176,20 +213,50 @@
   const CARD_SIZES = '(max-width: 640px) 80vw, (max-width: 960px) 46vw, 400px';
 
   // ---------- Offers ----------
-  // A sale is live until its end time; the server applies exactly the same rule at checkout
-  function saleActive(p, now = Date.now()) {
-    return Boolean(p && p.sale && p.sale.percent > 0 && Date.parse(p.sale.endsAt) > now);
-  }
-  function unitPrice(p, option, now) {
-    return saleActive(p, now) ? Math.round((option.price * (100 - p.sale.percent)) / 100) : option.price;
-  }
+  // Same rules as the server (js/rules.js), so the price shown is the price charged
+  const { saleActive, unitPrice } = RULES;
   const productUrl = (id) => `product.html?id=${encodeURIComponent(id)}`;
+
+  // ---------- Wishlist and recently viewed (saved in this browser) ----------
+  const readList = (key) => { try { return JSON.parse(localStorage.getItem(key) || '[]').filter((id) => products[id]); } catch (e) { return []; } };
+  const writeList = (key, list) => { try { localStorage.setItem(key, JSON.stringify(list)); } catch (e) { /* storage unavailable */ } };
+  const wishlist = {
+    ids: () => readList('envie_wishlist'),
+    has: (id) => readList('envie_wishlist').includes(id),
+    toggle(id) {
+      const list = readList('envie_wishlist');
+      const on = !list.includes(id);
+      writeList('envie_wishlist', on ? [id, ...list] : list.filter((x) => x !== id));
+      return on;
+    }
+  };
+  const recent = {
+    ids: () => readList('envie_recent'),
+    add(id) { writeList('envie_recent', [id, ...readList('envie_recent').filter((x) => x !== id)].slice(0, 8)); }
+  };
+
+  // ---------- Gift add-ons ----------
+  function addonVisual(a) {
+    return a.image
+      ? `<img ${imgAttrs(a.image, '64px')} alt="" loading="lazy" decoding="async">`
+      : `<svg class="addon__icon"><use href="#i-${esc(a.icon || 'gift')}"/></svg>`;
+  }
+  function addonChoice(a, checked) {
+    return `
+      <label class="addon${a.price === 0 ? ' addon--free' : ''}">
+        <input type="checkbox" value="${esc(a.id)}" data-addon${checked ? ' checked' : ''}>
+        <span class="addon__media">${addonVisual(a)}</span>
+        <span class="addon__text"><strong>${esc(a.name)}</strong><small>${a.price === 0 ? 'Free' : '+' + money(a.price)}</small></span>
+        <span class="addon__tick" aria-hidden="true"></span>
+      </label>`;
+  }
 
   function productCard(id) {
     const p = products[id];
     if (!p) return '';
     const onSale = saleActive(p);
     const cheapest = p.options.length ? p.options.reduce((a, b) => (a.price <= b.price ? a : b)) : null;
+    const saved = wishlist.has(id);
     const action = p.enquire
       ? `<a href="#" class="btn btn--outline btn--sm" data-enquire="${esc(p.name)}"><svg class="icon"><use href="#i-whatsapp"/></svg> Enquire</a>`
       : `<button type="button" class="btn btn--gold btn--sm" data-buy>Buy Now <svg class="icon"><use href="#i-arrow"/></svg></button>`;
@@ -204,7 +271,7 @@
             <div class="product__img">
               <a href="${productUrl(id)}" class="product__link" tabindex="-1" aria-hidden="true"><img ${imgAttrs(p.image, CARD_SIZES)} alt="${esc(p.name)}" loading="lazy" decoding="async" width="1080" height="1080"></a>
               ${onSale ? `<span class="product__badge">-${p.sale.percent}%</span>` : ''}
-              <button type="button" class="wish" aria-label="Add to wishlist" aria-pressed="false"><svg><use href="#i-heart"/></svg></button>
+              <button type="button" class="wish" aria-label="${saved ? 'Remove from wishlist' : 'Add to wishlist'}" aria-pressed="${saved}"><svg><use href="#i-heart"/></svg></button>
               ${p.enquire ? '' : '<button type="button" class="quick-add">Add to Bag</button>'}
             </div>
             <div class="product__body">
@@ -257,7 +324,17 @@
           <li><a href="shop.html?c=boxes">Rose Boxes</a></li>
           <li><a href="shop.html?c=bouquets">Bouquets</a></li>
           <li><a href="gifts.html">Gifts &amp; Occasions</a></li>
+          <li><a href="finder.html">Bouquet Finder</a></li>
+          <li><a href="wishlist.html">Your Wishlist</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Discover</h4>
+        <ul>
           <li><a href="about.html">About Us</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="guarantee.html">Freshness Guarantee</a></li>
+          <li><a href="delivery.html#areas">Delivery Areas</a></li>
           <li><a href="contact.html">Contact</a></li>
         </ul>
       </div>
@@ -324,6 +401,10 @@
             <button type="button" data-qty="1" aria-label="Increase quantity">+</button>
           </div>
         </div>
+        <div class="pm__field" id="pmAddonsWrap" hidden>
+          <span class="pm__label">Add a gift</span>
+          <div class="addons addons--compact" id="pmAddons"></div>
+        </div>
         <div class="pm__actions">
           <button type="button" class="btn btn--outline" id="pmAdd">Add to Bag</button>
           <button type="button" class="btn btn--whatsapp" id="pmBuy"><svg class="icon"><use href="#i-whatsapp"/></svg> Buy Now on WhatsApp</button>
@@ -342,7 +423,10 @@
       <h2 id="cartTitle">Your Bag</h2>
       <button type="button" class="modal__close" data-close aria-label="Close bag"><svg class="icon"><use href="#i-close"/></svg></button>
     </div>
-    <div class="drawer__body" id="cartItems"></div>
+    <div class="drawer__body">
+      <div id="cartItems"></div>
+      <div class="drawer__extras" id="cartExtras" hidden></div>
+    </div>
     <div class="drawer__foot" id="cartFoot">
       <div class="sum-row"><span>Subtotal</span><strong id="cartSubtotal">£0.00</strong></div>
       <p class="drawer__note" id="cartDeliveryNote"></p>
@@ -374,8 +458,10 @@
             <label class="field field--full"><span>Address *</span><input name="address1" required autocomplete="address-line1" placeholder="House number and street"></label>
             <label class="field field--full"><span class="sr-only">Address line 2</span><input name="address2" autocomplete="address-line2" placeholder="Flat, building (optional)"></label>
             <label class="field"><span>Town / City *</span><input name="city" required autocomplete="address-level2"></label>
-            <label class="field"><span>Postcode *</span><input name="postcode" required autocomplete="postal-code" pattern="[A-Za-z]{1,2}[0-9][A-Za-z0-9]?\\s*[0-9][A-Za-z]{2}" title="A UK postcode, e.g. SW1A 1AA" placeholder="SW1A 1AA"></label>
-            <label class="field field--full"><span>Delivery date *</span><input name="date" type="date" required id="coDate"></label>
+            <label class="field"><span>Postcode *</span><input name="postcode" id="coPostcode" required autocomplete="postal-code" pattern="[A-Za-z]{1,2}[0-9][A-Za-z0-9]?\\s*[0-9][A-Za-z]{2}" title="A UK postcode, e.g. SW1A 1AA" placeholder="SW1A 1AA"></label>
+            <p class="co-info field--full" id="coDeliveryInfo" role="status" aria-live="polite"></p>
+            <label class="field"><span>Delivery date *</span><input name="date" type="date" required id="coDate"></label>
+            <label class="field" id="coSlotWrap"><span>Delivery time</span><select name="slot" id="coSlot"></select></label>
           </div>
         </fieldset>
 
@@ -414,6 +500,13 @@
         <div id="coItems"></div>
         <div class="sum-row"><span>Subtotal</span><span id="coSubtotal"></span></div>
         <div class="sum-row"><span>Delivery</span><span id="coDelivery"></span></div>
+        <div class="sum-row sum-row--discount" id="coDiscountRow" hidden><span id="coDiscountLabel">Discount</span><span id="coDiscount"></span></div>
+        <div class="co-discount">
+          <label for="coCode" class="sr-only">Discount code</label>
+          <input id="coCode" placeholder="Discount code" autocomplete="off" autocapitalize="characters" maxlength="30">
+          <button type="button" class="btn btn--outline btn--sm" id="coApply">Apply</button>
+        </div>
+        <p class="co-discount__msg" id="coCodeMsg" role="status" aria-live="polite"></p>
         <div class="sum-row sum-row--total"><span id="coTotalLabel">Total</span><strong id="coTotal"></strong></div>
         <button type="submit" class="btn btn--gold btn--block" id="coSubmit">Place Order</button>
         <p class="co-terms">By placing your order you agree to our <a href="terms.html" target="_blank">Terms &amp; Conditions</a> and confirm you have read our <a href="privacy.html" target="_blank">Privacy Policy</a>. All prices in GBP.</p>
@@ -459,6 +552,13 @@
   }
 
   // Fill shop/legal details into page content: <span data-shop="email"></span> etc.
+  // "14:00" -> "2pm", "13:30" -> "1:30pm"
+  function niceTime(hhmm) {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm || '');
+    if (!m) return hhmm;
+    const h = Number(m[1]), h12 = h % 12 || 12;
+    return `${h12}${m[2] === '00' ? '' : ':' + m[2]}${h < 12 ? 'am' : 'pm'}`;
+  }
   function fill() {
     const values = {
       name: shop.name,
@@ -472,6 +572,7 @@
       vatNumber: legal.vatNumber,
       hours: shop.hours,
       deliveryFee: typeof shop.deliveryFee === 'number' ? (shop.deliveryFee === 0 ? 'free' : money(shop.deliveryFee)) : 'confirmed with your order',
+      sameDayCutoff: niceTime((window.ENVIE_CATALOG.delivery || {}).sameDayCutoff),
       identity: legalLine() || `${shop.name} is based in ${shop.location}.`
     };
     document.querySelectorAll('[data-shop]').forEach((el) => {
@@ -493,5 +594,5 @@
     });
   }
 
-  window.EnvieLayout = { top, bottom, pageHero, productCard, fill, money, esc, saleActive, unitPrice, productUrl, srcset, imgAttrs, setImg };
+  window.EnvieLayout = { top, bottom, pageHero, productCard, fill, money, esc, saleActive, unitPrice, productUrl, srcset, imgAttrs, setImg, wishlist, recent, addonChoice, addonVisual };
 })();

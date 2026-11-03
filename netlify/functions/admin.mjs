@@ -10,13 +10,19 @@
 //   GET    /api/admin/reviews          -> { reviews }
 //   PATCH  /api/admin/reviews/:product/:id  { status } -> review
 //   DELETE /api/admin/reviews/:product/:id
+//   GET    /api/admin/discounts        -> { discounts }
+//   PUT    /api/admin/discounts        [codes] -> { discounts }
+//   GET    /api/admin/posts            -> { posts } (including drafts)
+//   PUT    /api/admin/posts            { post, previousSlug } -> post
+//   DELETE /api/admin/posts/:slug
 //
 // Needs the environment variable ADMIN_PASSWORD.
 
 import { purgeCache } from '@netlify/functions';
 import {
   ORDER_STATUSES, REVIEW_STATUSES, adminConfigured, deleteReview, listReviews, updateReview, checkPassword, deleteOrder, getCatalog, imageStore,
-  isAdmin, json, listOrders, makeToken, newImageKey, saveCatalog, updateOrder, validOrderId, validateCatalog
+  isAdmin, json, listOrders, makeToken, newImageKey, saveCatalog, updateOrder, validOrderId, validateCatalog,
+  deletePost, getDiscounts, listPosts, saveDiscounts, savePost, validateDiscounts, validatePost
 } from '../lib/shop-data.mjs';
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -77,6 +83,26 @@ export default async (req) => {
         await deleteOrder(id);
         return json(200, { ok: true });
       }
+    }
+
+    if (path === 'discounts' && method === 'GET') return json(200, { discounts: await getDiscounts() });
+    if (path === 'discounts' && method === 'PUT') {
+      const clean = validateDiscounts(await req.json());
+      await saveDiscounts(clean);
+      return json(200, { discounts: clean });
+    }
+
+    if (path === 'posts' && method === 'GET') return json(200, { posts: await listPosts({ includeDrafts: true }) });
+    if (path === 'posts' && method === 'PUT') {
+      const { post, previousSlug } = await req.json();
+      const clean = validatePost(post || {});
+      await savePost(clean, previousSlug && /^[a-z0-9-]{1,80}$/.test(previousSlug) ? previousSlug : null);
+      return json(200, clean);
+    }
+    const postMatch = path.match(/^posts\/([a-z0-9-]{1,80})$/);
+    if (postMatch && method === 'DELETE') {
+      await deletePost(postMatch[1]);
+      return json(200, { ok: true });
     }
 
     if (path === 'reviews' && method === 'GET') return json(200, { reviews: await listReviews() });
