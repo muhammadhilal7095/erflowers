@@ -266,7 +266,7 @@ export function validateCatalog(input) {
     enabled: pu.enabled === true,
     delay: int(pu.delay ?? 0, 0, 120, 'Popup delay (seconds)'),
     pages: pu.pages === 'home' ? 'home' : 'all',
-    everyDays: int(pu.everyDays ?? 3, 1, 60, 'Show the popup again after (days)')
+    everyDays: int(pu.everyDays ?? 0, 0, 60, 'Show the popup again after (days)')
   };
 
   const cl = input.club || {};

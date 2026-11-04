@@ -1396,7 +1396,7 @@
               <label class="check"><input type="checkbox" id="popOn"${catalog.popup.enabled ? ' checked' : ''}> Show the popup</label>
               <label class="field"><span>Show after (seconds)</span><input class="input" id="popDelay" type="number" min="0" max="120" value="${catalog.popup.delay}"></label>
               <label class="field"><span>Where</span><select class="input" id="popPages"><option value="home"${catalog.popup.pages === 'home' ? ' selected' : ''}>Homepage only</option><option value="all"${catalog.popup.pages === 'all' ? ' selected' : ''}>Every page</option></select></label>
-              <label class="field"><span>Show again after (days)</span><input class="input" id="popDays" type="number" min="1" max="60" value="${catalog.popup.everyDays}"></label>
+              <label class="field"><span>Hide after closing for (days) <small>0 = show on every visit</small></span><input class="input" id="popDays" type="number" min="0" max="60" value="${catalog.popup.everyDays}"></label>
             </div>
           </div>
           <p class="help" style="margin-top:10px">Price changes apply to new subscribers. Existing card subscribers keep the price they signed up at.</p>

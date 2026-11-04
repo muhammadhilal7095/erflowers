@@ -108,8 +108,8 @@
     },
 
     // Flower Club popup: shown as soon as the site opens (delay 0) on any page ('all') or the homepage only ('home'),
-    // then not again for `everyDays` once closed
-    popup: { enabled: true, delay: 0, pages: 'all', everyDays: 3 },
+    // everyDays: 0 = every visit, or hide for that many days once closed
+    popup: { enabled: true, delay: 0, pages: 'all', everyDays: 0 },
 
     // Gift cards: amounts in pence. Cards are issued from the dashboard once paid.
     giftCards: {

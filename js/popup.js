@@ -1,6 +1,6 @@
 // Envie Roses — Flower Club popup (a calendar page you can flip to the next plan).
 // Settings: catalog.popup { enabled, delay (seconds), pages ('home' | 'all'), everyDays }
-// Shown once, then not again for `everyDays` after it's closed. Never on checkout, account or club pages.
+// Shown every time the site is opened (everyDays 0), or hidden for `everyDays` after it's closed. Never on checkout, account or club pages.
 
 (function () {
   const C = window.ENVIE_CATALOG;
@@ -16,11 +16,15 @@
   if (cfg.pages === 'home' && !isHome) return;
   if (/^(club|account|admin|track-order|gift-cards)(\.html)?$/.test(page.replace(/\.html$/, '')) || /checkout=/.test(location.search)) return;
 
+  // everyDays 0 = every visit (closed only for this browser tab's visit); otherwise hidden for that many days
   const KEY = 'envie_popup_closed';
+  const days = Number(cfg.everyDays ?? 0);
+  const memory = () => (days > 0 ? window.localStorage : window.sessionStorage);
   try {
-    const last = Number(localStorage.getItem(KEY) || 0);
-    if (last && Date.now() - last < (cfg.everyDays || 3) * 86400000) return;
-  } catch (e) { return; } // no storage: don't risk showing it on every page
+    const last = Number(memory().getItem(KEY) || 0);
+    if (last && (days === 0 || Date.now() - last < days * 86400000)) return;
+  } catch (e) { /* storage blocked: still show it once on this page */ }
+  const remember = () => { try { memory().setItem(KEY, String(Date.now())); } catch (e) { /* ignore */ } };
 
   const { money, esc } = L;
   const FREQ = { weekly: 'weekly', fortnightly: 'every 2 weeks', monthly: 'monthly' };
@@ -90,7 +94,7 @@
     wrap.querySelector('.cpop__cta').focus({ preventScroll: true });
   }
   function close() {
-    try { localStorage.setItem(KEY, String(Date.now())); } catch (e) { /* ignore */ }
+    remember();
     wrap.classList.remove('is-open');
     document.body.classList.remove('cpop-lock');
     setTimeout(() => { wrap.hidden = true; }, 300);
@@ -98,7 +102,7 @@
   }
   wrap.addEventListener('click', (e) => {
     if (e.target.closest('[data-cpop-close]')) close();
-    if (e.target.closest('.cpop__cta')) { try { localStorage.setItem(KEY, String(Date.now())); } catch (err) { /* ignore */ } }
+    if (e.target.closest('.cpop__cta')) remember();
   });
   document.addEventListener('keydown', (e) => {
     if (wrap.hidden) return;
