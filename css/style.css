@@ -3251,3 +3251,133 @@ a.acct-card:hover { border-color: var(--gold); }
   .h-grid .product__name { font-size: 17px; }
 }
 @media (max-width: 640px) { .h-grid .product .btn { min-width: 0; } }
+
+/* ==========================================================
+   Clean white theme — white pages, white header, softer cards.
+   Kept as one layer so it is easy to adjust or remove.
+   ========================================================== */
+:root {
+  --cream: #ffffff;
+  --soft: #f7f5f2;          /* light panels on white */
+  --cream-2: #f3f1ed;
+  --line: #ebe6de;
+  --text: #2b2b2b;
+  --muted: #74706a;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(17, 17, 17, .04), 0 8px 24px rgba(17, 17, 17, .06);
+  --shadow-lift: 0 2px 6px rgba(17, 17, 17, .06), 0 18px 40px rgba(17, 17, 17, .10);
+}
+body { background: #fff; color: var(--text); -webkit-font-smoothing: antialiased; }
+
+/* Panels that need to stand apart from the white page */
+.modal, .drawer, .rv__summary, .rv-empty, .rv-form, .concierge__btn--call,
+.acct__nav a.is-on, .h-uk__card, .features { background: var(--soft); }
+.step__icon { background: var(--soft); box-shadow: 0 0 0 8px #fff; }
+.colour__swatch { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08), 0 0 0 6px #fff; }
+
+/* ---------- Header: white with dark text ---------- */
+.header {
+  background: rgba(255, 255, 255, .97);
+  color: var(--black);
+  border-bottom: 1px solid var(--line);
+}
+.header.is-scrolled { box-shadow: 0 6px 24px rgba(17, 17, 17, .08); }
+.header__inner { min-height: 80px; }
+.header .logo, .header .logo__name { color: var(--black); }
+.header .logo__sub { color: var(--muted); }
+.header .logo__mark { color: var(--gold-dark); }
+.nav a { font-size: 13.5px; font-weight: 500; color: var(--black); }
+.nav a:hover, .nav a.active { color: var(--gold-dark); }
+.header__actions a, .header__actions button { color: var(--black); }
+.header__actions a:hover, .header__actions button:hover { color: var(--gold-dark); }
+.burger span { background: var(--black); }
+.mega { background: #fff; border-top: 1px solid var(--line); box-shadow: 0 24px 48px rgba(17, 17, 17, .10); }
+.nav .mega a { color: var(--text); }
+.nav .mega a:hover { color: var(--gold-dark); }
+.mega__title { color: var(--gold-dark); }
+@media (max-width: 960px) {
+  .header { background: #fff; }
+  .header__inner { min-height: 66px; }
+  .nav { background: #fff; color: var(--black); box-shadow: 12px 0 40px rgba(0, 0, 0, .12); }
+  .nav > ul > li { border-bottom-color: var(--line); }
+  .nav > ul a { color: var(--black); }
+  .nav .mega a { color: var(--muted); }
+  .nav-overlay { background: rgba(17, 17, 17, .35); }
+}
+
+/* ---------- Buttons and fields ---------- */
+.btn { border-radius: 6px; }
+.btn--sm { border-radius: 6px; }
+.chip, .h-chip, .check-pill { border-radius: 999px; }
+.field input, .field select, .field textarea, .pc-check__row input, .co-discount input, .filter select, .sort select, .input {
+  border-radius: 8px;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201, 169, 110, .18); }
+
+/* ---------- Product cards ---------- */
+.product {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: none;
+  outline: 0;
+}
+.product:hover { transform: translateY(-4px); box-shadow: var(--shadow-lift); border-color: #e2d6bf; }
+.product__img { background: var(--soft); }
+.product__body { padding: 18px 16px 20px; }
+.product__name { font-size: 19px; line-height: 1.25; }
+.product__price { margin: 6px 0 14px; font-size: 14px; }
+.product__badge { border-radius: 999px; }
+.wish { background: rgba(255, 255, 255, .92); color: var(--black); box-shadow: 0 2px 8px rgba(0, 0, 0, .12); backdrop-filter: none; }
+.wish:hover { background: #fff; }
+.wish[aria-pressed="true"] { color: var(--gold-dark); }
+.quick-add { background: rgba(255, 255, 255, .95); color: var(--black); border-top: 1px solid var(--line); }
+.quick-add:hover { background: var(--black); color: #fff; }
+
+/* ---------- Cards and panels: consistent rounded corners ---------- */
+.addon, .extra, .pc-check, .filters, .info-card, .order-card, .acct-card, .acct-form, .acct__side, .addr, .points-log,
+.auth, .post-card, .plan, .club-step, .club-form form, .gc__form, .track__form, .track__result, .enquiry__form,
+.city-list a, .h-info__card, .h-price__card, .h-review, .h-tile, .h-tile-more, .h-promo__card, .h-uk__card,
+.contact__form, .faq-more, .orders__empty, .variant span, .modal, .quiz__choice, .gc__amount-btn, .blog-grid .post-card__media {
+  border-radius: 12px;
+}
+.post-card, .plan, .order-card, .h-tile, .h-review, .h-promo__card, .auth { overflow: hidden; }
+.auth__tabs button:first-child { border-top-left-radius: 12px; }
+.auth__tabs button:last-child { border-top-right-radius: 12px; }
+.info-card { border: 1px solid var(--line); box-shadow: none; background: #fff; }
+.order-card { border: 1px solid var(--line); box-shadow: none; }
+.plan { border: 1px solid var(--line); box-shadow: none; }
+.plan:hover, .post-card:hover, .info-card:hover { box-shadow: var(--shadow); }
+.faq { border-bottom-color: var(--line); }
+
+/* ---------- Homepage on white ---------- */
+.home { background: #fff; }
+.h-info__card { background: var(--soft); border-color: transparent; }
+.h-info__card--check { background: #fff; border: 1px solid var(--gold); }
+.h-info__card--check strong { color: var(--black); }
+.h-info__card--check small { color: var(--muted); }
+.h-info__card--check .pc-check__row input { border-color: var(--line); }
+.h-info__card--check .pc-check__result { color: var(--text); }
+.h-info__card--check .pc-check__result.is-good { color: #2e7d4f; }
+.h-info__card--check .pc-check__result.is-error { color: #c0392b; }
+.h-tile-more { background: var(--soft); color: var(--black); border: 1px solid var(--line); }
+.h-tile-more:hover { background: #f1ede6; }
+.h-tile-more__n { color: var(--gold-dark); }
+.h-tile-more__t { color: var(--muted); }
+.h-tile-more__go { color: var(--black); }
+.h-price__card { background: var(--soft); border-color: transparent; }
+.h-price__card:hover { background: #fff; border-color: var(--gold); }
+.h-review { background: var(--soft); border-color: transparent; }
+.h-uk, .h-text { background: #fff; }
+.h-uk__note { background: var(--soft); border-radius: 10px; }
+.h-chip { background: #fff; }
+.h-arrows button { box-shadow: var(--shadow); border-color: transparent; }
+.home .section { padding-top: 40px; padding-bottom: 40px; }
+.h-row + .h-row { border-top: 1px solid var(--line); }
+.h-how { background: var(--soft); }
+
+/* ---------- Section rhythm ---------- */
+.section { padding-top: clamp(48px, 6vw, 80px); padding-bottom: clamp(48px, 6vw, 80px); }
+.related, .reviews-section, .pp, .signature, .instagram, .testimonials, .experience, .about--page { background: #fff; }
+.related { border-top: 1px solid var(--line); }
+input::placeholder { text-transform: none; letter-spacing: normal; }
