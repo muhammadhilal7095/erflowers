@@ -40,6 +40,10 @@ import {
   listGiftCards, listSubscriptions, makeResetLink, onOrderStatus, publicCustomer, saveSubscription, stripe, updateGiftCard
 } from '../lib/accounts.mjs';
 
+import {
+  deleteAffiliate, getAffiliate, listAffiliates, newAffiliateKey, onAffiliateStatus, recordPayout, updateAffiliate, approveAffiliate
+} from '../lib/affiliates.mjs';
+
 const SUB_STATUSES = ['pending', 'awaiting-payment', 'active', 'paused', 'past-due', 'cancelled'];
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -96,7 +100,7 @@ export default async (req) => {
         const before = await getOrder(id);
         if (!before) return json(404, { error: 'Order not found.' });
         // Loyalty points and gift card balances follow the status (see onOrderStatus)
-        const extra = await onOrderStatus(await getCatalog(), before, status);
+        const extra = { ...(await onOrderStatus(await getCatalog(), before, status)), ...(await onAffiliateStatus(before, status)) };
         return json(200, await updateOrder(id, { status, ...extra }));
       }
       if (method === 'DELETE') {
@@ -126,6 +130,42 @@ export default async (req) => {
     }
 
     if (path === 'reviews' && method === 'GET') return json(200, { reviews: await listReviews() });
+
+    // ---------- Partners (affiliates) ----------
+    if (path === 'affiliates' && method === 'GET') {
+      const affiliates = (await listAffiliates()).map(({ keyHash, ...a }) => ({ ...a, ledger: (a.ledger || []).slice(-50).reverse() }));
+      return json(200, { affiliates });
+    }
+    const affMatch = path.match(/^affiliates\/(af[a-z0-9]{6,30})(\/payout|\/key)?$/);
+    if (affMatch) {
+      const [, id, action] = affMatch;
+      const a = await getAffiliate(id);
+      if (!a) return json(404, { error: 'Partner not found.' });
+      const site = process.env.URL || new URL(req.url).origin;
+      const strip = ({ keyHash, ...rest }) => rest;
+      if (!action && method === 'PATCH') {
+        const body = await req.json().catch(() => ({}));
+        // Approving for the first time also creates their private stats link
+        if (body.status === 'approved' && !a.keyHash) {
+          const { affiliate, key } = await approveAffiliate(a);
+          return json(200, { affiliate: strip(affiliate), statsLink: `${site}/partners.html?key=${key}` });
+        }
+        return json(200, { affiliate: strip(await updateAffiliate(a, body)) });
+      }
+      if (action === '/key' && method === 'POST') {
+        if (a.status !== 'approved') return json(400, { error: 'Approve the partner first.' });
+        return json(200, { statsLink: `${site}/partners.html?key=${await newAffiliateKey(a)}` });
+      }
+      if (action === '/payout' && method === 'POST') {
+        const { amount, note } = await req.json().catch(() => ({}));
+        return json(200, { affiliate: strip(await recordPayout(a, amount, note)) });
+      }
+      if (!action && method === 'DELETE') {
+        if ((a.earned || 0) - (a.paid || 0) > 0) return json(400, { error: 'This partner still has unpaid earnings. Record the payout first.' });
+        await deleteAffiliate(a);
+        return json(200, { ok: true });
+      }
+    }
 
     // ---------- Customers ----------
     if (path === 'customers' && method === 'GET') {

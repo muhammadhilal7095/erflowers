@@ -42,7 +42,7 @@
   const VIEWS = {
     overview: 'Overview', orders: 'Orders', products: 'Products', reviews: 'Reviews',
     addons: 'Gift Add-ons', delivery: 'Delivery', discounts: 'Discount Codes',
-    customers: 'Customers & Points', club: 'Flower Club', giftcards: 'Gift Cards', blog: 'Blog',
+    customers: 'Customers & Points', club: 'Flower Club', partners: 'Partners', giftcards: 'Gift Cards', blog: 'Blog',
     images: 'Site Images', settings: 'Settings'
   };
   const RULES = window.ENVIE_RULES;
@@ -179,7 +179,7 @@
     ({
       overview: renderOverview, orders: renderOrders, products: renderProducts, reviews: renderReviews,
       addons: renderAddons, delivery: renderDelivery, discounts: renderDiscounts, blog: renderBlog,
-      customers: renderCustomers, club: renderClub, giftcards: renderGiftCards,
+      customers: renderCustomers, club: renderClub, partners: renderPartners, giftcards: renderGiftCards,
       images: renderImages, settings: renderSettings
     })[view]();
   }
@@ -346,6 +346,7 @@
         ${o.giftCardOrder.message ? `<p class="od-quote">${esc(o.giftCardOrder.message)}</p>` : ''}
         ${o.giftCardIssued ? `<p>Issued: <strong>${esc(o.giftCardIssued)}</strong></p>` : `<p class="help">Once paid, issue the card and send the code to the customer.</p><button type="button" class="btn btn--gold btn--sm" id="odIssue">${icon('card')} Issue gift card</button>`}
       </div>` : ''}
+      ${o.affiliate ? `<div class="od-section"><p class="help">Came through partner link <strong>${esc(o.affiliate.code)}</strong>: ${money(o.affiliate.commission)} commission ${o.affiliateCancelled ? 'cancelled' : o.affiliateEarned ? 'earned' : 'when delivered'}.</p></div>` : ''}
       ${o.customerId || o.subscriptionId || o.pointsAwarded ? `<div class="od-section"><p class="help">${o.customerId ? 'Customer has an account. ' : ''}${o.subscriptionId ? `Flower Club delivery (${esc(o.subscriptionId)}). ` : ''}${o.pointsAwarded ? `${o.pointsAwarded} points added.` : o.customerId && !o.giftCardOrder ? 'Loyalty points are added when you mark this order Delivered.' : ''}</p></div>` : ''}
       ${o.message ? `<div class="od-section"><h3>Card message</h3><p class="od-quote">${esc(o.message)}</p></div>` : ''}
       ${o.notes ? `<div class="od-section"><h3>Notes</h3><p>${esc(o.notes)}</p></div>` : ''}
@@ -1472,6 +1473,132 @@
     });
   }
 
+
+  // ---------- Partners (affiliates) ----------
+  let affiliates = null;
+  const AFF_LABELS = { pending: 'New application', approved: 'Approved', rejected: 'Rejected', suspended: 'Suspended' };
+  const AFF_BADGE = { pending: 'new', approved: 'delivered', rejected: 'cancelled', suspended: 'awaiting-payment' };
+  function partnerBadge() {
+    const n = (affiliates || []).filter((a) => a.status === 'pending').length;
+    $('partnerBadge').hidden = !n;
+    $('partnerBadge').textContent = n;
+  }
+  async function loadAffiliates() {
+    try { affiliates = (await api('affiliates')).affiliates || []; } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); affiliates = affiliates || []; }
+    partnerBadge();
+  }
+  function sendLinkDialog(a, statsLink) {
+    const shareLink = `${location.origin}/?aff=${a.code}`;
+    const text = encodeURIComponent(`Hello ${a.name.split(' ')[0]}, welcome to the Envie Roses partner programme!\n\nYour link to share: ${shareLink}\nYou earn ${money(catalog.affiliates.commission)} for every delivered order through it.\n\nSee your visits, orders and earnings here (keep this private): ${statsLink}\n\nPlease mark your posts #ad. Thank you!`);
+    showDialogHtml('Send the partner their links', `
+      <p><strong>Link to share:</strong></p><input class="input" readonly value="${esc(shareLink)}" onclick="this.select()">
+      <p style="margin-top:12px"><strong>Private stats page</strong> <span class="help">(only shown now; make a new one any time)</span></p><input class="input" readonly value="${esc(statsLink)}" onclick="this.select()">
+      <div class="od-actions" style="margin-top:14px">
+        ${a.phone ? `<a class="btn btn--wa btn--sm" target="_blank" rel="noopener" href="https://wa.me/${waNumber(a.phone)}?text=${text}">${icon('wa')} Send on WhatsApp</a>` : ''}
+        <a class="btn btn--outline btn--sm" href="mailto:${esc(a.email)}?subject=${encodeURIComponent('Your Envie Roses partner links')}&body=${text}">Email</a>
+      </div>`);
+  }
+  async function renderPartners() {
+    setBar(`<button type="button" class="btn btn--outline btn--sm" id="refreshAff">${icon('refresh')}<span>Refresh</span></button>`);
+    $('refreshAff').addEventListener('click', async () => { affiliates = null; renderPartners(); });
+    if (!affiliates) {
+      $('content').innerHTML = '<div class="card"><div class="empty">Loading partners…</div></div>';
+      await loadAffiliates();
+      if (view !== 'partners') return;
+    }
+    const cfg = catalog.affiliates;
+    const totals = affiliates.reduce((t, a) => ({ orders: t.orders + (a.orders || 0), owed: t.owed + (a.earned || 0) - (a.paid || 0), paid: t.paid + (a.paid || 0) }), { orders: 0, owed: 0, paid: 0 });
+    const order = { pending: 0, approved: 1, suspended: 2, rejected: 3 };
+    const list = [...affiliates].sort((x, y) => order[x.status] - order[y.status]);
+    $('content').innerHTML = `
+      <div class="stats">
+        <div class="card stat"><p class="stat__label">Applications waiting</p><p class="stat__value">${affiliates.filter((a) => a.status === 'pending').length}</p><p class="stat__sub">Approve or reject below</p></div>
+        <div class="card stat"><p class="stat__label">Partner orders</p><p class="stat__value">${totals.orders}</p><p class="stat__sub">All time</p></div>
+        <div class="card stat"><p class="stat__label">To pay partners</p><p class="stat__value">${money(totals.owed)}</p><p class="stat__sub">Earned, not yet paid</p></div>
+        <div class="card stat"><p class="stat__label">Paid so far</p><p class="stat__value">${money(totals.paid)}</p><p class="stat__sub">Recorded payouts</p></div>
+      </div>
+      <div class="card">${list.length ? list.map((a) => `
+        <div class="rv-card" data-aid="${esc(a.id)}">
+          <div class="rv-card__head">
+            <strong>${esc(a.name)}</strong>
+            <span class="badge st-${AFF_BADGE[a.status]}">${esc(AFF_LABELS[a.status])}</span>
+            ${a.code ? `<span class="help">Code ${esc(a.code)}</span>` : ''}
+          </div>
+          <p class="rv-card__meta">${esc(a.email)} · ${esc(a.phone)} · applied ${fmtDate(a.createdAt)}${a.audience ? ' · audience ' + esc(a.audience) : ''}</p>
+          <p class="rv-card__text"><strong>Where:</strong> ${esc(a.links)}${a.how ? `<br><strong>How:</strong> ${esc(a.how)}` : ''}</p>
+          ${a.status !== 'pending' ? `<p class="rv-card__meta">Visits <strong>${a.clicks || 0}</strong> · Orders <strong>${a.orders || 0}</strong> · Waiting for delivery <strong>${money(a.pending || 0)}</strong> · Earned <strong>${money(a.earned || 0)}</strong> · Paid <strong>${money(a.paid || 0)}</strong> · <strong>Owed ${money((a.earned || 0) - (a.paid || 0))}</strong></p>` : ''}
+          <div class="rv-card__actions">
+            ${a.status !== 'approved' ? `<button type="button" class="btn btn--gold btn--sm" data-aact="approve">Approve</button>` : ''}
+            ${a.status === 'pending' ? `<button type="button" class="btn btn--ghost btn--sm" data-aact="reject">Reject</button>` : ''}
+            ${a.status === 'approved' ? `<button type="button" class="btn btn--outline btn--sm" data-aact="payout">Record payout</button><button type="button" class="btn btn--ghost btn--sm" data-aact="key">New stats link</button><button type="button" class="btn btn--ghost btn--sm" data-aact="suspend">Suspend</button>` : ''}
+            ${a.phone ? `<a class="btn btn--wa btn--sm" target="_blank" rel="noopener" href="https://wa.me/${waNumber(a.phone)}">${icon('wa')}</a>` : ''}
+            <button type="button" class="btn btn--danger btn--sm" data-aact="delete">${icon('trash')}</button>
+          </div>
+        </div>`).join('') : `<div class="empty">${icon('star')}<strong>No partner applications yet</strong>People apply on the <a href="partners.html" target="_blank" rel="noopener">Partner Programme</a> page.</div>`}
+      </div>
+      <div class="card">
+        <div class="card__head"><h2>Programme settings</h2></div>
+        <form class="card__body" id="affSettings" novalidate>
+          <label class="check"><input type="checkbox" name="enabled"${cfg.enabled ? ' checked' : ''}> Partner programme is open (shows the "Become a Partner" button)</label>
+          <div class="grid-loyalty">
+            <label class="field"><span>Commission per order</span><div class="money"><input class="input" name="commission" inputmode="decimal" value="${(cfg.commission / 100).toFixed(2)}"></div></label>
+            <label class="field"><span>Link lasts (days)</span><input class="input" name="cookieDays" type="number" min="1" max="90" value="${cfg.cookieDays}"></label>
+            <label class="field"><span>Minimum payout</span><div class="money"><input class="input" name="minPayout" inputmode="decimal" value="${(cfg.minPayout / 100).toFixed(2)}"></div></label>
+          </div>
+          <p class="help">Commission is added when you mark an order <strong>Delivered</strong> and removed if it's cancelled. Partners don't earn on their own orders or on gift card purchases. Changing the commission applies to new orders.</p>
+          <button type="submit" class="btn btn--gold btn--sm" style="margin-top:12px">Save settings</button>
+        </form>
+      </div>`;
+
+    $('affSettings').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const commission = toPence(f.elements.commission.value);
+      const minPayout = toPence(f.elements.minPayout.value || '0');
+      if (!Number.isInteger(commission) || commission < 100) { toast('Enter the commission, e.g. 10.00', true); return; }
+      const next = clone(catalog);
+      next.affiliates = { enabled: f.elements.enabled.checked, commission, cookieDays: Number(f.elements.cookieDays.value), minPayout: Number.isInteger(minPayout) ? minPayout : 0 };
+      if (await publish(next, 'Partner settings saved.')) renderPartners();
+    });
+    document.querySelectorAll('[data-aact]').forEach((b) => b.addEventListener('click', async () => {
+      const id = b.closest('[data-aid]').dataset.aid;
+      const a = affiliates.find((x) => x.id === id);
+      const act = b.dataset.aact;
+      const replace = (updated) => { affiliates = affiliates.map((x) => (x.id === id ? { ...x, ...updated } : x)); partnerBadge(); };
+      try {
+        if (act === 'approve') {
+          const r = await api(`affiliates/${id}`, { method: 'PATCH', body: { status: 'approved' } });
+          replace(r.affiliate);
+          renderPartners();
+          toast(`${a.name} approved.`);
+          if (r.statsLink) sendLinkDialog(r.affiliate, r.statsLink);
+        } else if (act === 'reject' || act === 'suspend') {
+          if (!confirm(`${act === 'reject' ? 'Reject' : 'Suspend'} ${a.name}?${act === 'suspend' ? ' Their link will stop earning.' : ''}`)) return;
+          replace((await api(`affiliates/${id}`, { method: 'PATCH', body: { status: act === 'reject' ? 'rejected' : 'suspended' } })).affiliate);
+          renderPartners();
+        } else if (act === 'key') {
+          if (!confirm('Make a new private stats link? The old one will stop working.')) return;
+          const r = await api(`affiliates/${id}/key`, { method: 'POST' });
+          sendLinkDialog(a, r.statsLink);
+        } else if (act === 'payout') {
+          const owed = (a.earned || 0) - (a.paid || 0);
+          const amount = toPence(prompt(`${a.name} is owed ${money(owed)}.\nAmount you have paid them (£):`, (owed / 100).toFixed(2)) || '');
+          if (!Number.isInteger(amount) || amount <= 0) return;
+          const note = prompt('Note (optional, e.g. bank transfer ref):') || '';
+          replace((await api(`affiliates/${id}/payout`, { method: 'POST', body: { amount, note } })).affiliate);
+          toast(`${money(amount)} payout recorded.`);
+          renderPartners();
+        } else if (act === 'delete') {
+          if (!confirm(`Delete ${a.name}? Their link will stop working.`)) return;
+          await api(`affiliates/${id}`, { method: 'DELETE' });
+          affiliates = affiliates.filter((x) => x.id !== id);
+          partnerBadge();
+          renderPartners();
+        }
+      } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    }));
+  }
+
   // ---------- Settings ----------
   function renderSettings() {
     setBar(`<button type="button" class="btn btn--gold btn--sm" id="saveSettingsTop">Save settings</button>`);
@@ -1649,6 +1776,7 @@
     customers = null;
     subscriptions = null;
     giftcards = null;
+    affiliates = null;
     document.querySelectorAll('dialog[open]').forEach((d) => d.close());
     $('app').hidden = true;
     $('login').hidden = false;
@@ -1660,7 +1788,7 @@
 
   async function start() {
     try {
-      const [cat] = await Promise.all([api('catalog'), loadOrders(), loadReviews()]);
+      const [cat] = await Promise.all([api('catalog'), loadOrders(), loadReviews(), loadAffiliates()]);
       catalog = cat;
     } catch (err) {
       if (err.message !== 'Session ended') logout(err.message);

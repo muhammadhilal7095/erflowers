@@ -297,6 +297,14 @@
 
   // ---------- Customer account (optional): prefill, saved addresses, loyalty points ----------
   const ACCOUNT_KEY = 'envie_account_token';
+  // Partner link the customer arrived through (kept for the partner's link period)
+  function affiliateCode() {
+    try {
+      const a = JSON.parse(localStorage.getItem('envie_aff') || 'null');
+      const days = (CATALOG.affiliates && CATALOG.affiliates.cookieDays) || 30;
+      return a && Date.now() - a.at < days * 86400000 ? a.code : '';
+    } catch (e) { return ''; }
+  }
   const accountToken = () => { try { return localStorage.getItem(ACCOUNT_KEY) || ''; } catch (e) { return ''; } };
   const authHeaders = () => (accountToken() ? { Authorization: `Bearer ${accountToken()}` } : {});
   let account = null;
@@ -580,7 +588,8 @@
       body: JSON.stringify({
         orderId: order.id, items: order.items, customer: order.customer, quick: order.quick === true,
         delivery: order.delivery, message: order.message, notes: order.notes, discountCode: order.discountCode || '',
-        giftCardCode: order.giftCardCode || '', usePoints: order.usePoints === true, giftCardPurchase: order.giftCardOrder || undefined
+        giftCardCode: order.giftCardCode || '', usePoints: order.usePoints === true, giftCardPurchase: order.giftCardOrder || undefined,
+        affiliateCode: affiliateCode()
       })
     }).catch(() => {});
   }
@@ -666,7 +675,8 @@
             notes: order.notes,
             discountCode: order.discountCode,
             giftCardCode: order.giftCardCode,
-            usePoints: order.usePoints
+            usePoints: order.usePoints,
+            affiliateCode: affiliateCode()
           })
         });
         const data = await res.json().catch(() => ({}));

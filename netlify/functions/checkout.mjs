@@ -7,6 +7,7 @@
 import { cleanOrderDetails, findDiscount, getCatalog, json, priceOrder, saveOrder, validOrderId } from '../lib/shop-data.mjs';
 import { cleanGiftBuyer, commitExtras, prepareExtras, priceGiftCardPurchase } from '../lib/order-extras.mjs';
 import { stripe } from '../lib/accounts.mjs';
+import { affiliateForOrder, noteAffiliateOrder } from '../lib/affiliates.mjs';
 
 // Stripe metadata values are limited to 500 characters
 const clip = (value, max = 490) => String(value || '').trim().slice(0, max);
@@ -45,13 +46,15 @@ export default async (req) => {
   }
 
   const site = process.env.URL || new URL(req.url).origin;
+  const affiliate = await affiliateForOrder(catalog, body.affiliateCode, order).catch(() => null);
+  if (affiliate) order.affiliate = affiliate;
   const base = { id: body.orderId, createdAt: new Date().toISOString(), payment: 'card' };
 
   // Fully paid by gift card and/or points: nothing to charge
   if (order.total === 0) {
     const fresh = { ...base, ...order, status: 'paid', payment: 'gift card / points' };
     const saved = await saveOrder(fresh);
-    if (saved === fresh) await commitExtras(saved);
+    if (saved === fresh) { await commitExtras(saved); await noteAffiliateOrder(saved); }
     return json(200, { url: `${site}/?checkout=success&order=${body.orderId}` });
   }
 
@@ -110,7 +113,10 @@ export default async (req) => {
     // Record the order. Gift card balance and points are taken now and given back if you cancel the order.
     const fresh = { ...base, ...order, status: 'awaiting-payment', stripeSession: session.id };
     const saved = await saveOrder(fresh).catch((err) => { console.error('Could not record order', err); return null; });
-    if (saved === fresh) await commitExtras(saved).catch((err) => console.error('Could not apply gift card / points', err));
+    if (saved === fresh) {
+      await commitExtras(saved).catch((err) => console.error('Could not apply gift card / points', err));
+      await noteAffiliateOrder(saved).catch((err) => console.error('Could not record partner order', err));
+    }
     return json(200, { url: session.url });
   } catch (err) {
     return json(502, { error: 'We could not start the payment. Please try again.' });

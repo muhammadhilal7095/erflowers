@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Partner Programme: Earn per Order | Envie Roses</title>
+  <meta name="description" content="Join the Envie Roses partner programme. Share your link and earn a commission for every delivered order.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Partner Programme: Earn per Order | Envie Roses">
+  <meta property="og:description" content="Join the Envie Roses partner programme. Share your link and earn a commission for every delivered order.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body>
+  <script>EnvieLayout.top(null);</script>
+
+  <main id="main">
+    <script>EnvieLayout.pageHero({"title": "Become a Partner", "kicker": "Partner Programme", "intro": "Share Envie Roses with your audience and earn on every order.", "crumb": "Partner Programme"});</script>
+
+    <!-- Private stats (partners.html?key=...) -->
+    <section class="section" id="stats" hidden>
+      <div class="container partner-stats" id="statsBox" aria-busy="true"></div>
+    </section>
+
+    <div id="programme">
+      <section class="section">
+        <div class="container">
+          <div class="earn">
+            <div class="earn__big"><span>Earn</span><strong data-aff="commission">£10</strong><span>for every order</span></div>
+            <div class="earn__text">
+              <h2>Love roses? Get paid to share them.</h2>
+              <p>Bloggers, creators, wedding planners, event planners and small businesses: share your personal Envie Roses link. For every order delivered through your link, you earn <strong data-aff="commission">£10</strong>. There&rsquo;s no limit on how much you can earn.</p>
+              <a href="#apply" class="btn btn--gold">Apply now</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section--tight">
+        <div class="container">
+          <ol class="partner-steps">
+            <li><span>1</span><h3>Apply</h3><p>Tell us about you and where you&rsquo;ll share. It only takes a minute.</p></li>
+            <li><span>2</span><h3>Get your link</h3><p>Once approved, you get your own link and a private page to see your results.</p></li>
+            <li><span>3</span><h3>Share</h3><p>Post it on social media, your website, or send it to clients and friends.</p></li>
+            <li><span>4</span><h3>Get paid</h3><p>Earn <span data-aff="commission">£10</span> for each delivered order, paid by bank transfer.</p></li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section section--tight" id="apply">
+        <div class="container enquiry">
+          <div class="enquiry__intro">
+            <p class="kicker">Join Us</p>
+            <h2 class="section-title section-title--sm">Apply to Become a Partner</h2>
+            <p>We review every application and usually reply within a few working days, on WhatsApp or by email.</p>
+            <ul class="partner-ticks">
+              <li>Free to join, no targets</li>
+              <li>Your link works for <span data-aff="cookieDays">30</span> days after someone clicks it</li>
+              <li>See your visits, orders and earnings any time</li>
+            </ul>
+          </div>
+          <form class="enquiry__form" id="applyForm" novalidate>
+            <div class="co-grid">
+              <label class="field"><span>Full name *</span><input name="name" required maxlength="100" autocomplete="name"></label>
+              <label class="field"><span>Phone / WhatsApp *</span><input name="phone" type="tel" required maxlength="30" autocomplete="tel"></label>
+              <label class="field field--full"><span>Email *</span><input name="email" type="email" required maxlength="120" autocomplete="email"></label>
+              <label class="field field--full"><span>Your website or social media *</span><input name="links" required maxlength="400" placeholder="e.g. instagram.com/yourname, your blog"></label>
+              <label class="field"><span>Audience size</span>
+                <select name="audience"><option value="">Choose…</option><option>Under 1,000</option><option>1,000 – 10,000</option><option>10,000 – 50,000</option><option>50,000 – 250,000</option><option>Over 250,000</option><option>I have clients or a business</option></select>
+              </label>
+              <label class="field field--full"><span>How will you promote Envie Roses?</span><textarea name="how" rows="3" maxlength="800"></textarea></label>
+            </div>
+            <label class="check-line"><input type="checkbox" name="agree" required> I agree to the <a href="#terms">partner terms</a> below.</label>
+            <p class="form-error" role="alert"></p>
+            <button type="submit" class="btn btn--gold btn--block">Send application</button>
+          </form>
+          <div class="enquiry__form partner-done" id="applyDone" hidden>
+            <h3>Thank you for applying!</h3>
+            <p>We&rsquo;ll review your application and get back to you soon with your partner link.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section--tight" id="terms">
+        <div class="container prose">
+          <h2>Partner terms</h2>
+          <ul>
+            <li>You earn <strong data-aff="commission">£10</strong> for each order placed through your link within <span data-aff="cookieDays">30</span> days of the customer clicking it. If they clicked another partner&rsquo;s link more recently, that partner gets the order.</li>
+            <li>Commission is earned when the order is delivered. Cancelled or refunded orders don&rsquo;t earn commission. Gift card purchases aren&rsquo;t included.</li>
+            <li>You can&rsquo;t earn from your own orders or orders you place for others.</li>
+            <li>We pay by bank transfer once your earnings reach <strong data-aff="minPayout">£50</strong>, usually at the start of each month.</li>
+            <li>You must make it clear that you earn from your link, for example with <strong>#ad</strong> or &ldquo;affiliate link&rdquo; on every post, as required by UK advertising rules (the CAP Code and the Competition and Markets Authority&rsquo;s guidance).</li>
+            <li>Don&rsquo;t make claims about our products that aren&rsquo;t true, use spam, or bid on &ldquo;Envie Roses&rdquo; in paid search ads.</li>
+            <li>We may decline applications, and may close a partner account and withhold commission that comes from misleading promotion or misuse.</li>
+            <li>You&rsquo;re responsible for declaring your earnings to HMRC if needed.</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+  <script>
+    (function () {
+      const C = window.ENVIE_CATALOG;
+      const cfg = C.affiliates || {};
+      const { money, esc } = EnvieLayout;
+      const short = (p) => (p % 100 ? money(p) : '£' + p / 100);
+      const $ = (id) => document.getElementById(id);
+      document.querySelectorAll('[data-aff="commission"]').forEach((e) => { e.textContent = short(cfg.commission || 1000); });
+      document.querySelectorAll('[data-aff="minPayout"]').forEach((e) => { e.textContent = short(cfg.minPayout || 0); });
+      document.querySelectorAll('[data-aff="cookieDays"]').forEach((e) => { e.textContent = cfg.cookieDays || 30; });
+
+      // ----- Private stats page -----
+      const key = new URLSearchParams(location.search).get('key');
+      if (key) {
+        $('programme').hidden = true;
+        $('stats').hidden = false;
+        const box = $('statsBox');
+        const date = (d) => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        const STATUS = { pending: 'Waiting for delivery', earned: 'Earned', cancelled: 'Cancelled' };
+        fetch('/api/affiliate/me?key=' + encodeURIComponent(key)).then((r) => r.json().then((d) => ({ ok: r.ok, d }))).then(({ ok, d }) => {
+          box.removeAttribute('aria-busy');
+          if (!ok) { box.innerHTML = `<p class="club-closed">${esc(d.error || 'Something went wrong.')}</p>`; return; }
+          if (d.status !== 'approved') { box.innerHTML = '<p class="club-closed">Your partner account is not active at the moment. Please contact us.</p>'; return; }
+          const link = `${location.origin}/?aff=${d.code}`;
+          const share = `Luxury roses from Envie Roses, delivered across the UK: ${link} #ad`;
+          box.innerHTML = `
+            <h2 class="acct__h">Hello, ${esc(d.name.split(' ')[0])}</h2>
+            <div class="refer">
+              <p class="refer__lead">Your partner link</p>
+              <div class="refer__row"><input id="affLink" readonly value="${esc(link)}"><button type="button" class="btn btn--gold btn--sm" id="copyAff">Copy</button></div>
+              <p class="refer__code">Tip: you can add <strong>?aff=${esc(d.code)}</strong> to the end of any Envie Roses page link. Remember to mark posts as <strong>#ad</strong>.</p>
+              <div class="refer__share"><a class="btn btn--whatsapp btn--sm" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(share)}"><svg class="icon"><use href="#i-whatsapp"/></svg> Share on WhatsApp</a></div>
+            </div>
+            <div class="acct-cards">
+              <div class="acct-card"><span>Visits</span><strong>${d.clicks}</strong><small>Through your link</small></div>
+              <div class="acct-card"><span>Orders</span><strong>${d.orders}</strong><small>${money(d.pending)} waiting for delivery</small></div>
+              <div class="acct-card"><span>Earned</span><strong>${money(d.earned)}</strong><small>${money(d.commission)} per delivered order</small></div>
+              <div class="acct-card"><span>To be paid</span><strong>${money(d.balance)}</strong><small>Paid from ${money(d.minPayout)}</small></div>
+            </div>
+            <h3 class="acct__h3">Recent orders</h3>
+            ${d.recent.length ? `<ul class="points-log">${d.recent.map((x) => `<li><span>Order …${esc(x.order)}<small>${date(x.at)} · ${STATUS[x.status] || x.status}</small></span><strong class="${x.status === 'cancelled' ? 'is-minus' : 'is-plus'}">${money(x.amount)}</strong></li>`).join('')}</ul>` : '<p class="orders__note">No orders yet. Share your link to get started!</p>'}
+            <h3 class="acct__h3">Payments</h3>
+            ${d.payouts.length ? `<ul class="points-log">${d.payouts.map((x) => `<li><span>Paid${x.note ? ': ' + esc(x.note) : ''}<small>${date(x.at)}</small></span><strong>${money(x.amount)}</strong></li>`).join('')}</ul>` : '<p class="orders__note">No payments yet.</p>'}
+            <p class="orders__note">Keep this page private: anyone with the link can see your results. Questions? <a href="contact.html">Contact us</a>.</p>`;
+          $('copyAff').addEventListener('click', async () => {
+            try { await navigator.clipboard.writeText(link); } catch (e) { $('affLink').select(); document.execCommand('copy'); }
+            $('copyAff').textContent = 'Copied';
+          });
+        }).catch(() => { box.innerHTML = '<p class="club-closed">Could not load your results. Please try again.</p>'; });
+        return;
+      }
+
+      if (!cfg.enabled) {
+        $('apply').innerHTML = '<div class="container"><p class="club-closed">We&rsquo;re not taking new partners at the moment. Please check back soon.</p></div>';
+        return;
+      }
+
+      // ----- Application -----
+      const form = $('applyForm');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = form.querySelector('.form-error');
+        err.textContent = '';
+        if (!form.checkValidity()) { err.textContent = 'Please complete the required fields and accept the terms.'; form.classList.add('was-validated'); form.querySelector(':invalid').focus(); return; }
+        if (location.protocol === 'file:') { err.textContent = 'Applications work on the live website.'; return; }
+        const v = Object.fromEntries(new FormData(form).entries());
+        v.agree = form.elements.agree.checked;
+        const btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        try {
+          const res = await fetch('/api/affiliate/apply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(v) });
+          const d = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(d.error || 'Something went wrong. Please try again.');
+          form.hidden = true;
+          $('applyDone').hidden = false;
+        } catch (ex) { err.textContent = ex.message; }
+        btn.disabled = false;
+      });
+    })();
+  </script>
+</body>
+</html>

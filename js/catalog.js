@@ -107,6 +107,9 @@
       }
     },
 
+    // Partner programme: commission (pence) per delivered order from a partner's link
+    affiliates: { enabled: true, commission: 1000, cookieDays: 30, minPayout: 5000 },
+
     // Flower Club popup: shown as soon as the site opens (delay 0) on any page ('all') or the homepage only ('home'),
     // everyDays: 0 = every visit, or hide for that many days once closed
     popup: { enabled: true, delay: 0, pages: 'all', everyDays: 0 },

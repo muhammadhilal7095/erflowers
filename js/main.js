@@ -219,4 +219,20 @@
     const q = params.toString();
     history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + location.hash);
   })();
+
+  // ---------- Partner links (?aff=CODE): remembered for the partner's link period ----------
+  (function () {
+    const params = new URLSearchParams(location.search);
+    const code = (params.get('aff') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16);
+    if (!code) return;
+    try { localStorage.setItem('envie_aff', JSON.stringify({ code, at: Date.now() })); } catch (e) { /* private mode */ }
+    let counted = false;
+    try { counted = sessionStorage.getItem('envie_aff_click') === code; sessionStorage.setItem('envie_aff_click', code); } catch (e) { /* ignore */ }
+    if (!counted && location.protocol !== 'file:') {
+      fetch('/api/affiliate/click', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }), keepalive: true }).catch(() => {});
+    }
+    params.delete('aff');
+    const q = params.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + location.hash);
+  })();
 })();

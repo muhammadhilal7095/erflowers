@@ -57,6 +57,11 @@
     <symbol id="i-star" viewBox="0 0 24 24"><path fill="currentColor" d="m12 2 3 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.5l-6.4 3.7 1.6-7.1L1.8 9.3 9 8.6z"/></symbol>
   </svg>`;
 
+  const partnerCfg = window.ENVIE_CATALOG.affiliates || {};
+  const partnerOn = partnerCfg.enabled === true;
+  const partnerPay = partnerCfg.commission || 1000;
+  const shortMoney = (p) => (p % 100 ? money(p) : '£' + p / 100);
+
   const NAV = [
     ['home', 'index.html', 'Home'],
     ['shop', 'shop.html', 'Shop'],
@@ -146,6 +151,7 @@
         <ul>
           ${NAV.map((item) => navItem(item, active)).join('')}
         </ul>
+        ${partnerOn ? `<a href="partners.html" class="nav__partner">Become a Partner <small>Earn ${shortMoney(partnerPay)} per order</small></a>` : ''}
         <div class="nav__extra">
           <a href="tel:${tel}"><svg class="icon"><use href="#i-phone"/></svg>${esc(shop.phone)}</a>
           <a href="mailto:${esc(shop.email)}"><svg class="icon"><use href="#i-mail"/></svg>${esc(shop.email)}</a>
@@ -153,6 +159,7 @@
         </div>
       </nav>
       <div class="header__actions">
+        ${partnerOn ? `<a href="partners.html" class="partner-btn"><span class="partner-btn__top">Become a Partner</span><span class="partner-btn__sub">Earn ${shortMoney(partnerPay)} per order</span></a>` : ''}
         <button type="button" aria-label="Search" class="icon-btn" id="searchOpen"><svg class="icon"><use href="#i-search"/></svg></button>
         <a href="wishlist.html" aria-label="Wishlist" class="wish-link" id="wishLink"><svg class="icon"><use href="#i-heart"/></svg><span class="cart__count wish-count" id="wishCount" hidden>0</span></a>
         <a href="account.html" aria-label="My account" class="hide-sm" id="accountLink"><svg class="icon"><use href="#i-user"/></svg></a>
@@ -337,6 +344,7 @@
           <li><a href="weddings.html">Weddings</a></li>
           <li><a href="sympathy.html">Sympathy Flowers</a></li>
           <li><a href="corporate.html">Corporate Flowers</a></li>
+          <li><a href="partners.html">Partner Programme</a></li>
           <li><a href="blog.html">Blog</a></li>
           <li><a href="guarantee.html">Freshness Guarantee</a></li>
           <li><a href="delivery.html#areas">Delivery Areas</a></li>

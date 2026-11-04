@@ -220,3 +220,15 @@ Every customer gets a referral link and code (e.g. `AMELIA-K2JG`) in **My Accoun
 ### Flower Club popup
 
 A calendar-style popup advertises your Flower Club plans. Visitors can "flip to tomorrow" to see the next plan, and **Join the Flower Club** opens the sign-up form with that plan chosen. By default it appears as soon as someone opens the website, on whichever page they land on. It appears on every new visit; once closed, it stays closed while the customer browses that visit (you can choose to hide it for a number of days instead). It never shows during checkout, or on the account, Flower Club, gift card and tracking pages. Change it or switch it off in Dashboard → Flower Club.
+
+### Partner (affiliate) programme
+
+A **Become a Partner · Earn £10 per order** button in the header (and in the phone menu) leads to `partners.html`, where people apply.
+
+1. New applications appear in **Dashboard → Partners**, with a number badge.
+2. Press **Approve**. The partner gets a link to share (e.g. `yourdomain.co.uk/?aff=PRIYA7XK`) and a private stats page. Send both with one tap on WhatsApp or email.
+3. Visitors who arrive through the link are tracked for 30 days. Their orders show the partner in the order details.
+4. The commission (£10) is earned when you mark the order **Delivered**, and removed if it's cancelled. Partners don't earn on their own orders (same email or phone) or on gift card purchases.
+5. Pay partners yourself (e.g. bank transfer from £50), then press **Record payout** so their balance is correct.
+
+You can change the commission, link length and minimum payout, or close the programme, in Dashboard → Partners. The partner terms on `partners.html` require partners to label posts as ads (#ad), as UK advertising rules require.

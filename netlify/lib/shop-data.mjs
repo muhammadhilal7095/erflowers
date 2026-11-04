@@ -56,6 +56,7 @@ function withDefaults(saved) {
     loyalty: { ...DEFAULTS.loyalty, ...saved.loyalty },
     referrals: { ...DEFAULTS.referrals, ...saved.referrals },
     popup: { ...DEFAULTS.popup, ...saved.popup },
+    affiliates: { ...DEFAULTS.affiliates, ...saved.affiliates },
     club: saved.club ? { ...DEFAULTS.club, ...saved.club } : structuredClone(DEFAULTS.club),
     giftCards: { ...DEFAULTS.giftCards, ...saved.giftCards },
     products: saved.products || {}
@@ -261,6 +262,14 @@ export function validateCatalog(input) {
     maxPerCustomer: int(rf.maxPerCustomer ?? 50, 1, 1000, 'Most rewards per customer')
   };
 
+  const af = input.affiliates || {};
+  const affiliates = {
+    enabled: af.enabled === true,
+    commission: int(af.commission ?? 1000, 100, 100000, 'Partner commission'),
+    cookieDays: int(af.cookieDays ?? 30, 1, 90, 'Partner link lasts (days)'),
+    minPayout: int(af.minPayout ?? 5000, 0, 1000000, 'Minimum payout')
+  };
+
   const pu = input.popup || {};
   const popup = {
     enabled: pu.enabled === true,
@@ -296,7 +305,7 @@ export function validateCatalog(input) {
   };
   if (giftCards.enabled && !giftCards.amounts.length) throw new Error('Add at least one gift card amount.');
 
-  return { shop, legal, social, payments, delivery, addons, cities, loyalty, referrals, club, giftCards, popup, images, products };
+  return { shop, legal, social, payments, delivery, addons, cities, loyalty, referrals, club, giftCards, popup, affiliates, images, products };
 }
 
 // ---------- Orders ----------

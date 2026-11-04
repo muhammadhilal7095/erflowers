@@ -4,6 +4,7 @@
 
 import { cleanOrderDetails, findDiscount, getCatalog, json, priceOrder, saveOrder, validOrderId } from '../lib/shop-data.mjs';
 import { cleanGiftBuyer, commitExtras, prepareExtras, priceGiftCardPurchase } from '../lib/order-extras.mjs';
+import { affiliateForOrder, noteAffiliateOrder } from '../lib/affiliates.mjs';
 
 export default async (req) => {
   if (req.method !== 'POST') return json(405, { error: 'Method not allowed.' });
@@ -43,9 +44,10 @@ export default async (req) => {
       order = { ...details, ...priced, ...fields };
     }
 
-    const fresh = { id: body.orderId, createdAt: new Date().toISOString(), status: 'new', payment: 'whatsapp', ...order };
+    const affiliate = await affiliateForOrder(catalog, body.affiliateCode, order);
+    const fresh = { id: body.orderId, createdAt: new Date().toISOString(), status: 'new', payment: 'whatsapp', ...order, ...(affiliate ? { affiliate } : {}) };
     const saved = await saveOrder(fresh);
-    if (saved === fresh) await commitExtras(saved);
+    if (saved === fresh) { await commitExtras(saved); await noteAffiliateOrder(saved); }
     return json(200, { ok: true, id: saved.id, total: saved.total, giftCard: saved.giftCard || null, points: saved.points || null });
   } catch (err) {
     return json(400, { error: err.message });
