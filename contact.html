@@ -23,33 +23,101 @@
 <body class="">
   <script>EnvieLayout.top('contact');</script>
 
-  <main id="main">
-    <script>EnvieLayout.pageHero({"title": "Contact Us", "kicker": "We’re Here to Help", "intro": "Message us on WhatsApp, call or email. We’re happy to help you choose the perfect roses."});</script>
-    <section class="section">
-      <div class="container contact">
-        <div class="contact__cards">
-          <a href="#" class="contact-card" data-enquire="">
-            <svg class="icon contact-card__icon contact-card__icon--wa"><use href="#i-whatsapp"/></svg>
-            <span><strong>WhatsApp</strong><small>The quickest way to reach us</small></span>
-          </a>
-          <a href="#" class="contact-card" data-shop-href="phone">
-            <svg class="icon contact-card__icon"><use href="#i-phone"/></svg>
-            <span><strong>Call us</strong><small data-shop="phone"></small></span>
-          </a>
-          <a href="#" class="contact-card" data-shop-href="email">
-            <svg class="icon contact-card__icon"><use href="#i-mail"/></svg>
-            <span><strong>Email</strong><small data-shop="email"></small></span>
-          </a>
-          <div class="contact-card">
-            <svg class="icon contact-card__icon"><use href="#i-pin"/></svg>
-            <span><strong>Location</strong><small>London, UK &middot; Delivering across the UK</small></span>
+  <main id="main" class="cpage">
+    <section class="cpage__top">
+      <div class="container">
+        <nav class="crumbs crumbs--light" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><span aria-current="page">Contact us</span></nav>
+        <h1 class="cpage__title"><em>Contact</em> us</h1>
+        <p class="cpage__intro">We&rsquo;re here to help with orders, deliveries, bespoke ideas and anything else about your roses. Message us on WhatsApp for the quickest reply<span id="hoursLine"></span>.</p>
+      </div>
+    </section>
+
+    <!-- Quick answers -->
+    <section class="h-info">
+      <div class="container h-info__grid">
+        <form class="h-info__card h-info__card--check" data-postcode-check novalidate>
+          <label for="contactPostcode"><strong>Check delivery to your postcode</strong><small>See the earliest date we can deliver.</small></label>
+          <div class="pc-check__row">
+            <input id="contactPostcode" placeholder="e.g. SW1A 1AA" autocomplete="postal-code" autocapitalize="characters" maxlength="10">
+            <button type="submit" class="btn btn--gold btn--sm">Check</button>
           </div>
-          <div class="contact-card" data-optional-wrap>
-            <svg class="icon contact-card__icon"><use href="#i-user"/></svg>
-            <span><strong>Hours</strong><small data-shop="hours" data-optional></small></span>
+          <p class="pc-check__result" role="status" aria-live="polite"></p>
+        </form>
+        <div class="h-info__card">
+          <svg class="h-info__icon"><use href="#i-truck"/></svg>
+          <div><strong>Same-day delivery</strong><small>Order by <span data-shop="sameDayCutoff"></span> for delivery today in selected areas.</small></div>
+          <a href="delivery.html" class="h-info__link" aria-label="Delivery information"><svg class="icon"><use href="#i-arrow"/></svg></a>
+        </div>
+        <div class="h-info__card">
+          <svg class="h-info__icon"><use href="#i-search"/></svg>
+          <div><strong>Track your order</strong><small>Check your order status with your reference and postcode.</small></div>
+          <a href="track-order.html" class="h-info__link" aria-label="Track your order"><svg class="icon"><use href="#i-arrow"/></svg></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Where we are -->
+    <section class="cpage__section">
+      <div class="container">
+        <div class="cmap" role="img" aria-label="Map showing Envie Roses is based in London">
+          <div class="cmap__river" aria-hidden="true"></div>
+          <div class="cmap__pin" aria-hidden="true"><svg><use href="#i-pin"/></svg></div>
+          <div class="cmap__card">
+            <p class="cmap__brand">Envie Roses</p>
+            <strong>We&rsquo;re based in London</strong>
+            <p>We&rsquo;re an online florist, not a walk-in shop. Order online or on WhatsApp, and we deliver across the UK.</p>
           </div>
         </div>
 
+        <!-- Ways to reach us -->
+        <div class="cways">
+          <div class="cway">
+            <div class="cway__icons">
+              <a href="#" data-enquire="" aria-label="WhatsApp"><svg class="icon"><use href="#i-whatsapp"/></svg></a>
+              <a href="#" data-shop-href="phone" aria-label="Call us"><svg class="icon"><use href="#i-phone"/></svg></a>
+              <a href="#" data-social="instagram" aria-label="Instagram"><svg class="icon"><use href="#i-instagram"/></svg></a>
+              <a href="#" data-social="facebook" aria-label="Facebook"><svg class="icon"><use href="#i-facebook"/></svg></a>
+            </div>
+            <h2>Chat or call</h2>
+            <p>The quickest way to reach us is WhatsApp. You can also call us on <a href="#" data-shop-href="phone"><span data-shop="phone"></span></a>.</p>
+          </div>
+          <div class="cway">
+            <a href="#" data-shop-href="email" class="cway__mail"><svg class="icon"><use href="#i-mail"/></svg><span data-shop="email"></span></a>
+            <h2>Customer support</h2>
+            <p>Questions about an order? Email us with your order reference (e.g. ER-261104-AB12) and we&rsquo;ll get back to you as soon as we can.</p>
+          </div>
+          <div class="cway">
+            <a href="#" data-shop-href="email" class="cway__mail"><svg class="icon"><use href="#i-mail"/></svg><span data-shop="email"></span></a>
+            <h2>Business enquiries</h2>
+            <p>For <a href="corporate.html">corporate flowers</a>, <a href="weddings.html">weddings</a>, events or <a href="partners.html">partnerships</a>, email us or use the enquiry forms.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WhatsApp banner -->
+    <section class="cpage__section">
+      <div class="container">
+        <div class="cwa">
+          <div class="cwa__text">
+            <h2>Chat with us on WhatsApp</h2>
+            <p>Order, ask a question or send a photo of what you have in mind. We&rsquo;re happy to help you choose.</p>
+            <div class="cwa__btns">
+              <a href="#" class="btn btn--whatsapp" data-enquire=""><svg class="icon"><use href="#i-whatsapp"/></svg> Start a chat</a>
+              <a href="#" class="btn btn--outline-light" data-shop-href="phone"><svg class="icon"><use href="#i-phone"/></svg> Call us</a>
+            </div>
+          </div>
+          <div class="cwa__qr" id="waQrWrap" hidden>
+            <div class="cwa__qrbox" id="waQr"></div>
+            <span>Scan to chat on WhatsApp</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Message form -->
+    <section class="cpage__section" id="message">
+      <div class="container cmsg">
         <form class="contact__form" id="contactForm" novalidate>
           <h2 class="contact__title">Send Us a Message</h2>
           <p class="contact__intro">Questions about an order, a bespoke idea or corporate gifting? We&rsquo;d love to hear from you.</p>
@@ -57,7 +125,7 @@
             <label class="field"><span>Your name *</span><input name="name" required autocomplete="name"></label>
             <label class="field"><span>Email *</span><input name="email" type="email" required autocomplete="email"></label>
             <label class="field"><span>Phone</span><input name="phone" type="tel" autocomplete="tel" placeholder="07123 456789"></label>
-            <label class="field"><span>Order reference</span><input name="order" placeholder="e.g. ER-261025-AB12"></label>
+            <label class="field"><span>Order reference</span><input name="order" placeholder="e.g. ER-261104-AB12"></label>
             <label class="field field--full"><span>Subject *</span>
               <select name="subject" required>
                 <option value="">Please choose</option>
@@ -80,28 +148,17 @@
       </div>
     </section>
 
-    <section class="section care">
-      <div class="container care__inner">
-        <div class="care__intro">
-          <p class="kicker kicker--left">Quick Answers</p>
-          <h2 class="section-title section-title--left">Common Questions</h2>
-          <p>Find answers about ordering, delivery and caring for your roses.</p>
-          <a href="faq.html" class="btn btn--outline btn--sm">All FAQs <svg class="icon"><use href="#i-arrow"/></svg></a>
-        </div>
-        <div class="care__list">
-          <details class="faq" open>
-            <summary>Where do you deliver?<span class="faq__icon" aria-hidden="true"></span></summary>
-            <p>We deliver to addresses across the UK. See our <a href="delivery.html">Delivery Information</a> for details.</p>
-          </details>
-          <details class="faq">
-            <summary>Can I choose the delivery date?<span class="faq__icon" aria-hidden="true"></span></summary>
-            <p>Yes. Choose your delivery date at checkout. For same day delivery, call us or message us on WhatsApp and we&rsquo;ll create a bouquet to suit your budget.</p>
-          </details>
-          <details class="faq">
-            <summary>Can I change or cancel my order?<span class="faq__icon" aria-hidden="true"></span></summary>
-            <p>Please contact us as soon as possible with your order reference. See our <a href="refunds.html">Refunds &amp; Returns</a> policy.</p>
-          </details>
-        </div>
+    <!-- FAQ -->
+    <section class="cpage__section cfaq">
+      <div class="container cfaq__inner">
+        <h2 class="cpage__h">FAQ</h2>
+        <details class="faq" open><summary>How can I track my order?<span class="faq__icon" aria-hidden="true"></span></summary><p>Use <a href="track-order.html">Track Your Order</a> with your order reference and delivery postcode. If you have an account, all your orders are in <a href="account.html">My Account</a>. Can&rsquo;t find your reference? Message us and we&rsquo;ll check for you.</p></details>
+        <details class="faq"><summary>What delivery options do you offer, and how fast?<span class="faq__icon" aria-hidden="true"></span></summary><p>We deliver across the UK on the date you choose, with morning, afternoon or evening slots. Same-day delivery is available in selected areas when you order by <span data-shop="sameDayCutoff"></span>. See <a href="delivery.html">Delivery Information</a>.</p></details>
+        <details class="faq"><summary>Can I change the delivery address or date after ordering?<span class="faq__icon" aria-hidden="true"></span></summary><p>Yes, if we haven&rsquo;t started preparing your roses. Message us as soon as possible with your order reference and the new details.</p></details>
+        <details class="faq"><summary>What does your freshness guarantee cover?<span class="faq__icon" aria-hidden="true"></span></summary><p>If your roses arrive damaged, aren&rsquo;t as described or aren&rsquo;t fresh, tell us within 24 hours with a photo and we&rsquo;ll replace them or refund you. See our <a href="guarantee.html">Freshness Guarantee</a>.</p></details>
+        <details class="faq"><summary>What payment methods do you accept, and can I use a code?<span class="faq__icon" aria-hidden="true"></span></summary><p>Order on WhatsApp and we&rsquo;ll confirm payment with you<span class="cfaq__card" hidden>, or pay by card, Apple Pay or Google Pay at checkout</span>. Discount codes and gift cards go in the code box at checkout.</p></details>
+        <details class="faq"><summary>How does the Flower Club work, and how do I cancel?<span class="faq__icon" aria-hidden="true"></span></summary><p>Choose a plan and how often you&rsquo;d like your roses; delivery is included. You can pause or cancel any time from <a href="account.html#subscriptions">My Account</a> or by messaging us. See the <a href="club.html">Flower Club</a>.</p></details>
+        <div class="center cfaq__more"><a href="#" class="btn btn--gold" data-enquire="">Still need help? Message us</a></div>
       </div>
     </section>
   </main>
@@ -111,11 +168,25 @@
   <script src="js/main.js"></script>
   <script src="js/shop.js"></script>
   <script src="js/popup.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
   <script>
     (function () {
+      const { shop, payments } = window.ENVIE_CATALOG;
+      if (shop.hours) document.getElementById('hoursLine').textContent = ` (${shop.hours})`;
+      if (payments.stripe) document.querySelectorAll('.cfaq__card').forEach((e) => { e.hidden = false; });
+
+      // QR code that opens a WhatsApp chat (handy on a computer)
+      window.addEventListener('load', () => {
+        if (!window.QRCode || !shop.whatsapp) return;
+        const url = `https://wa.me/${shop.whatsapp}?text=${encodeURIComponent(`Hello ${shop.name}, I have a question.`)}`;
+        try {
+          new window.QRCode(document.getElementById('waQr'), { text: url, width: 132, height: 132, colorDark: '#0b0b0b', colorLight: '#ffffff', correctLevel: window.QRCode.CorrectLevel.M });
+          document.getElementById('waQrWrap').hidden = false;
+        } catch (e) { /* no QR, the buttons still work */ }
+      });
+
       const form = document.getElementById('contactForm');
       const err = document.getElementById('contactError');
-      const { shop } = window.ENVIE_CATALOG;
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         if (!form.checkValidity()) {

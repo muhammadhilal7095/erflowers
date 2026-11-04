@@ -3514,3 +3514,94 @@ body.cpop-lock { overflow: hidden; }
 @media (max-width: 480px) { .partner-steps { grid-template-columns: 1fr; } }
 
 @media (max-width: 960px) { .header__actions .partner-btn { display: none; } }
+
+/* ==========================================================
+   Contact page
+   ========================================================== */
+.cpage { background: #fff; }
+.cpage__top { padding: 22px 0 8px; text-align: center; }
+.cpage__top .crumbs { justify-content: flex-start; margin-bottom: 20px; text-align: left; }
+.cpage__title { margin: 0; font-family: var(--serif); font-size: clamp(44px, 7vw, 76px); font-weight: 600; line-height: 1; color: var(--black); }
+.cpage__title em { font-style: normal; color: var(--gold-dark); }
+.cpage__intro { max-width: 720px; margin: 16px auto 0; font-size: clamp(15px, 1.6vw, 18px); line-height: 1.6; color: var(--muted); }
+.cpage .h-info { padding-top: 32px; }
+.cpage__section { padding: 20px 0; }
+.cpage__h { margin: 0 0 24px; text-align: center; font-family: var(--serif); font-size: clamp(38px, 5vw, 56px); font-weight: 600; color: var(--black); }
+
+/* Map card (drawn with CSS, no tracking) */
+.cmap {
+  position: relative; height: clamp(240px, 30vw, 320px); overflow: hidden; border-radius: 14px;
+  background-color: #eceae5;
+  background-image:
+    linear-gradient(90deg, rgba(255,255,255,.9) 0 2px, transparent 2px), linear-gradient(rgba(255,255,255,.9) 0 2px, transparent 2px),
+    linear-gradient(90deg, rgba(255,255,255,.6) 0 1px, transparent 1px), linear-gradient(rgba(255,255,255,.6) 0 1px, transparent 1px);
+  background-size: 160px 120px, 160px 120px, 40px 40px, 40px 40px;
+  background-position: -20px -10px, -20px -10px, 0 0, 0 0;
+}
+.cmap::before { content: ""; position: absolute; left: -10%; right: -10%; top: 46%; height: 10px; background: #fff; transform: rotate(-8deg); box-shadow: 0 0 0 1px #e2ddd4; }
+.cmap::after { content: ""; position: absolute; left: 30%; top: -10%; bottom: -10%; width: 8px; background: #fff; transform: rotate(18deg); box-shadow: 0 0 0 1px #e2ddd4; }
+.cmap__river { position: absolute; left: -5%; right: -5%; top: 62%; height: 46px; border-radius: 50%; background: #c9dbe6; transform: rotate(4deg); opacity: .9; }
+.cmap__pin { position: absolute; left: 52%; top: 50%; z-index: 2; width: 40px; height: 40px; margin: -40px 0 0 -20px; color: var(--gold-dark); filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
+.cmap__pin svg { width: 100%; height: 100%; }
+.cmap__card { position: absolute; left: 52%; top: 50%; z-index: 3; width: min(270px, calc(100% - 32px)); margin: -150px 0 0 24px; padding: 16px 18px; border-radius: 14px; background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,.14); }
+.cmap__brand { margin: 0; font-family: var(--script); font-size: 30px; line-height: 1; color: var(--gold-dark); }
+.cmap__card strong { display: block; margin: 6px 0 4px; font-size: 16px; color: var(--black); }
+.cmap__card p:last-child { margin: 0; font-size: 13px; line-height: 1.5; color: var(--muted); }
+
+/* Ways to reach us */
+.cways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
+.cway { padding: 22px 22px 24px; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: var(--shadow); }
+.cway h2 { margin: 12px 0 6px; font-size: 16px; font-weight: 600; color: var(--black); }
+.cway p { margin: 0; font-size: 14px; line-height: 1.55; color: var(--muted); }
+.cway p a { color: var(--gold-dark); text-decoration: underline; text-underline-offset: 3px; }
+.cway__icons { display: flex; gap: 12px; }
+.cway__icons a { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--soft); color: var(--black); transition: background .2s, color .2s; }
+.cway__icons a:hover { background: var(--black); color: var(--gold); }
+.cway__icons .icon { width: 17px; height: 17px; }
+.cway__mail { display: inline-flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; color: var(--gold-dark); text-decoration: underline; text-underline-offset: 4px; word-break: break-all; }
+.cway__mail .icon { flex: 0 0 18px; width: 18px; height: 18px; }
+
+/* WhatsApp banner */
+.cwa { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 28px; overflow: hidden; padding: 32px 36px; border-radius: 16px; background: var(--black); color: #fff; }
+.cwa::before { content: ""; position: absolute; right: -80px; top: -120px; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle, rgba(37, 211, 102, .28), transparent 65%); }
+.cwa__text { position: relative; max-width: 560px; }
+.cwa__text h2 { margin: 0 0 8px; font-family: var(--serif); font-size: clamp(26px, 3vw, 34px); font-weight: 600; }
+.cwa__text p { margin: 0 0 20px; color: #cfc9bf; }
+.cwa__btns { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn--outline-light { border: 1px solid rgba(255,255,255,.5); background: transparent; color: #fff; }
+.btn--outline-light:hover { background: #fff; color: var(--black); }
+.cwa__qr { position: relative; display: grid; justify-items: center; gap: 10px; }
+.cwa__qrbox { padding: 10px; border-radius: 12px; background: #fff; }
+.cwa__qrbox img, .cwa__qrbox canvas { display: block; width: 132px; height: 132px; }
+.cwa__qr span { padding: 6px 14px; border-radius: 999px; background: #25d366; font-size: 12px; font-weight: 600; color: #fff; }
+
+/* Message form */
+.cmsg { max-width: 820px; }
+.cmsg .contact__form { border: 1px solid var(--line); border-radius: 14px; box-shadow: none; }
+
+/* FAQ */
+.cfaq { padding-top: 48px; padding-bottom: 64px; }
+.cfaq__inner { max-width: 860px; }
+.cfaq .faq { margin-bottom: 10px; padding: 0 20px; border: 0; border-radius: 12px; background: var(--soft); }
+.cfaq .faq summary { padding-top: 18px; padding-bottom: 18px; }
+.cfaq .faq p { padding-bottom: 18px; }
+.cfaq .faq p a { color: var(--gold-dark); text-decoration: underline; }
+.cfaq__more { margin-top: 28px; }
+.cfaq__more .btn { min-width: min(340px, 100%); }
+
+@media (max-width: 960px) {
+  .cways { grid-template-columns: 1fr 1fr; }
+  .cways .cway:first-child { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  .cwa { flex-direction: column; align-items: flex-start; padding: 26px 20px; }
+  .cwa__qr { display: none !important; }       /* on a phone, the button opens WhatsApp directly */
+  .cmap__card { left: 16px; top: auto; bottom: 16px; margin: 0; }
+  .cmap__pin { left: 60%; top: 34%; }
+}
+@media (max-width: 640px) {
+  .cpage__top .crumbs { margin-bottom: 14px; }
+  .cways { grid-template-columns: 1fr; }
+  .cway__mail { font-size: 15px; }
+  .cfaq .faq { padding: 0 14px; }
+}
