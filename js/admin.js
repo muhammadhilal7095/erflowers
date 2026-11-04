@@ -43,7 +43,7 @@
     overview: 'Overview', orders: 'Orders', products: 'Products', reviews: 'Reviews',
     addons: 'Gift Add-ons', delivery: 'Delivery', discounts: 'Discount Codes',
     customers: 'Customers & Points', membership: 'Membership', club: 'Flower Club', partners: 'Partners', giftcards: 'Gift Cards', blog: 'Blog',
-    images: 'Site Images', settings: 'Settings'
+    images: 'Site Images', integrations: 'Payments & Stripe', settings: 'Settings'
   };
   const RULES = window.ENVIE_RULES;
   const TAG_GROUPS = [['occasions', 'Occasion'], ['colours', 'Colour'], ['flowers', 'Flowers'], ['recipients', 'Who for']];
@@ -181,7 +181,7 @@
       overview: renderOverview, orders: renderOrders, products: renderProducts, reviews: renderReviews,
       addons: renderAddons, delivery: renderDelivery, discounts: renderDiscounts, blog: renderBlog,
       customers: renderCustomers, membership: renderMembership, club: renderClub, partners: renderPartners, giftcards: renderGiftCards,
-      images: renderImages, settings: renderSettings
+      images: renderImages, integrations: renderIntegrations, settings: renderSettings
     })[view]();
   }
 
@@ -1736,6 +1736,135 @@
     });
   }
 
+
+  // ---------- Payments & integrations ----------
+  let integ = null;
+  async function loadIntegrations() {
+    try { integ = await api('integrations'); } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    const warn = integ && catalog && catalog.payments.stripe && (!integ.stripe.connected || !integ.stripe.webhook.set);
+    $('stripeBadge').hidden = !warn;
+  }
+  async function renderIntegrations() {
+    setBar('');
+    if (!integ) {
+      $('content').innerHTML = '<div class="card"><div class="empty">Loading…</div></div>';
+      await loadIntegrations();
+      if (view !== 'integrations' || !integ) return;
+    }
+    const st = integ.stripe;
+    const em = integ.email;
+    const local = /localhost|127\.0\.0\.1/.test(location.hostname);
+    $('content').innerHTML = `
+      <div class="card">
+        <div class="card__head"><h2>Stripe card payments</h2>${st.connected ? `<span class="badge st-delivered">Connected${st.mode === 'test' ? ' · test mode' : ''}</span>` : '<span class="badge st-new">Not connected</span>'}</div>
+        <div class="card__body">
+          ${st.connected ? `
+            <p class="integ-line"><strong>Account:</strong> ${esc(st.account || 'Stripe account')} · <strong>Key:</strong> <code>${esc(st.keyHint)}</code>${st.source === 'host settings' ? ' <span class="help">(from your hosting settings)</span>' : ''}</p>
+            ${st.mode === 'test' ? '<p class="notice" style="margin:8px 0">This is a <strong>test</strong> key: payments use Stripe test cards and no real money moves. Paste your live key (sk_live_…) when you are ready to take real payments.</p>' : ''}`
+          : `<ol class="integ-steps">
+              <li>Log in to <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener">dashboard.stripe.com → Developers → API keys</a>.</li>
+              <li>Copy the <strong>Secret key</strong> (it starts with <code>sk_live_</code>, or <code>sk_test_</code> to try things out first).</li>
+              <li>Paste it below and press <strong>Connect</strong>. We check it with Stripe before saving.</li>
+            </ol>`}
+          <form class="integ-form" id="stripeKeyForm" autocomplete="off">
+            <label class="field"><span>${st.connected ? 'Replace secret key' : 'Secret key'}</span><input class="input" name="key" type="password" placeholder="sk_live_…" autocomplete="off" spellcheck="false"></label>
+            <button type="submit" class="btn btn--gold btn--sm">${st.connected ? 'Update key' : 'Connect'}</button>
+          </form>
+
+          ${st.connected ? `
+          <div class="integ-block">
+            <h3>Webhook ${st.webhook.set ? '<span class="badge st-delivered">Connected</span>' : '<span class="badge st-cancelled">Not connected</span>'}</h3>
+            <p class="help">The webhook lets Stripe tell your website when someone has paid: card orders are marked Paid, and Flower Club and membership payments, trials and cancellations update automatically.</p>
+            ${st.webhook.set ? `<p class="integ-line">Sending to <code>${esc(st.webhook.url || integ.webhookUrl)}</code></p>` : ''}
+            ${local
+              ? '<p class="notice" style="margin:8px 0">You’re on a local copy of the site. Open this page on your live website (https://…) to connect the webhook.</p>'
+              : `<button type="button" class="btn btn--gold btn--sm" id="autoHook">${st.webhook.set ? 'Reconnect webhook' : 'Connect webhook automatically'}</button>`}
+            <details class="integ-manual"><summary>Or set it up by hand</summary>
+              <p class="help">In Stripe go to Developers → Webhooks → Add endpoint. URL: <code>${esc(integ.webhookUrl)}</code>. Events: <code>checkout.session.completed</code>, <code>invoice.paid</code>, <code>customer.subscription.updated</code>, <code>customer.subscription.deleted</code>. Then paste the signing secret here:</p>
+              <form class="integ-form" id="hookSecretForm" autocomplete="off">
+                <label class="field"><span>Signing secret</span><input class="input" name="secret" type="password" placeholder="whsec_…" autocomplete="off"></label>
+                <button type="submit" class="btn btn--outline btn--sm">Save</button>
+              </form>
+            </details>
+          </div>
+
+          <div class="integ-block">
+            <h3>Card payments at checkout</h3>
+            <label class="check"><input type="checkbox" id="cardsOn"${catalog.payments.stripe ? ' checked' : ''}> Let customers pay by card, Apple Pay and Google Pay</label>
+            <p class="help">${st.webhook.set ? 'Everything is set up.' : 'Connect the webhook first, so paid orders and memberships update automatically.'}</p>
+          </div>
+          <p style="margin-top:14px"><button type="button" class="btn btn--danger btn--sm" id="stripeOff">Disconnect Stripe</button></p>` : ''}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__head"><h2>Email (optional)</h2>${em.connected ? '<span class="badge st-delivered">Connected</span>' : '<span class="badge st-new">Not connected</span>'}</div>
+        <div class="card__body">
+          <p class="help">Sends customers their password-reset emails automatically. Uses <a href="https://resend.com" target="_blank" rel="noopener">Resend</a> (free plan available). Add and verify your domain there, then create an API key.</p>
+          ${em.connected ? `<p class="integ-line"><strong>Key:</strong> <code>${esc(em.keyHint)}</code> · <strong>From:</strong> ${esc(em.from)}</p>` : ''}
+          <form class="integ-form integ-form--2" id="emailForm" autocomplete="off">
+            <label class="field"><span>Resend API key</span><input class="input" name="key" type="password" placeholder="${em.connected ? 'Leave empty to keep the current key' : 're_…'}" autocomplete="off"></label>
+            <label class="field"><span>Send from</span><input class="input" name="from" value="${esc(em.from)}" placeholder="Envie Roses <hello@yourdomain.co.uk>"></label>
+            <button type="submit" class="btn btn--gold btn--sm">Save</button>
+          </form>
+          ${em.connected ? `<form class="integ-form" id="testEmailForm"><label class="field"><span>Send a test email to</span><input class="input" name="to" type="email" placeholder="you@example.com"></label><button type="submit" class="btn btn--outline btn--sm">Send test</button></form>
+          <p style="margin-top:10px"><button type="button" class="btn btn--ghost btn--sm" id="emailOff">Disconnect email</button></p>` : ''}
+        </div>
+      </div>
+      <p class="help">Keys are stored securely on your server and are never shown in full or sent to the website. Keys set in your hosting settings (STRIPE_SECRET_KEY and so on) still work, but keys saved here are used first.</p>`;
+
+    const busy = (form, on) => form.querySelectorAll('button').forEach((b) => { b.disabled = on; });
+    const save = async (body, msg, form) => {
+      if (form) busy(form, true);
+      try { integ = { ...(await api('integrations', { method: 'PUT', body })), webhookUrl: integ.webhookUrl }; toast(msg); await loadIntegrations(); renderIntegrations(); }
+      catch (err) { if (err.message !== 'Session ended') toast(err.message, true); if (form) busy(form, false); }
+    };
+    $('stripeKeyForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const key = e.target.elements.key.value.trim();
+      if (!key) { toast('Paste your Stripe secret key first.', true); return; }
+      save({ stripeSecretKey: key }, 'Stripe connected.', e.target);
+    });
+    if ($('hookSecretForm')) $('hookSecretForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      save({ stripeWebhookSecret: e.target.elements.secret.value.trim() }, 'Webhook secret saved.', e.target);
+    });
+    if ($('autoHook')) $('autoHook').addEventListener('click', async () => {
+      $('autoHook').disabled = true;
+      try { integ = { ...(await api('integrations/stripe-webhook', { method: 'POST' })), webhookUrl: integ.webhookUrl }; toast('Webhook connected.'); await loadIntegrations(); renderIntegrations(); }
+      catch (err) { if (err.message !== 'Session ended') toast(err.message, true); $('autoHook').disabled = false; }
+    });
+    if ($('cardsOn')) $('cardsOn').addEventListener('change', async (e) => {
+      if (e.target.checked && !st.webhook.set && !confirm('The webhook isn’t connected yet, so paid orders won’t be marked Paid automatically. Turn card payments on anyway?')) { e.target.checked = false; return; }
+      const next = clone(catalog);
+      next.payments.stripe = e.target.checked;
+      if (!next.payments.stripe && !next.payments.whatsapp) next.payments.whatsapp = true;
+      if (await publish(next, e.target.checked ? 'Card payments are on.' : 'Card payments are off.')) { await loadIntegrations(); renderIntegrations(); }
+      else e.target.checked = !e.target.checked;
+    });
+    if ($('stripeOff')) $('stripeOff').addEventListener('click', async () => {
+      if (!confirm('Disconnect Stripe? Card payments will be switched off. Existing Stripe subscriptions keep running in Stripe.')) return;
+      await save({ disconnect: 'stripe' }, 'Stripe disconnected.');
+      try { catalog = await api('catalog'); } catch (err) { /* ignore */ }
+    });
+    $('emailForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const key = e.target.elements.key.value.trim();
+      const from = e.target.elements.from.value.trim();
+      if (!key && !em.connected) { toast('Paste your Resend API key.', true); return; }
+      if (!from) { toast('Enter the sender, e.g. Envie Roses <hello@yourdomain.co.uk>', true); return; }
+      save({ ...(key ? { resendApiKey: key } : {}), emailFrom: from }, 'Email settings saved.', e.target);
+    });
+    if ($('testEmailForm')) $('testEmailForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      busy(e.target, true);
+      try { await api('integrations/test-email', { method: 'POST', body: { to: e.target.elements.to.value.trim() } }); toast('Test email sent.'); }
+      catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+      busy(e.target, false);
+    });
+    if ($('emailOff')) $('emailOff').addEventListener('click', () => { if (confirm('Disconnect email?')) save({ disconnect: 'email' }, 'Email disconnected.'); });
+  }
+
   // ---------- Settings ----------
   function renderSettings() {
     setBar(`<button type="button" class="btn btn--gold btn--sm" id="saveSettingsTop">Save settings</button>`);
@@ -1783,7 +1912,7 @@
             <div class="card__body">
               <label class="check"><input type="checkbox" name="payments.whatsapp"${payments.whatsapp ? ' checked' : ''}> Order on WhatsApp</label>
               <label class="check"><input type="checkbox" name="payments.stripe"${payments.stripe ? ' checked' : ''}> Card, Apple Pay &amp; Google Pay (Stripe)</label>
-              <p class="help" style="margin-top:8px">Only switch on card payments after adding your Stripe key in Netlify (see SETUP.md).</p>
+              <p class="help" style="margin-top:8px">Connect your Stripe account first in <a href="#integrations" data-go="integrations">Payments &amp; Stripe</a>.</p>
             </div>
           </div>
 
@@ -1915,6 +2044,7 @@
     giftcards = null;
     affiliates = null;
     memberships = null;
+    integ = null;
     document.querySelectorAll('dialog[open]').forEach((d) => d.close());
     $('app').hidden = true;
     $('login').hidden = false;
@@ -1928,6 +2058,7 @@
     try {
       const [cat] = await Promise.all([api('catalog'), loadOrders(), loadReviews(), loadAffiliates()]);
       catalog = cat;
+      loadIntegrations();
     } catch (err) {
       if (err.message !== 'Session ended') logout(err.message);
       return;

@@ -5,6 +5,7 @@
 import RULES from '../../js/rules.js';
 import { getCatalog, json } from '../lib/shop-data.mjs';
 import { FREQUENCIES, customerFromRequest, newSubscriptionId, saveSubscription, stripe } from '../lib/accounts.mjs';
+import { stripeKey } from '../lib/integrations.mjs';
 
 const t = (v, max) => String(v ?? '').trim().slice(0, max);
 
@@ -41,7 +42,7 @@ export default async (req) => {
     };
 
     const site = process.env.URL || new URL(req.url).origin;
-    if (catalog.payments.stripe && process.env.STRIPE_SECRET_KEY) {
+    if (catalog.payments.stripe && (await stripeKey())) {
       const session = await stripe('checkout/sessions', {
         mode: 'subscription',
         success_url: `${site}/account.html?club=success#subscriptions`,

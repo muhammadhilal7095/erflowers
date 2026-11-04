@@ -3764,3 +3764,28 @@ body.cpop-lock { overflow: hidden; }
 .mship__section { padding: 40px 0; }
 @media (max-width: 960px) { .mship__plans { grid-template-columns: minmax(0, 1fr); max-width: 520px; margin: 0 auto; gap: 26px; } }
 @media (max-width: 480px) { .mship__join { padding: 20px 16px; } .mplan { padding: 26px 20px 22px; } }
+
+/* ---------- Highlighted "Membership" menu item ---------- */
+.header__navbar .nav-hl > a {
+  position: relative; display: inline-flex !important; align-items: center; gap: 7px;
+  margin: 7px 0; padding: 7px 14px !important; border-radius: 999px;
+  background: linear-gradient(135deg, #0b0b0b, #2a2117); color: var(--gold-light) !important;
+  box-shadow: 0 0 0 1px rgba(201, 169, 110, .55), 0 6px 16px rgba(168, 135, 77, .22);
+  transition: transform .2s var(--ease), box-shadow .2s;
+}
+.header__navbar .nav-hl > a::after { display: none !important; }
+.header__navbar .nav-hl > a:hover, .header__navbar .nav-hl > a.active { color: #fff !important; transform: translateY(-1px); box-shadow: 0 0 0 1px var(--gold), 0 8px 20px rgba(168, 135, 77, .32); }
+.nav-hl__icon { width: 14px; height: 14px; color: var(--gold); }
+.nav-hl__tag {
+  margin-left: 2px; padding: 2px 7px; border-radius: 999px; background: #b3122a;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .06em; color: #fff; white-space: nowrap;
+  animation: navTag 2.4s ease-in-out infinite;
+}
+@keyframes navTag { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .nav-hl__tag { animation: none; } }
+@media (max-width: 1240px) and (min-width: 961px) { .nav-hl__tag { display: none; } }
+@media (max-width: 960px) {
+  .header__navbar .nav-hl > a { display: flex !important; justify-content: flex-start; margin: 10px 0; padding: 14px 16px !important; border-radius: 10px; font-size: 14px; }
+  .header__navbar .nav-hl { border-bottom: 0 !important; }
+  .nav-hl__tag { margin-left: auto; font-size: 10px; }
+}

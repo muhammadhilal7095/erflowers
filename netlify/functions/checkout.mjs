@@ -9,13 +9,14 @@ import { cleanGiftBuyer, commitExtras, prepareExtras, priceGiftCardPurchase } fr
 import { stripe } from '../lib/accounts.mjs';
 import { affiliateForOrder, noteAffiliateOrder } from '../lib/affiliates.mjs';
 import { memberForRequest } from '../lib/membership.mjs';
+import { stripeKey } from '../lib/integrations.mjs';
 
 // Stripe metadata values are limited to 500 characters
 const clip = (value, max = 490) => String(value || '').trim().slice(0, max);
 
 export default async (req) => {
   if (req.method !== 'POST') return json(405, { error: 'Method not allowed.' });
-  if (!process.env.STRIPE_SECRET_KEY) return json(503, { error: 'Card payments are not set up yet.' });
+  if (!(await stripeKey())) return json(503, { error: 'Card payments are not set up yet.' });
 
   let body;
   try {

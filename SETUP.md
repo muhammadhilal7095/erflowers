@@ -246,3 +246,16 @@ Three monthly plans: **Flower Lover £9.99**, **Flower Club Premium £19.99** an
 - **With Stripe** (card payments on and `STRIPE_WEBHOOK_SECRET` set): the trial, monthly payments, failed payments and cancellations all update automatically. Customers cancel in My Account → Membership, and benefits continue until the end of the trial or paid month. In Stripe, turn on **Settings → Billing → Subscriptions → Send emails about upcoming renewals / trial endings**, so members get a reminder before they're charged.
 - **Without Stripe:** sign-ups come to you on WhatsApp. Arrange payment, then set the member to **Free trial** or **Active** in the dashboard.
 - Benefits like "exclusive member offers", "member-only bouquets", "early access", "birthday offers", "priority service" and "occasion reminders" are delivered by you (for example by WhatsApp or email). Only list the ones you will actually give.
+
+## Connect Stripe from the dashboard (recommended)
+
+No hosting settings needed. On your **live** website:
+
+1. Open **Dashboard → Payments & Stripe**.
+2. Copy your **Secret key** from [Stripe → Developers → API keys](https://dashboard.stripe.com/apikeys) (`sk_live_…`, or `sk_test_…` to try it with test cards first), paste it, and press **Connect**. The key is checked with Stripe before it's saved.
+3. Press **Connect webhook automatically**. This creates the webhook in Stripe for you and saves its secret, so paid orders, Flower Club subscriptions and memberships update by themselves.
+4. Tick **Let customers pay by card, Apple Pay and Google Pay**.
+
+Optional: add your **Resend** API key and sender address in the Email box to send password-reset emails, and press **Send test**.
+
+Keys are stored on your server only. The dashboard shows just the start and last 4 characters, and they are never sent to the website. If you also set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY` or `EMAIL_FROM` in your hosting settings, the dashboard values are used first. **Disconnect Stripe** removes the key and the webhook and switches card payments off.

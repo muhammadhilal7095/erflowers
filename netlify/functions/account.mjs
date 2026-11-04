@@ -16,6 +16,7 @@ import {
   ensureReferralCode, findByReferralCode
 } from '../lib/accounts.mjs';
 import { getMembership, publicMembership } from '../lib/membership.mjs';
+import { stripeKey } from '../lib/integrations.mjs';
 
 const orderSummary = (o) => ({
   id: o.id, createdAt: o.createdAt, status: o.status, payment: o.payment, quick: o.quick || false,
@@ -58,12 +59,13 @@ export default async (req) => {
     if (path === 'forgot' && method === 'POST') {
       // Always the same answer, so nobody can find out which emails have accounts
       const c = await findCustomerByEmail(cleanEmail(body.email));
-      if (c && emailConfigured()) {
+      const emailOn = await emailConfigured();
+      if (c && emailOn) {
         const link = await makeResetLink(c, site);
         await sendEmail(c.email, `Reset your ${catalog.shop.name} password`,
           `Hello ${c.name},\n\nUse this link to choose a new password. It works for one hour:\n${link}\n\nIf you didn't ask for this, you can ignore this email.\n\n${catalog.shop.name}`);
       }
-      return json(200, { ok: true, emailed: emailConfigured() });
+      return json(200, { ok: true, emailed: emailOn });
     }
     if (path === 'reset' && method === 'POST') {
       const c = await resetPassword(body.token, body.password);
@@ -78,7 +80,7 @@ export default async (req) => {
       const orders = (await Promise.all((c.orders || []).slice(0, 50).map((id) => getOrder(id)))).filter(Boolean).map(orderSummary);
       const subscriptions = (await listSubscriptions(c.id)).map(subSummary);
       const membership = publicMembership(await getMembership(c.id), catalog);
-      return json(200, { customer: { ...publicCustomer(c), trialUsed: Boolean(c.membershipTrialUsed) }, membership, orders, subscriptions, loyalty, billing: Boolean(c.stripeCustomerId && process.env.STRIPE_SECRET_KEY) });
+      return json(200, { customer: { ...publicCustomer(c), trialUsed: Boolean(c.membershipTrialUsed) }, membership, orders, subscriptions, loyalty, billing: Boolean(c.stripeCustomerId && (await stripeKey())) });
     }
     if (path === 'me' && method === 'PUT') {
       return json(200, { customer: publicCustomer(await updateProfile(c, body)) });

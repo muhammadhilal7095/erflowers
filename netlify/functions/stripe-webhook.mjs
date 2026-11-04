@@ -13,6 +13,7 @@ import RULES from '../../js/rules.js';
 import { getCatalog, getOrder, json, saveOrder, updateOrder } from '../lib/shop-data.mjs';
 import { getCustomer, getSubscription, linkOrder, saveSubscription, verifyStripeSignature, saveCustomer } from '../lib/accounts.mjs';
 import { getMembership, markTrialUsed, saveMembership } from '../lib/membership.mjs';
+import { webhookSecret } from '../lib/integrations.mjs';
 
 // Membership events carry membership_customer in their metadata
 const memberMeta = (obj) =>
@@ -87,7 +88,7 @@ const subIdFrom = (obj) =>
 
 export default async (req) => {
   if (req.method !== 'POST') return json(405, { error: 'Method not allowed.' });
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  const secret = await webhookSecret();
   if (!secret) return json(503, { error: 'Webhook not set up.' });
   const raw = await req.text();
   if (!verifyStripeSignature(raw, req.headers.get('stripe-signature'), secret)) return json(400, { error: 'Bad signature.' });

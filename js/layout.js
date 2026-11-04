@@ -65,6 +65,7 @@
   const NAV = [
     ['home', 'index.html', 'Home'],
     ['shop', 'shop.html', 'Shop'],
+    ['membership', 'membership.html', 'Membership'],
     ['gifts', 'gifts.html', 'Gifts'],
     ['finder', 'finder.html', 'Bouquet Finder'],
     ['blog', 'blog.html', 'Blog'],
@@ -94,6 +95,13 @@
   }
   const navItem = ([key, href, label], active) => {
     const isActive = key === active || (key === 'shop' && active === 'boxes');
+    if (key === 'membership') {
+      // Highlighted: gold, with the free-trial tag
+      const ms = window.ENVIE_CATALOG.membership || {};
+      if (!ms.enabled) return '';
+      const tag = ms.trialDays ? `<span class="nav-hl__tag">${ms.trialDays} days free</span>` : '';
+      return `<li class="nav-hl"><a href="${href}"${isActive ? ' class="active" aria-current="page"' : ''}><svg class="icon nav-hl__icon" aria-hidden="true"><use href="#i-diamond"/></svg>${label}${tag}</a></li>`;
+    }
     const a = `<a href="${href}"${isActive ? ' class="active" aria-current="page"' : ''}>${label}</a>`;
     if (key !== 'shop') return `<li>${a}</li>`;
     return `<li class="has-mega">${a}<button type="button" class="mega-toggle" aria-expanded="false" aria-controls="megaShop" aria-label="Show shop categories"><svg class="icon"><use href="#i-chevron"/></svg></button>${megaMenu()}</li>`;

@@ -9,6 +9,7 @@
 
 import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { dataStore } from './shop-data.mjs';
+import { emailSettings, stripeKey } from './integrations.mjs';
 
 const now = () => new Date().toISOString();
 const t = (v, max) => String(v ?? '').trim().slice(0, max);
@@ -256,14 +257,15 @@ export async function resetPassword(token, password) {
   return c;
 }
 
-export const emailConfigured = () => Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
+export const emailConfigured = async () => { const e = await emailSettings(); return Boolean(e.apiKey && e.from); };
 
 export async function sendEmail(to, subject, text) {
-  if (!emailConfigured()) return false;
+  const e = await emailSettings();
+  if (!e.apiKey || !e.from) return false;
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: process.env.EMAIL_FROM, to, subject, text })
+    headers: { Authorization: `Bearer ${e.apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: e.from, to, subject, text })
   });
   if (!res.ok) console.error('Email not sent', res.status, await res.text().catch(() => ''));
   return res.ok;
@@ -421,7 +423,7 @@ export function stripeForm(obj, prefix, out = []) {
 }
 
 export async function stripe(path, params, method = 'POST') {
-  const secret = process.env.STRIPE_SECRET_KEY;
+  const secret = await stripeKey();
   if (!secret) throw new Error('Card payments are not set up yet.');
   const res = await fetch(`https://api.stripe.com/v1/${path}`, {
     method,

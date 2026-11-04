@@ -46,6 +46,22 @@ import {
 
 import { MEMBER_STATUSES, deleteMembership, getMembership, listMemberships, markTrialUsed, saveMembership } from '../lib/membership.mjs';
 
+import { getIntegrations, integrationStatus, saveIntegrations } from '../lib/integrations.mjs';
+import { sendEmail, stripeForm } from '../lib/accounts.mjs';
+
+// Calls Stripe with a given key (used to check a key before saving it)
+async function stripeWith(key, path, params, method = 'POST') {
+  const res = await fetch(`https://api.stripe.com/v1/${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params && method !== 'GET' ? stripeForm(params) : undefined
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data.error && data.error.message) || `Stripe said no (${res.status}).`);
+  return data;
+}
+const WEBHOOK_EVENTS = ['checkout.session.completed', 'invoice.paid', 'customer.subscription.updated', 'customer.subscription.deleted'];
+
 const SUB_STATUSES = ['pending', 'awaiting-payment', 'active', 'paused', 'past-due', 'cancelled'];
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -132,6 +148,77 @@ export default async (req) => {
     }
 
     if (path === 'reviews' && method === 'GET') return json(200, { reviews: await listReviews() });
+
+    // ---------- Payments & integrations (Stripe, email) ----------
+    if (path === 'integrations' && method === 'GET') {
+      const site = process.env.URL || new URL(req.url).origin;
+      return json(200, { ...(await integrationStatus()), webhookUrl: `${site}/api/stripe-webhook` });
+    }
+    if (path === 'integrations' && method === 'PUT') {
+      const body = await req.json().catch(() => ({}));
+      const changes = {};
+      if (body.disconnect === 'stripe') {
+        const i = await getIntegrations();
+        if (i.stripeWebhookId && i.stripeSecretKey) await stripeWith(i.stripeSecretKey, `webhook_endpoints/${i.stripeWebhookId}`, null, 'DELETE').catch(() => {});
+        Object.assign(changes, { stripeSecretKey: null, stripeWebhookSecret: null, stripeWebhookId: null, stripeWebhookUrl: null, stripeAccountName: null });
+        // No key any more: switch card payments off so checkout doesn't offer them
+        const cat = await getCatalog();
+        if (cat.payments.stripe) {
+          cat.payments.stripe = false;
+          if (!cat.payments.whatsapp) cat.payments.whatsapp = true;
+          await saveCatalog(validateCatalog(cat));
+        }
+      }
+      if (body.disconnect === 'email') Object.assign(changes, { resendApiKey: null, emailFrom: null });
+      if (body.stripeSecretKey) {
+        const key = String(body.stripeSecretKey).trim();
+        if (!/^(sk|rk)_(live|test)_[A-Za-z0-9]{10,}$/.test(key)) return json(400, { error: 'That doesn\u2019t look like a Stripe secret key. It starts with sk_live_ (or sk_test_ for testing).' });
+        let account;
+        try { account = await stripeWith(key, 'account', null, 'GET'); } catch (err) { return json(400, { error: `Stripe didn't accept that key: ${err.message}` }); }
+        const name = (account.settings && account.settings.dashboard && account.settings.dashboard.display_name) || (account.business_profile && account.business_profile.name) || account.email || account.id;
+        Object.assign(changes, { stripeSecretKey: key, stripeAccountName: String(name || '').slice(0, 80) });
+      }
+      if (body.stripeWebhookSecret) {
+        const wh = String(body.stripeWebhookSecret).trim();
+        if (!/^whsec_[A-Za-z0-9+/=]{10,}$/.test(wh)) return json(400, { error: 'A webhook signing secret starts with whsec_.' });
+        changes.stripeWebhookSecret = wh;
+      }
+      if (body.resendApiKey) {
+        const rk = String(body.resendApiKey).trim();
+        if (!/^re_[A-Za-z0-9_]{10,}$/.test(rk)) return json(400, { error: 'A Resend API key starts with re_.' });
+        changes.resendApiKey = rk;
+      }
+      if (body.emailFrom !== undefined && body.emailFrom !== '') {
+        const from = String(body.emailFrom).trim().slice(0, 120);
+        if (!/^([^<>]+<)?[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+>?$/.test(from)) return json(400, { error: 'Enter the sender like: Envie Roses <hello@yourdomain.co.uk>' });
+        changes.emailFrom = from;
+      }
+      await saveIntegrations(changes);
+      return json(200, await integrationStatus());
+    }
+    if (path === 'integrations/stripe-webhook' && method === 'POST') {
+      const i = await getIntegrations();
+      const key = i.stripeSecretKey;
+      if (!key) return json(400, { error: 'Connect your Stripe key first.' });
+      const site = process.env.URL || new URL(req.url).origin;
+      if (!/^https:\/\//.test(site) || /localhost|127\.0\.0\.1/.test(site)) {
+        return json(400, { error: 'Open the dashboard on your live website (https://…) to connect the webhook. Stripe can\u2019t reach a computer\u2019s local copy.' });
+      }
+      if (i.stripeWebhookId) await stripeWith(key, `webhook_endpoints/${i.stripeWebhookId}`, null, 'DELETE').catch(() => {});
+      const url = `${site}/api/stripe-webhook`;
+      const params = { url, description: 'Envie Roses website (orders, Flower Club, membership)' };
+      WEBHOOK_EVENTS.forEach((e, n) => { params[`enabled_events[${n}]`] = e; });
+      let hook;
+      try { hook = await stripeWith(key, 'webhook_endpoints', params); } catch (err) { return json(400, { error: `Stripe couldn't create the webhook: ${err.message}` }); }
+      await saveIntegrations({ stripeWebhookSecret: hook.secret, stripeWebhookId: hook.id, stripeWebhookUrl: url });
+      return json(200, await integrationStatus());
+    }
+    if (path === 'integrations/test-email' && method === 'POST') {
+      const { to } = await req.json().catch(() => ({}));
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(to || ''))) return json(400, { error: 'Enter an email address to send the test to.' });
+      const ok = await sendEmail(String(to), 'Test email from your Envie Roses website', 'Your website can send emails. Password-reset emails will now be sent automatically.');
+      return ok ? json(200, { ok: true }) : json(400, { error: 'The email was not sent. Check the API key and that the sender\u2019s domain is verified in Resend.' });
+    }
 
     // ---------- Memberships ----------
     if (path === 'memberships' && method === 'GET') return json(200, { memberships: await listMemberships() });

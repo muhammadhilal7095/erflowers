@@ -533,3 +533,20 @@ svg { width: 18px; height: 18px; flex-shrink: 0; }
   .row-actions { justify-content: flex-start; }
 }
 .addon-edit--wide { grid-template-columns: 1fr; }
+
+/* ---------- Payments & integrations ---------- */
+.integ-steps { margin: 0 0 14px; padding-left: 20px; font-size: 14px; line-height: 1.7; }
+.integ-steps a, .card__body .help a { color: var(--gold-dark); text-decoration: underline; }
+.integ-form { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.integ-form .field { flex: 1 1 260px; margin-bottom: 0; }
+.integ-form--2 .field { flex: 1 1 220px; }
+.integ-line { margin: 0 0 6px; font-size: 14px; }
+.integ-line code, .card__body code { padding: 1px 6px; border-radius: 4px; background: var(--bg); font-size: 12.5px; word-break: break-all; }
+.integ-block { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.integ-block h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 15px; }
+.integ-manual { margin-top: 12px; }
+.integ-manual summary { cursor: pointer; font-size: 13px; color: var(--gold-dark); }
+.side__badge--warn { background: #c0392b; }
+/* Many sections: the sidebar scrolls instead of cutting off "Log out" */
+.side { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #333 transparent; }
+.side__nav button { padding-top: 9px; padding-bottom: 9px; }

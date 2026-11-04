@@ -6,6 +6,7 @@
 import { getCatalog, json } from '../lib/shop-data.mjs';
 import { customerFromRequest, stripe } from '../lib/accounts.mjs';
 import { getMembership, isActive, markTrialUsed, publicMembership, saveMembership } from '../lib/membership.mjs';
+import { stripeKey } from '../lib/integrations.mjs';
 
 export default async (req) => {
   if (req.method !== 'POST') return json(405, { error: 'Method not allowed.' });
@@ -33,7 +34,7 @@ export default async (req) => {
       };
       const site = process.env.URL || new URL(req.url).origin;
 
-      if (catalog.payments.stripe && process.env.STRIPE_SECRET_KEY) {
+      if (catalog.payments.stripe && (await stripeKey())) {
         const meta = { membership_customer: c.id, membership_plan: body.planId };
         const session = await stripe('checkout/sessions', {
           mode: 'subscription',
