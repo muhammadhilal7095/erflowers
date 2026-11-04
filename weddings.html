@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Wedding Flowers | Envie Roses</title>
+  <meta name="description" content="Luxury rose wedding flowers: bridal bouquets, buttonholes, table centrepieces and venue arrangements.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Wedding Flowers | Envie Roses">
+  <meta property="og:description" content="Luxury rose wedding flowers: bridal bouquets, buttonholes, table centrepieces and venue arrangements.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body>
+  <script>EnvieLayout.top(null);</script>
+
+  <main id="main">
+    <script>EnvieLayout.pageHero({"title": "Wedding Flowers", "kicker": "Your Day, In Roses", "intro": "Bridal bouquets, buttonholes and venue flowers, designed around you.", "crumb": "Weddings"});</script>
+    <section class="section">
+      <div class="container">
+        <div class="info-grid info-grid--4">
+          <div class="info-card"><svg class="info-card__icon"><use href="#i-rose"/></svg><h3>Bridal Bouquets</h3><p>Hand-tied bouquets for the bride and bridesmaids, designed around your colours.</p></div>
+          <div class="info-card"><svg class="info-card__icon"><use href="#i-heart"/></svg><h3>Buttonholes &amp; Corsages</h3><p>Matching rose buttonholes and corsages for the wedding party and family.</p></div>
+          <div class="info-card"><svg class="info-card__icon"><use href="#i-diamond"/></svg><h3>Tables &amp; Venue</h3><p>Centrepieces, top-table arrangements, arches and ceremony flowers.</p></div>
+          <div class="info-card"><svg class="info-card__icon"><use href="#i-gift"/></svg><h3>Gifts &amp; Thank-yous</h3><p>Rose boxes for parents, the wedding party and everyone who helped.</p></div>
+        </div>
+      </div>
+    </section>
+    <section class="section section--tight">
+      <div class="container prose">
+        <h2>How it works</h2>
+        <ul>
+          <li><strong>Tell us about your day:</strong> the date, venue, colours and roughly what you need. Photos and Pinterest boards are welcome.</li>
+          <li><strong>Your proposal:</strong> we suggest designs and a clear quote, with no obligation.</li>
+          <li><strong>Secure your date:</strong> a deposit holds your date. We finalise numbers and details closer to the day.</li>
+          <li><strong>On the day:</strong> we deliver to you and your venue, on time and ready to go.</li>
+        </ul>
+        <p>We recommend getting in touch <strong>3 to 6 months</strong> before your wedding, especially for spring and summer dates. Short notice? Ask anyway; we&rsquo;ll always try.</p>
+      </div>
+    </section>
+    <section class="section" id="enquire">
+      <div class="container enquiry">
+        <div class="enquiry__intro">
+          <p class="kicker">Get in Touch</p>
+          <h2 class="section-title section-title--sm">Plan Your Wedding Flowers</h2>
+          <p>Tell us a little about what you need and we&rsquo;ll reply on WhatsApp with ideas and a quote. Prefer email? Write to <a href="#" data-shop-href="email"><span data-shop="email"></span></a>.</p>
+        </div>
+        <form class="enquiry__form" id="wedForm" data-subject="Wedding" novalidate>
+          <div class="co-grid">
+            <label class="field"><span>Your names *</span><input name="names" required maxlength="100"></label>
+            <label class="field"><span>Wedding date *</span><input name="date" required type="date"></label>
+            <label class="field field--full"><span>Venue and town</span><input name="venue" maxlength="150"></label>
+            <label class="field"><span>Rough budget</span><input name="budget" maxlength="40" placeholder="e.g. £1,500"></label>
+            <label class="field"><span>Colours / style</span><input name="style" maxlength="100"></label>
+            <label class="field field--full"><span>What do you need?</span><textarea name="needs" rows="4" maxlength="800"></textarea></label>
+          </div>
+          <p class="form-error" role="alert"></p>
+          <button type="submit" class="btn btn--whatsapp btn--block"><svg class="icon"><use href="#i-whatsapp"/></svg> Send enquiry on WhatsApp</button>
+          <p class="enquiry__small">We only use these details to reply to your enquiry. See our <a href="privacy.html">Privacy Policy</a>.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+  <script>
+    // Turns the enquiry form into a WhatsApp message
+    document.querySelectorAll('.enquiry__form').forEach((form) => form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const err = form.querySelector('.form-error');
+      err.textContent = '';
+      if (!form.checkValidity()) { err.textContent = 'Please complete the required fields.'; form.querySelector(':invalid').focus(); return; }
+      const lines = [`*${form.dataset.subject} enquiry - ${window.ENVIE_CATALOG.shop.name}*`, ''];
+      form.querySelectorAll('[name]').forEach((el) => {
+        const v = el.value.trim();
+        if (v) lines.push(`${el.closest('label').querySelector('span').textContent.replace(' *', '')}: ${v}`);
+      });
+      window.EnvieShop.openWhatsApp(window.EnvieShop.waLink(lines.join('\n')));
+    }));
+  </script>
+</body>
+</html>

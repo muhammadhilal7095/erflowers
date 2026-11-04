@@ -22,6 +22,9 @@ Manage the website without touching any code. Log in at **yourdomain.co.uk/admin
 | **Gift Add-ons** | Gifts customers can add to an order (vase, chocolates, teddy, balloon, candle…). Set the name, price (0 = free), photo or icon, and show or hide each one. |
 | **Delivery** | Same-day delivery: on/off, the order-by time (UK time), an optional same-day charge and the postcode areas it covers. Also delivery time slots, closed days (e.g. Christmas), postcode areas you can't deliver to online, and the towns/cities that get their own delivery page. |
 | **Discount Codes** | Create codes for % off, £ off or free delivery, with an optional minimum spend and expiry date. Codes are checked on the server and never appear in the website's code. |
+| **Customers & Points** | See customer accounts, add or remove loyalty points, create a password-reset link to send on WhatsApp, and set the loyalty rules (points per £1, value, minimum, welcome points). |
+| **Flower Club** | See subscriptions and change their status, cancel card subscriptions, and edit the plans, prices and photos. |
+| **Gift Cards** | Turn gift card sales on or off, set the amounts, issue gift cards, and see each card's balance. To issue a card someone bought, open their order and press **Issue gift card**. |
 | **Blog** | Write, edit, publish or delete blog posts with a cover photo. Drafts stay hidden until you publish them. |
 | **Reviews** | Approve (publish), reject or delete customer reviews. New reviews never appear on the website until you publish them. |
 | **Site Images** | Replace the homepage hero, banners, About photo, page banner and Instagram photos, or reset any of them to the original |
@@ -65,6 +68,11 @@ Run `npm install`, then `ADMIN_PASSWORD=yourpassword npx netlify dev`. Open http
 | Flower delivery by city | `delivery-to.html?city=london` (cities are set in Dashboard → Delivery) |
 | Freshness Guarantee | `guarantee.html` |
 | Wishlist (saved on that device) | `wishlist.html` |
+| My Account (log in, orders, points, Flower Club, addresses) | `account.html` |
+| Flower Club (subscriptions) | `club.html` |
+| Gift Cards | `gift-cards.html` |
+| Track Your Order | `track-order.html` |
+| Weddings, Sympathy, Corporate | `weddings.html`, `sympathy.html`, `corporate.html` |
 | Gifts & Occasions | `gifts.html` |
 | About Us | `about.html` |
 | Contact | `contact.html` |
@@ -182,3 +190,21 @@ Each payment in Stripe shows:
 ## Testing locally
 
 Opening `index.html` lets you test the bag and WhatsApp ordering. Card payments only work on the Netlify site, because they need the server function.
+
+## Customer accounts, loyalty points, gift cards and the Flower Club
+
+- **Accounts:** customers sign up on **My Account**. Passwords are stored scrambled (scrypt), never as plain text. Logged-in customers get their details and saved addresses filled in at checkout, and see their orders.
+- **Loyalty points:** points are added when you mark an order **Delivered**. If you mark it **Cancelled**, any points or gift card balance used on it are given back, and points earned are removed. The starting rules are 1 point per £1, 100 points = £1 off, use 500 or more, up to 50% of an order, and 100 welcome points. Change them in Dashboard → Customers & Points.
+- **Gift cards:** a code like `GC-AB12-CD34`, typed into the "Discount or gift card code" box at checkout. The balance can be spent over several orders.
+- **Flower Club:** customers need an account to join.
+  - Without Stripe, sign-ups come to you on WhatsApp. Arrange payment, then set the subscription to **Active** in the dashboard.
+  - With Stripe card payments on, customers pay automatically each week, fortnight or month.
+
+### Optional settings (environment variables)
+
+| Setting | What it does |
+|---|---|
+| `STRIPE_WEBHOOK_SECRET` | Marks card orders **Paid** automatically, runs Flower Club card payments, and adds each paid subscription delivery to Orders. In Stripe go to Developers → Webhooks → Add endpoint `https://yourdomain.co.uk/api/stripe-webhook`, with the events `checkout.session.completed`, `invoice.paid`, `customer.subscription.updated` and `customer.subscription.deleted`, then copy the signing secret here. |
+| `RESEND_API_KEY` and `EMAIL_FROM` | Sends "forgot password" emails through resend.com (free plan available), e.g. `EMAIL_FROM=Envie Roses <hello@yourdomain.co.uk>`. Without these, customers are asked to message you, and you create a reset link in Dashboard → Customers & Points. |
+
+To let Flower Club card customers cancel or update their card themselves, turn on the **Customer portal** in Stripe (Settings → Billing → Customer portal).

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Flower Club: Rose Subscriptions | Envie Roses</title>
+  <meta name="description" content="Fresh luxury roses delivered weekly, fortnightly or monthly. Delivery included; pause or cancel any time.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Flower Club: Rose Subscriptions | Envie Roses">
+  <meta property="og:description" content="Fresh luxury roses delivered weekly, fortnightly or monthly. Delivery included; pause or cancel any time.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body>
+  <script>EnvieLayout.top(null);</script>
+
+  <main id="main">
+    <script>EnvieLayout.pageHero({"title": "The Flower Club", "kicker": "Rose Subscriptions", "intro": "Fresh roses, delivered as often as you like. Delivery included.", "crumb": "Flower Club"});</script>
+    <section class="section">
+      <div class="container">
+        <div class="club-steps">
+          <div class="club-step"><span class="club-step__n">1</span><h3>Choose your plan</h3><p>Pick a size and how often you&rsquo;d like your roses: weekly, every two weeks or monthly.</p></div>
+          <div class="club-step"><span class="club-step__n">2</span><h3>We design each delivery</h3><p>Our florists choose the best roses of the season, so every delivery feels a little different.</p></div>
+          <div class="club-step"><span class="club-step__n">3</span><h3>Enjoy, or gift it</h3><p>Delivery is included. Change, pause or cancel whenever you like.</p></div>
+        </div>
+      </div>
+    </section>
+    <section class="section section--tight" id="plans">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">Flower Club Plans</p>
+          <h2 class="section-title section-title--sm">Choose Your Plan</h2>
+          <p class="section-intro">Prices are per delivery and include UK delivery.</p>
+        </div>
+        <div class="plans" id="plansGrid"></div>
+        <p class="club-closed" id="clubClosed" hidden>The Flower Club is closed to new members at the moment. Please <a href="contact.html">contact us</a> for regular deliveries.</p>
+      </div>
+    </section>
+    <section class="section" id="join" hidden>
+      <div class="container club-form">
+        <form id="clubForm" novalidate>
+          <h2 class="section-title section-title--sm">Your Subscription</h2>
+          <p class="club-form__login" id="clubLogin"></p>
+          <fieldset class="co-group">
+            <legend>Plan</legend>
+            <div class="co-grid">
+              <label class="field"><span>Plan *</span><select name="planId" id="clubPlan" required></select></label>
+              <label class="field"><span>How often *</span><select name="frequency" id="clubFreq" required></select></label>
+              <label class="field"><span>First delivery *</span><input type="date" name="startDate" id="clubStart" required></label>
+              <p class="club-form__price field--full" id="clubPrice"></p>
+            </div>
+          </fieldset>
+          <fieldset class="co-group">
+            <legend>Deliver to</legend>
+            <div class="co-grid">
+              <label class="field"><span>Recipient name *</span><input name="recipient" required maxlength="100"></label>
+              <label class="field"><span>Recipient phone</span><input name="phone" type="tel" maxlength="30"></label>
+              <label class="field field--full"><span>Address *</span><input name="address1" required maxlength="150" placeholder="House number and street"></label>
+              <label class="field field--full"><span class="sr-only">Address line 2</span><input name="address2" maxlength="150" placeholder="Flat, building (optional)"></label>
+              <label class="field"><span>Town / City *</span><input name="city" required maxlength="80"></label>
+              <label class="field"><span>Postcode *</span><input name="postcode" id="clubPostcode" required maxlength="10" pattern="[A-Za-z]{1,2}[0-9][A-Za-z0-9]?\s*[0-9][A-Za-z]{2}"></label>
+              <p class="co-info field--full" id="clubInfo"></p>
+              <label class="field field--full"><span>Card message <small>(optional, for the first delivery)</small></span><textarea name="message" rows="2" maxlength="250"></textarea></label>
+              <label class="field field--full"><span>Notes <small>(optional, e.g. safe place, colours they love)</small></span><input name="notes" maxlength="200"></label>
+            </div>
+          </fieldset>
+          <p class="form-error" id="clubError" role="alert"></p>
+          <button type="submit" class="btn btn--gold btn--block" id="clubSubmit">Start my subscription</button>
+          <p class="co-terms">Your subscription continues until you cancel. You can cancel at any time before your next payment. See our <a href="terms.html">Terms</a>.</p>
+        </form>
+      </div>
+    </section>
+    <section class="section section--tight">
+      <div class="container prose">
+        <h2>Good to know</h2>
+        <ul>
+          <li><strong>Flexible:</strong> pause, skip, change or cancel whenever you need to. Just let us know before your next delivery.</li>
+          <li><strong>Seasonal:</strong> each delivery is designed by our florists using the best roses available that week, so colours and stems vary.</li>
+          <li><strong>A gift that keeps giving:</strong> send a subscription to someone special. Add their address and a card message for the first delivery.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+  <script>
+    (function () {
+      const C = window.ENVIE_CATALOG;
+      const R = window.ENVIE_RULES;
+      const { money, esc, imgAttrs } = EnvieLayout;
+      const club = C.club || {};
+      const FREQ = { weekly: 'Every week', fortnightly: 'Every 2 weeks', monthly: 'Every month' };
+      const plans = Object.entries(club.plans || {}).filter(([, p]) => p.active !== false);
+      const $ = (id) => document.getElementById(id);
+      if (!club.enabled || !plans.length) { $('clubClosed').hidden = false; return; }
+
+      $('plansGrid').innerHTML = plans.map(([id, p]) => `
+        <article class="plan">
+          <div class="plan__media">${p.image ? `<img ${imgAttrs(p.image, '(max-width: 640px) 100vw, 380px')} alt="" loading="lazy" decoding="async">` : ''}</div>
+          <div class="plan__body">
+            <h3>${esc(p.name)}</h3>
+            <p>${esc(p.description)}</p>
+            <p class="plan__price"><strong>${money(p.price)}</strong> per delivery</p>
+            <button type="button" class="btn btn--gold btn--sm" data-plan="${esc(id)}">Choose ${esc(p.name)}</button>
+          </div>
+        </article>`).join('');
+      $('clubPlan').innerHTML = plans.map(([id, p]) => `<option value="${esc(id)}">${esc(p.name)} (${money(p.price)})</option>`).join('');
+      $('clubFreq').innerHTML = (club.frequencies || Object.keys(FREQ)).map((f) => `<option value="${f}">${FREQ[f]}</option>`).join('');
+
+      const token = EnvieShop.accountToken();
+      $('clubLogin').innerHTML = token
+        ? 'You&rsquo;ll find your subscription under <a href="account.html#subscriptions">My Account</a>.'
+        : 'You need an account to manage your subscription. <a href="account.html">Log in or create one</a> first, then come back to this page.';
+
+      function update() {
+        const p = club.plans[$('clubPlan').value];
+        $('clubPrice').innerHTML = p ? `<strong>${money(p.price)}</strong> ${FREQ[$('clubFreq').value].toLowerCase()}, delivery included.` : '';
+        const q = R.deliveryQuote(C, { postcode: R.normalizePostcode($('clubPostcode').value) ? $('clubPostcode').value : '' });
+        $('clubStart').min = q.earliest;
+        const info = $('clubInfo');
+        info.className = 'co-info field--full';
+        info.textContent = q.blocked ? q.error : '';
+        if (q.blocked) info.classList.add('is-error');
+      }
+      ['clubPlan', 'clubFreq', 'clubPostcode'].forEach((id) => $(id).addEventListener('input', update));
+      update();
+
+      document.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-plan]');
+        if (!b) return;
+        $('clubPlan').value = b.dataset.plan;
+        $('join').hidden = false;
+        update();
+        $('join').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      $('clubForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = e.target, err = $('clubError');
+        err.textContent = '';
+        if (!EnvieShop.accountToken()) { err.innerHTML = 'Please <a href="account.html">log in or create an account</a> first.'; return; }
+        if (!f.checkValidity()) { err.textContent = 'Please check the highlighted fields.'; f.classList.add('was-validated'); f.querySelector(':invalid').focus(); return; }
+        const v = Object.fromEntries(new FormData(f).entries());
+        const body = { planId: v.planId, frequency: v.frequency, startDate: v.startDate, message: v.message, notes: v.notes,
+          delivery: { recipient: v.recipient, phone: v.phone, address1: v.address1, address2: v.address2, city: v.city, postcode: v.postcode } };
+        const btn = $('clubSubmit');
+        btn.disabled = true;
+        try {
+          const res = await fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json', ...EnvieShop.authHeaders() }, body: JSON.stringify(body) });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+          if (data.url) { location.href = data.url; return; }
+          const p = club.plans[v.planId];
+          const text = [`*Flower Club - ${C.shop.name}*`, `Reference: *${data.id}*`, '', `Plan: ${p.name} (${money(p.price)} per delivery)`, `How often: ${FREQ[v.frequency]}`,
+            `First delivery: ${new Date(v.startDate + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}`, '',
+            '*Deliver to*', v.recipient, v.address1, ...(v.address2 ? [v.address2] : []), `${v.city} ${v.postcode.toUpperCase()}`, ...(v.message ? ['', `Card message: "${v.message}"`] : []),
+            '', 'Please send me payment details to start my subscription.'].join('\n');
+          EnvieShop.openWhatsApp(EnvieShop.waLink(text));
+          location.href = 'account.html?club=success#subscriptions';
+        } catch (ex) {
+          err.textContent = ex.message;
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Sympathy & Funeral Flowers | Envie Roses</title>
+  <meta name="description" content="Sympathy roses and funeral flowers, delivered with care to a home or funeral director.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Sympathy & Funeral Flowers | Envie Roses">
+  <meta property="og:description" content="Sympathy roses and funeral flowers, delivered with care to a home or funeral director.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body>
+  <script>EnvieLayout.top(null);</script>
+
+  <main id="main">
+    <script>EnvieLayout.pageHero({"title": "Sympathy & Funeral Flowers", "kicker": "With Deepest Sympathy", "intro": "Gentle, thoughtful roses to show you care.", "crumb": "Sympathy"});</script>
+    <section class="section section--tight">
+      <div class="container prose">
+        <p>Flowers can say what words often can&rsquo;t. Our sympathy roses are arranged with care in calm, gentle tones, to send to a home or to the funeral.</p>
+        <h2>Sending flowers to a funeral</h2>
+        <ul>
+          <li>Ask the family or funeral director first: some families prefer donations instead of flowers.</li>
+          <li>For a funeral, send flowers to the funeral director the day before the service. Put the funeral director&rsquo;s name and address as the delivery address, and the name of the person who has died plus the date of the service in the notes.</li>
+          <li>For a home, a bouquet or rose box a few days after the funeral is often appreciated, when the house is quieter.</li>
+        </ul>
+        <h2>Need something specific?</h2>
+        <p>For tributes, wreaths, letters or casket sprays, please <a href="#" data-enquire="sympathy and funeral flowers">message us on WhatsApp</a> and we&rsquo;ll talk you through the options.</p>
+      </div>
+    </section>
+    <section class="section related">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">With Sympathy</p>
+          <h2 class="section-title section-title--sm">Sympathy Roses</h2>
+        </div>
+        <div class="product-grid" id="symGrid"></div>
+        <div class="center view-all"><a href="shop.html?o=sympathy" class="btn btn--outline">View All Sympathy Flowers</a></div>
+      </div>
+    </section>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+  <script>
+    (function () {
+      const { products } = window.ENVIE_CATALOG;
+      const ids = Object.keys(products);
+      let pick = ids.filter((id) => (products[id].occasions || []).includes('sympathy'));
+      if (!pick.length) pick = ids.filter((id) => (products[id].colours || []).includes('white'));
+      document.getElementById('symGrid').innerHTML = (pick.length ? pick : ids.slice(0, 3)).slice(0, 6).map(EnvieLayout.productCard).join('');
+    })();
+  </script>
+</body>
+</html>

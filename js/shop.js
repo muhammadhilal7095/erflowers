@@ -295,28 +295,83 @@
   dateInput.addEventListener('change', updateDelivery);
   const currentFee = () => (quote.ok && typeof quote.fee === 'number' ? quote.fee : typeof shop.deliveryFee === 'number' ? shop.deliveryFee : null);
 
+  // ---------- Customer account (optional): prefill, saved addresses, loyalty points ----------
+  const ACCOUNT_KEY = 'envie_account_token';
+  const accountToken = () => { try { return localStorage.getItem(ACCOUNT_KEY) || ''; } catch (e) { return ''; } };
+  const authHeaders = () => (accountToken() ? { Authorization: `Bearer ${accountToken()}` } : {});
+  let account = null;
+  async function loadAccount() {
+    if (!accountToken() || location.protocol === 'file:') { account = null; return; }
+    try {
+      const res = await fetch('/api/account/me', { headers: authHeaders() });
+      if (res.status === 401) { try { localStorage.removeItem(ACCOUNT_KEY); } catch (e) { /* ignore */ } account = null; return; }
+      account = res.ok ? await res.json() : null;
+    } catch (e) { account = null; }
+  }
+  function fillFromAccount() {
+    const acc = $('coAccount');
+    if (!account) {
+      acc.innerHTML = CATALOG.loyalty && CATALOG.loyalty.enabled
+        ? `<a href="account.html">Log in or create an account</a> to earn ${CATALOG.loyalty.pointsPerPound} point${CATALOG.loyalty.pointsPerPound === 1 ? '' : 's'} for every £1.`
+        : '';
+      $('coSavedWrap').hidden = true;
+      return;
+    }
+    const c = account.customer;
+    acc.textContent = `Logged in as ${c.name}.`;
+    const set = (name, v) => { const el = form.elements[name]; if (el && !el.value && v) el.value = v; };
+    set('name', c.name); set('phone', c.phone); set('email', c.email);
+    const list = c.addresses || [];
+    $('coSavedWrap').hidden = !list.length;
+    $('coSaved').innerHTML = '<option value="">Enter a new address</option>' + list.map((a, i) =>
+      `<option value="${i}">${escapeHtml([a.label, a.recipient, a.address1, a.postcode].filter(Boolean).join(', '))}</option>`).join('');
+  }
+  $('coSaved').addEventListener('change', (e) => {
+    const a = account && account.customer.addresses[Number(e.target.value)];
+    if (!a) return;
+    const map = { recipient: a.recipient, recipientPhone: a.phone, address1: a.address1, address2: a.address2, city: a.city, postcode: a.postcode };
+    Object.entries(map).forEach(([k, v]) => { form.elements[k].value = v || ''; });
+    updateDelivery();
+  });
+
+  // Points: whole points, at least minRedeem, at most maxPercent of what is left to pay
+  function pointsUsable(due) {
+    const ly = CATALOG.loyalty || {};
+    if (!account || !ly.enabled) return { usable: 0, amount: 0 };
+    const usable = Math.min(account.customer.points || 0, Math.floor((due * (ly.maxPercent || 0)) / 100 / ly.pointValue));
+    return usable >= (ly.minRedeem || 0) && usable > 0 ? { usable, amount: usable * ly.pointValue } : { usable: 0, amount: 0 };
+  }
+  $('coUsePoints').addEventListener('change', () => renderSummary());
+
   // ---------- Discount codes (checked by the server; codes are never stored in the website) ----------
   let applied = null;
+  let giftApplied = null;
   const discountAmount = () => (applied ? applied.amount : 0);
   async function applyCode(silent) {
     const code = RULES.cleanCode($('coCode').value);
     const msg = $('coCodeMsg');
-    if (!code) { applied = null; msg.textContent = ''; renderSummary(); return; }
+    if (!code) { if (!silent) msg.textContent = ''; renderSummary(); return; }
     if (location.protocol === 'file:') { msg.textContent = 'Discount codes work on the live website.'; msg.className = 'co-discount__msg is-error'; return; }
     try {
       const pc = postcodeInput.value.trim();
       const res = await fetch('/api/discount', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, items: itemsForServer(), postcode: RULES.normalizePostcode(pc) ? pc : undefined, date: dateInput.value || undefined })
+        body: JSON.stringify({ code, items: itemsForServer(), postcode: RULES.normalizePostcode(pc) ? pc : undefined, date: dateInput.value || undefined, discountCode: applied ? applied.code : undefined })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'That code is not valid.');
-      applied = { code: data.code, label: data.label, amount: data.amount };
-      msg.textContent = `${data.code} applied: ${data.label}.`;
+      if (data.giftCard) {
+        giftApplied = { code: data.code, display: data.display, balance: data.balance };
+        msg.textContent = `Gift card ${data.display} applied (balance ${money(data.balance)}).`;
+      } else {
+        applied = { code: data.code, label: data.label, amount: data.amount };
+        msg.textContent = `${data.code} applied: ${data.label}.`;
+      }
       msg.className = 'co-discount__msg is-good';
+      $('coCode').value = '';
     } catch (err) {
-      applied = null;
       if (!silent) { msg.textContent = err.message; msg.className = 'co-discount__msg is-error'; }
+      else { applied = null; giftApplied = null; }
     }
     renderSummary();
   }
@@ -336,11 +391,31 @@
     $('coDelivery').textContent = fee === null ? 'Confirmed with your order' : fee === 0 ? 'Free' : money(fee) + (quote.sameDay ? ' (same day)' : '');
     $('coDiscountRow').hidden = !applied;
     if (applied) { $('coDiscountLabel').textContent = `Discount (${applied.code})`; $('coDiscount').textContent = '−' + money(applied.amount); }
-    $('coTotal').textContent = money(orderTotal());
+    const t = totals();
+    $('coGiftRow').hidden = !t.gift;
+    if (t.gift) { $('coGiftLabel').textContent = `Gift card (${giftApplied.display})`; $('coGift').textContent = '−' + money(t.gift); }
+    const pq = pointsUsable(t.afterGift);
+    $('coPointsWrap').hidden = !pq.usable;
+    if (account && CATALOG.loyalty && CATALOG.loyalty.enabled) {
+      $('coPointsText').textContent = pq.usable
+        ? `Use ${pq.usable} points for ${money(pq.amount)} off (you have ${account.customer.points})`
+        : '';
+    }
+    $('coPointsRow').hidden = !t.points;
+    if (t.points) { $('coPointsLabel').textContent = `Points (${t.pointsUsed})`; $('coPoints').textContent = '−' + money(t.points); }
+    $('coTotal').textContent = money(t.total);
     $('coTotalLabel').textContent = fee === null ? 'Total (excl. delivery)' : 'Total';
     updateSubmitLabel();
   }
-  const orderTotal = () => Math.max(0, subtotal() + (currentFee() || 0) - discountAmount());
+  // Discount, then gift card, then points (the same order the server uses)
+  function totals() {
+    const base = Math.max(0, subtotal() + (currentFee() || 0) - discountAmount());
+    const gift = giftApplied ? Math.min(giftApplied.balance, base) : 0;
+    const afterGift = base - gift;
+    const pq = $('coUsePoints').checked ? pointsUsable(afterGift) : { usable: 0, amount: 0 };
+    return { base, gift, afterGift, points: pq.amount, pointsUsed: pq.usable, total: Math.max(0, afterGift - pq.amount) };
+  }
+  const orderTotal = () => totals().total;
   function selectedMethod() {
     const r = form.querySelector('input[name="payment"]:checked');
     return r ? r.value : null;
@@ -361,6 +436,7 @@
     updateDelivery();
     if (applied) applyCode(true);
     openDialog(co);
+    loadAccount().then(() => { fillFromAccount(); renderSummary(); });
   }
 
   function buildOrder(orderId) {
@@ -376,6 +452,10 @@
       sameDay: Boolean(quote.sameDay),
       discount: applied,
       discountCode: applied ? applied.code : '',
+      giftCard: totals().gift ? { display: giftApplied.display, amount: totals().gift } : null,
+      giftCardCode: giftApplied ? giftApplied.code : '',
+      points: totals().points ? { used: totals().pointsUsed, amount: totals().points } : null,
+      usePoints: Boolean(totals().points),
       total: orderTotal(),
       payment: data.payment,
       customer: { name: data.name, phone: data.phone, email: data.email },
@@ -407,6 +487,16 @@
 
   function orderText(order, paid) {
     if (order.quick) return quickText(order);
+    if (order.giftCardOrder) {
+      const g = order.giftCardOrder;
+      return [
+        `*Gift Card Order - ${shop.name}*`, `Order: *${order.id}*`, '',
+        `Gift card: *${money(g.amount)}*`, `For: ${g.to}`, ...(g.from ? [`From: ${g.from}`] : []), ...(g.message ? [`Message: "${g.message}"`] : []), '',
+        `Payment: ${paid ? 'Paid by card (Stripe)' : 'To arrange - please send payment details'}`, '',
+        '*My details*', order.customer.name, order.customer.phone, ...(order.customer.email ? [order.customer.email] : []),
+        ...(order.notes ? ['', order.notes] : [])
+      ].join('\n');
+    }
     const d = order.delivery;
     const date = new Date(d.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     const out = [
@@ -419,6 +509,8 @@
       `Subtotal: ${money(order.subtotal)}`,
       `Delivery: ${typeof order.deliveryFee === 'number' ? money(order.deliveryFee) : 'to be confirmed'}${order.sameDay ? ' (same day)' : ''}`,
       ...(order.discount ? [`Discount (${order.discount.code}): -${money(order.discount.amount)}`] : []),
+      ...(order.giftCard ? [`Gift card (${order.giftCard.display}): -${money(order.giftCard.amount)}`] : []),
+      ...(order.points ? [`Points (${order.points.used}): -${money(order.points.amount)}`] : []),
       `*Total: ${money(order.total)}*`,
       `Payment: ${paid ? 'Paid by card (Stripe)' : 'To arrange - please send payment details'}`,
       '',
@@ -462,10 +554,11 @@
     fetch('/api/orders', {
       method: 'POST',
       keepalive: true,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({
         orderId: order.id, items: order.items, customer: order.customer, quick: order.quick === true,
-        delivery: order.delivery, message: order.message, notes: order.notes, discountCode: order.discountCode || ''
+        delivery: order.delivery, message: order.message, notes: order.notes, discountCode: order.discountCode || '',
+        giftCardCode: order.giftCardCode || '', usePoints: order.usePoints === true, giftCardPurchase: order.giftCardOrder || undefined
       })
     }).catch(() => {});
   }
@@ -541,7 +634,7 @@
       try {
         const res = await fetch('/api/checkout', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
           body: JSON.stringify({
             orderId: order.id,
             items: order.items,
@@ -549,7 +642,9 @@
             delivery: order.delivery,
             message: order.message,
             notes: order.notes,
-            discountCode: order.discountCode
+            discountCode: order.discountCode,
+            giftCardCode: order.giftCardCode,
+            usePoints: order.usePoints
           })
         });
         const data = await res.json().catch(() => ({}));
@@ -572,6 +667,8 @@
     clearCart();
     form.reset();
     applied = null;
+    giftApplied = null;
+    $('coUsePoints').checked = false;
     $('coCodeMsg').textContent = '';
     if (firstMethod) firstMethod.checked = true;
     showConfirmation(order, false);
@@ -650,7 +747,32 @@
     },
     buy(productId, optionId, qty, addonIds = []) {
       quickOrder(productId, optionId, qty, addonIds);
-    }
+    },
+    // Used by gift-cards.html. payment: 'whatsapp' or 'stripe'
+    async buyGiftCard({ amount, to, from, message, customer, payment }) {
+      const order = {
+        id: makeOrderId(), createdAt: new Date().toISOString(),
+        giftCardOrder: { amount, to, from, message },
+        lines: [{ name: `${shop.name} Gift Card`, label: `For ${to}`, qty: 1, total: amount }],
+        subtotal: amount, deliveryFee: 0, total: amount, payment, customer, delivery: {}, message: '', notes: ''
+      };
+      if (payment === 'stripe') {
+        store(PENDING_KEY, order);
+        const res = await fetch('/api/checkout', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ orderId: order.id, giftCardPurchase: order.giftCardOrder, customer })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.url) { store(PENDING_KEY, null); throw new Error(data.error || 'Payment is unavailable right now.'); }
+        window.location.href = data.url;
+        return;
+      }
+      openWhatsApp(waLink(orderText(order, false)));
+      saveOrder(order, false);
+      recordOrder(order);
+      showConfirmation(order, false);
+    },
+    accountToken, authHeaders, openWhatsApp
   };
 
   renderCart();

@@ -15,7 +15,7 @@ import { getMysqlStore } from './mysql-store.mjs';
 const mode = process.env.ENVIE_STORAGE;
 const store = (name) =>
   mode === 'mysql' ? getMysqlStore(name) : mode === 'file' ? getFileStore(name) : getStore({ name, consistency: 'strong' });
-const dataStore = () => store('envie');
+export const dataStore = () => store('envie');
 export const imageStore = () => store('envie-images');
 
 export const CATEGORIES = ['boxes', 'bouquets', 'exclusive'];
@@ -53,6 +53,9 @@ function withDefaults(saved) {
     delivery: { ...DEFAULTS.delivery, ...saved.delivery },
     addons: saved.addons || DEFAULTS.addons,
     cities: saved.cities || DEFAULTS.cities,
+    loyalty: { ...DEFAULTS.loyalty, ...saved.loyalty },
+    club: saved.club ? { ...DEFAULTS.club, ...saved.club } : structuredClone(DEFAULTS.club),
+    giftCards: { ...DEFAULTS.giftCards, ...saved.giftCards },
     products: saved.products || {}
   };
 }
@@ -237,7 +240,44 @@ export function validateCatalog(input) {
     };
   }
 
-  return { shop, legal, social, payments, delivery, addons, cities, images, products };
+  const ly = input.loyalty || {};
+  const loyalty = {
+    enabled: ly.enabled === true,
+    pointsPerPound: int(ly.pointsPerPound ?? 1, 0, 100, 'Points per £1'),
+    pointValue: int(ly.pointValue ?? 1, 1, 100, 'Value of a point'),
+    minRedeem: int(ly.minRedeem ?? 0, 0, 1000000, 'Smallest number of points to use'),
+    maxPercent: int(ly.maxPercent ?? 50, 1, 100, 'Most of an order points can pay for'),
+    signupBonus: int(ly.signupBonus ?? 0, 0, 100000, 'Welcome points')
+  };
+
+  const cl = input.club || {};
+  const FREQ = ['weekly', 'fortnightly', 'monthly'];
+  const frequencies = (Array.isArray(cl.frequencies) ? cl.frequencies : FREQ).filter((f) => FREQ.includes(f));
+  const plansIn = cl.plans && typeof cl.plans === 'object' ? cl.plans : {};
+  if (Object.keys(plansIn).length > 12) throw new Error('Too many Flower Club plans (maximum 12).');
+  const plans = {};
+  for (const [id, pl] of Object.entries(plansIn)) {
+    if (!/^[a-z0-9-]{1,60}$/.test(id)) throw new Error(`Plan ID "${id}" is not valid.`);
+    const name = str(pl.name, 60, 'Plan name', { required: true });
+    plans[id] = {
+      name,
+      description: str(pl.description, 300, `Description for "${name}"`),
+      image: imagePath(pl.image, `Photo for "${name}"`),
+      price: int(pl.price, 100, 1000000, `Price for "${name}"`),
+      active: pl.active !== false
+    };
+  }
+  const club = { enabled: cl.enabled === true, frequencies: frequencies.length ? frequencies : FREQ, plans };
+
+  const gc = input.giftCards || {};
+  const giftCards = {
+    enabled: gc.enabled === true,
+    amounts: [...new Set((Array.isArray(gc.amounts) ? gc.amounts : []).map((a) => int(a, 500, 100000, 'Gift card amount')))].sort((a, b) => a - b).slice(0, 10),
+    months: int(gc.months ?? 24, 12, 120, 'Gift card validity (months)')
+  };
+  if (giftCards.enabled && !giftCards.amounts.length) throw new Error('Add at least one gift card amount.');
+
+  return { shop, legal, social, payments, delivery, addons, cities, loyalty, club, giftCards, images, products };
 }
 
 // ---------- Orders ----------

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Gift Cards | Envie Roses</title>
+  <meta name="description" content="Give an Envie Roses gift card, to spend on luxury roses, gifts or the Flower Club.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Gift Cards | Envie Roses">
+  <meta property="og:description" content="Give an Envie Roses gift card, to spend on luxury roses, gifts or the Flower Club.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body>
+  <script>EnvieLayout.top(null);</script>
+
+  <main id="main">
+    <script>EnvieLayout.pageHero({"title": "Gift Cards", "kicker": "Let Them Choose", "intro": "The gift of roses, for them to choose.", "crumb": "Gift Cards"});</script>
+    <section class="section">
+      <div class="container gc">
+        <div class="gc__card" aria-hidden="true">
+          <div class="gc__visual">
+            <svg class="gc__mark"><use href="#i-rose"/></svg>
+            <p class="gc__brand">Envie</p>
+            <p class="gc__label">Gift Card</p>
+            <p class="gc__amount" id="gcPreview">£50</p>
+          </div>
+          <ul class="gc__points">
+            <li>Use it on any roses, gifts or the Flower Club</li>
+            <li>Valid for <span id="gcMonths">24</span> months</li>
+            <li>Use it over several orders until the balance runs out</li>
+          </ul>
+        </div>
+        <form class="gc__form" id="gcForm" novalidate>
+          <fieldset class="co-group">
+            <legend>Choose an amount</legend>
+            <div class="gc__amounts" id="gcAmounts" role="radiogroup" aria-label="Gift card amount"></div>
+          </fieldset>
+          <fieldset class="co-group">
+            <legend>Who is it for?</legend>
+            <div class="co-grid">
+              <label class="field"><span>Their name *</span><input name="to" required maxlength="100"></label>
+              <label class="field"><span>From</span><input name="from" maxlength="100"></label>
+              <label class="field field--full"><span>Message <small>(optional)</small></span><textarea name="message" rows="2" maxlength="250"></textarea></label>
+            </div>
+          </fieldset>
+          <fieldset class="co-group">
+            <legend>Your details</legend>
+            <div class="co-grid">
+              <label class="field field--full"><span>Your name *</span><input name="name" required maxlength="100" autocomplete="name"></label>
+              <label class="field"><span>Phone *</span><input name="phone" type="tel" required maxlength="30" autocomplete="tel"></label>
+              <label class="field"><span>Email</span><input name="email" type="email" maxlength="120" autocomplete="email"></label>
+            </div>
+          </fieldset>
+          <div class="pay-methods" id="gcPay"></div>
+          <p class="form-error" id="gcError" role="alert"></p>
+          <button type="submit" class="btn btn--gold btn--block" id="gcSubmit">Buy gift card</button>
+          <p class="co-terms">Once paid, we send you the gift card code to pass on (or forward to them). Gift cards can&rsquo;t be exchanged for cash.</p>
+        </form>
+      </div>
+    </section>
+    <section class="section section--tight">
+      <div class="container prose">
+        <h2>Using a gift card</h2>
+        <p>At checkout, type the code (it starts with <strong>GC-</strong>) into the <em>Discount or gift card code</em> box and press Apply. If the order costs less than the balance, the rest stays on the card for next time. If it costs more, pay the difference as normal.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+  <script>
+    (function () {
+      const C = window.ENVIE_CATALOG, gc = C.giftCards || {};
+      const { money, esc } = EnvieLayout;
+      const $ = (id) => document.getElementById(id);
+      if (!gc.enabled) { document.querySelector('.gc').innerHTML = '<p class="club-closed">Gift cards are not available at the moment. Please <a href="contact.html">contact us</a>.</p>'; return; }
+      $('gcMonths').textContent = gc.months;
+      let amount = gc.amounts.includes(5000) ? 5000 : gc.amounts[0];
+      const pretty = (p) => '£' + (p % 100 ? (p / 100).toFixed(2) : p / 100);
+      function draw() {
+        $('gcAmounts').innerHTML = gc.amounts.map((a) => `<button type="button" role="radio" aria-checked="${a === amount}" class="gc__amount-btn${a === amount ? ' is-on' : ''}" data-amount="${a}">${pretty(a)}</button>`).join('');
+        $('gcPreview').textContent = pretty(amount);
+      }
+      draw();
+      $('gcAmounts').addEventListener('click', (e) => { const b = e.target.closest('[data-amount]'); if (b) { amount = Number(b.dataset.amount); draw(); } });
+      const methods = [C.payments.whatsapp && ['whatsapp', 'Order on WhatsApp'], C.payments.stripe && ['stripe', 'Pay by card']].filter(Boolean);
+      $('gcPay').innerHTML = methods.length > 1 ? methods.map(([v, l], i) => `<label class="check-pill"><input type="radio" name="payment" value="${v}"${i ? '' : ' checked'}> ${l}</label>`).join('') : '';
+      $('gcForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = e.target, err = $('gcError');
+        err.textContent = '';
+        if (!f.checkValidity()) { err.textContent = 'Please check the highlighted fields.'; f.classList.add('was-validated'); f.querySelector(':invalid').focus(); return; }
+        const v = Object.fromEntries(new FormData(f).entries());
+        const payment = v.payment || (methods[0] && methods[0][0]) || 'whatsapp';
+        $('gcSubmit').disabled = true;
+        try {
+          await EnvieShop.buyGiftCard({ amount, to: v.to.trim(), from: v.from.trim(), message: v.message.trim(), customer: { name: v.name.trim(), phone: v.phone.trim(), email: v.email.trim() }, payment });
+          f.reset(); draw();
+        } catch (ex) { err.textContent = ex.message; }
+        $('gcSubmit').disabled = false;
+      });
+    })();
+  </script>
+</body>
+</html>

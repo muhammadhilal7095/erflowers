@@ -75,6 +75,35 @@
     // Towns and cities with their own delivery page (delivery-to.html?city=london)
     cities: ['London', 'Manchester', 'Birmingham', 'Leeds', 'Liverpool', 'Bristol', 'Sheffield', 'Leicester', 'Nottingham', 'Glasgow', 'Edinburgh', 'Cardiff'],
 
+    // Loyalty points for customers with an account. pointValue is pence per point (1 = 100 points for £1 off).
+    // Points are added when an order is marked Delivered in the dashboard.
+    loyalty: {
+      enabled: true,
+      pointsPerPound: 1,     // points earned per £1 spent on flowers and gifts
+      pointValue: 1,         // pence each point is worth
+      minRedeem: 500,        // smallest number of points a customer can use
+      maxPercent: 50,        // most of an order (%) that points can pay for
+      signupBonus: 100       // points given when an account is created
+    },
+
+    // Flower Club: regular deliveries. price in pence per delivery, delivery included.
+    club: {
+      enabled: true,
+      frequencies: ['weekly', 'fortnightly', 'monthly'],
+      plans: {
+        signature: { name: 'The Signature', description: 'A hand-tied bouquet of seasonal roses, chosen by our florists.', image: 'images/product-5.jpg', price: 4500, active: true },
+        luxe: { name: 'The Luxe', description: 'A fuller arrangement of premium roses and seasonal stems.', image: 'images/product-3.jpg', price: 6500, active: true },
+        grand: { name: 'The Grand', description: 'Our most generous design: a statement box of luxury roses.', image: 'images/product-1.jpg', price: 9500, active: true }
+      }
+    },
+
+    // Gift cards: amounts in pence. Cards are issued from the dashboard once paid.
+    giftCards: {
+      enabled: true,
+      amounts: [2500, 5000, 7500, 10000, 15000],
+      months: 24              // how long a card can be used for
+    },
+
     // Site photos you can replace from the dashboard. '' = use the built-in photo.
     images: {
       hero: '',

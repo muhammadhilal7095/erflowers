@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Corporate & Business Flowers | Envie Roses</title>
+  <meta name="description" content="Luxury roses for offices, receptions, events and client gifts, with regular schedules and invoicing.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Corporate & Business Flowers | Envie Roses">
+  <meta property="og:description" content="Luxury roses for offices, receptions, events and client gifts, with regular schedules and invoicing.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body>
+  <script>EnvieLayout.top(null);</script>
+
+  <main id="main">
+    <script>EnvieLayout.pageHero({"title": "Corporate Flowers", "kicker": "For Business", "intro": "Roses for offices, events and client gifts.", "crumb": "Corporate"});</script>
+    <section class="section">
+      <div class="container">
+        <div class="info-grid info-grid--4">
+          <div class="info-card"><svg class="info-card__icon"><use href="#i-rose"/></svg><h3>Office &amp; Reception</h3><p>Weekly or fortnightly arrangements for reception, meeting rooms and shop windows.</p></div>
+          <div class="info-card"><svg class="info-card__icon"><use href="#i-gift"/></svg><h3>Client &amp; Staff Gifts</h3><p>Rose boxes to welcome, thank or congratulate, sent to one address or many.</p></div>
+          <div class="info-card"><svg class="info-card__icon"><use href="#i-diamond"/></svg><h3>Events &amp; Launches</h3><p>Statement roses for launches, dinners, hotels, restaurants and celebrations.</p></div>
+          <div class="info-card"><svg class="info-card__icon"><use href="#i-shield"/></svg><h3>Easy Account</h3><p>One contact, regular schedules, and invoices for your accounts team on request.</p></div>
+        </div>
+      </div>
+    </section>
+    <section class="section section--tight">
+      <div class="container prose">
+        <h2>Why businesses choose us</h2>
+        <ul>
+          <li>Luxury roses arranged by hand, consistent from one delivery to the next.</li>
+          <li>Branded card messages and colours to match your brand.</li>
+          <li>Flexible schedules you can change whenever you need.</li>
+        </ul>
+      </div>
+    </section>
+    <section class="section" id="enquire">
+      <div class="container enquiry">
+        <div class="enquiry__intro">
+          <p class="kicker">Get in Touch</p>
+          <h2 class="section-title section-title--sm">Talk to Us About Business Flowers</h2>
+          <p>Tell us a little about what you need and we&rsquo;ll reply on WhatsApp with ideas and a quote. Prefer email? Write to <a href="#" data-shop-href="email"><span data-shop="email"></span></a>.</p>
+        </div>
+        <form class="enquiry__form" id="corpForm" data-subject="Corporate" novalidate>
+          <div class="co-grid">
+            <label class="field"><span>Your name *</span><input name="name" required maxlength="100"></label>
+            <label class="field"><span>Company *</span><input name="company" required maxlength="100"></label>
+            <label class="field"><span>Phone *</span><input name="phone" required type="tel" maxlength="30"></label>
+            <label class="field"><span>Email</span><input name="email" type="email" maxlength="120"></label>
+            <label class="field"><span>Postcode</span><input name="postcode" maxlength="10"></label>
+            <label class="field"><span>How often?</span><input name="often" maxlength="60" placeholder="e.g. weekly, one-off event"></label>
+            <label class="field field--full"><span>What do you need? *</span><textarea name="needs" rows="4" maxlength="800" required></textarea></label>
+          </div>
+          <p class="form-error" role="alert"></p>
+          <button type="submit" class="btn btn--whatsapp btn--block"><svg class="icon"><use href="#i-whatsapp"/></svg> Send enquiry on WhatsApp</button>
+          <p class="enquiry__small">We only use these details to reply to your enquiry. See our <a href="privacy.html">Privacy Policy</a>.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+  <script>
+    // Turns the enquiry form into a WhatsApp message
+    document.querySelectorAll('.enquiry__form').forEach((form) => form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const err = form.querySelector('.form-error');
+      err.textContent = '';
+      if (!form.checkValidity()) { err.textContent = 'Please complete the required fields.'; form.querySelector(':invalid').focus(); return; }
+      const lines = [`*${form.dataset.subject} enquiry - ${window.ENVIE_CATALOG.shop.name}*`, ''];
+      form.querySelectorAll('[name]').forEach((el) => {
+        const v = el.value.trim();
+        if (v) lines.push(`${el.closest('label').querySelector('span').textContent.replace(' *', '')}: ${v}`);
+      });
+      window.EnvieShop.openWhatsApp(window.EnvieShop.waLink(lines.join('\n')));
+    }));
+  </script>
+</body>
+</html>

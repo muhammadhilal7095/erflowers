@@ -13,6 +13,8 @@
 //   DATA_DIR        without a database: folder where the data is saved as files
 //                   (default ./data; use a folder that survives redeploys if your host allows)
 //   STRIPE_SECRET_KEY  only needed for card payments
+//   STRIPE_WEBHOOK_SECRET  marks card orders paid and runs Flower Club subscriptions automatically
+//   RESEND_API_KEY + EMAIL_FROM  optional: sends customers password-reset emails
 
 // Use the MySQL database when its details are set, otherwise save files in DATA_DIR
 const usingDatabase = Boolean(process.env.DATABASE_URL || (process.env.DB_HOST && process.env.DB_USER && process.env.DB_NAME));
@@ -54,6 +56,10 @@ const ROUTES = [
   { match: (p) => p === '/api/reviews', load: () => fn('reviews.mjs') },
   { match: (p) => p === '/api/discount', load: () => fn('discount.mjs') },
   { match: (p) => p === '/api/posts', load: () => fn('posts.mjs') },
+  { match: (p) => p.startsWith('/api/account/'), load: () => fn('account.mjs') },
+  { match: (p) => p === '/api/subscribe', load: () => fn('subscribe.mjs') },
+  { match: (p) => p === '/api/track', load: () => fn('track.mjs') },
+  { match: (p) => p === '/api/stripe-webhook', load: () => fn('stripe-webhook.mjs') },
   { match: (p) => p.startsWith('/api/admin/'), load: () => fn('admin.mjs') },
   { match: (p) => /^\/api\/image\/[\w-]+$/.test(p), load: () => fn('image.mjs'), params: (p) => ({ key: p.split('/').pop() }) }
 ];

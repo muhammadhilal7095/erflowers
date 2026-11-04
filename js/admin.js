@@ -41,7 +41,8 @@
   ];
   const VIEWS = {
     overview: 'Overview', orders: 'Orders', products: 'Products', reviews: 'Reviews',
-    addons: 'Gift Add-ons', delivery: 'Delivery', discounts: 'Discount Codes', blog: 'Blog',
+    addons: 'Gift Add-ons', delivery: 'Delivery', discounts: 'Discount Codes',
+    customers: 'Customers & Points', club: 'Flower Club', giftcards: 'Gift Cards', blog: 'Blog',
     images: 'Site Images', settings: 'Settings'
   };
   const RULES = window.ENVIE_RULES;
@@ -165,6 +166,7 @@
   function go(next) {
     view = VIEWS[next] ? next : 'overview';
     addonDraft = null;
+    planDraft = null;
     if (location.hash !== `#${view}`) history.replaceState(null, '', `#${view}`);
     document.querySelectorAll('.side__nav [data-view]').forEach((b) => b.classList.toggle('is-active', b.dataset.view === view));
     $('viewTitle').textContent = VIEWS[view];
@@ -177,6 +179,7 @@
     ({
       overview: renderOverview, orders: renderOrders, products: renderProducts, reviews: renderReviews,
       addons: renderAddons, delivery: renderDelivery, discounts: renderDiscounts, blog: renderBlog,
+      customers: renderCustomers, club: renderClub, giftcards: renderGiftCards,
       images: renderImages, settings: renderSettings
     })[view]();
   }
@@ -227,7 +230,7 @@
         <tr data-order="${esc(o.id)}">
           <td class="ref">${esc(o.id)}<small>${fmtDate(o.createdAt)} ${fmtTime(o.createdAt)}</small></td>
           <td data-label="Customer">${o.quick ? 'WhatsApp quick order<small>Details in your WhatsApp chat</small>' : `${esc(o.customer?.name)}<small>${esc(o.customer?.phone)}</small>`}</td>
-          <td data-label="Delivery">${o.quick ? 'On WhatsApp' : `${fmtDate(o.delivery?.date, { weekday: 'short', day: 'numeric', month: 'short' })}${o.sameDay ? ' · same day' : ''}<small>${esc(o.delivery?.postcode)}${o.delivery?.slot ? ` · ${esc(o.delivery.slot)}` : ''}</small>`}</td>
+          <td data-label="Delivery">${o.giftCardOrder ? `Gift card<small>${o.giftCardIssued ? 'Issued ' + esc(o.giftCardIssued) : 'Not issued yet'}</small>` : o.quick ? 'On WhatsApp' : `${fmtDate(o.delivery?.date, { weekday: 'short', day: 'numeric', month: 'short' })}${o.sameDay ? ' · same day' : ''}<small>${esc(o.delivery?.postcode)}${o.delivery?.slot ? ` · ${esc(o.delivery.slot)}` : ''}</small>`}</td>
           <td data-label="Total">${money(o.total || 0)}</td>
           <td data-label="Payment">${paymentLabel(o)}</td>
           <td>${statusSelect(o)}</td>
@@ -315,7 +318,9 @@
         <h3>Items</h3>
         <ul class="od-lines">${(o.lines || []).map((l) => `<li><span>${l.qty} × ${esc(l.name)} <span class="help">(${esc(l.label)})</span></span><span>${money(l.total)}</span></li>`).join('')}</ul>
         <div class="od-lines"><li style="display:flex;justify-content:space-between"><span>Delivery${o.sameDay ? ' (same day)' : ''}</span><span>${typeof o.deliveryFee === 'number' ? money(o.deliveryFee) : 'To confirm'}</span></li>
-        ${o.discount ? `<li style="display:flex;justify-content:space-between"><span>Discount ${esc(o.discount.code)} <span class="help">(${esc(o.discount.label)})</span></span><span>−${money(o.discount.amount)}</span></li>` : ''}</div>
+        ${o.discount ? `<li style="display:flex;justify-content:space-between"><span>Discount ${esc(o.discount.code)} <span class="help">(${esc(o.discount.label)})</span></span><span>−${money(o.discount.amount)}</span></li>` : ''}
+        ${o.giftCard ? `<li style="display:flex;justify-content:space-between"><span>Gift card ${esc(o.giftCard.display)}${o.giftCardReturned ? ' <span class="help">(returned)</span>' : ''}</span><span>−${money(o.giftCard.amount)}</span></li>` : ''}
+        ${o.points ? `<li style="display:flex;justify-content:space-between"><span>${o.points.used} loyalty points${o.pointsReturned ? ' <span class="help">(returned)</span>' : ''}</span><span>−${money(o.points.amount)}</span></li>` : ''}</div>
         <div class="od-total"><span>Total</span><span>${money(o.total || 0)}</span></div>
       </div>
       ${o.quick ? `<div class="od-section"><p class="notice" style="margin:0">Quick order from <strong>Buy Now on WhatsApp</strong>. The customer sends their name, delivery address, date and card message in your WhatsApp chat. Search WhatsApp for <strong>${esc(o.id)}</strong> to find it.</p></div>` : `
@@ -335,10 +340,26 @@
         <p>${[d.address1, d.address2, d.city, d.postcode].filter(Boolean).map(esc).join(', ')}</p>
         <p><strong>${fmtDate(d.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</strong>${d.slot ? ` · ${esc(d.slot)}` : ''}${o.sameDay ? ' <span class="badge st-new">Same day</span>' : ''}</p>
       </div>`}
+      ${o.giftCardOrder ? `<div class="od-section"><h3>Gift card</h3>
+        <p><strong>${money(o.giftCardOrder.amount)}</strong> for ${esc(o.giftCardOrder.to)}${o.giftCardOrder.from ? ` from ${esc(o.giftCardOrder.from)}` : ''}</p>
+        ${o.giftCardOrder.message ? `<p class="od-quote">${esc(o.giftCardOrder.message)}</p>` : ''}
+        ${o.giftCardIssued ? `<p>Issued: <strong>${esc(o.giftCardIssued)}</strong></p>` : `<p class="help">Once paid, issue the card and send the code to the customer.</p><button type="button" class="btn btn--gold btn--sm" id="odIssue">${icon('card')} Issue gift card</button>`}
+      </div>` : ''}
+      ${o.customerId || o.subscriptionId || o.pointsAwarded ? `<div class="od-section"><p class="help">${o.customerId ? 'Customer has an account. ' : ''}${o.subscriptionId ? `Flower Club delivery (${esc(o.subscriptionId)}). ` : ''}${o.pointsAwarded ? `${o.pointsAwarded} points added.` : o.customerId && !o.giftCardOrder ? 'Loyalty points are added when you mark this order Delivered.' : ''}</p></div>` : ''}
       ${o.message ? `<div class="od-section"><h3>Card message</h3><p class="od-quote">${esc(o.message)}</p></div>` : ''}
       ${o.notes ? `<div class="od-section"><h3>Notes</h3><p>${esc(o.notes)}</p></div>` : ''}
       <div class="od-section"><button type="button" class="btn btn--danger btn--sm" id="odDelete">${icon('trash')} Delete order</button></div>`;
     $('odBody').querySelector('select[data-status]').addEventListener('change', (e) => setStatus(o.id, e.target.value));
+    if ($('odIssue')) $('odIssue').addEventListener('click', async () => {
+      if (!confirm(`Issue a ${money(o.giftCardOrder.amount)} gift card for ${o.giftCardOrder.to}? Only do this once the order is paid.`)) return;
+      try {
+        const card = await api('giftcards', { method: 'POST', body: { amount: o.giftCardOrder.amount, orderId: o.id, to: o.giftCardOrder.to, note: `Order ${o.id}` } });
+        orders = orders.map((x) => (x.id === o.id ? { ...x, giftCardIssued: card.display } : x));
+        giftcards = null;
+        openOrder(o.id);
+        showGiftCode(card, o.customer && o.customer.phone, o.giftCardOrder);
+      } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    });
     $('odDelete').addEventListener('click', async () => {
       if (!confirm(`Delete order ${o.id}? This cannot be undone.`)) return;
       try {
@@ -1120,6 +1141,301 @@
     }
   });
 
+
+  // ---------- Customers & loyalty points ----------
+  let customers = null;
+  async function renderCustomers() {
+    setBar(`<button type="button" class="btn btn--outline btn--sm" id="refreshCustomers">${icon('refresh')}<span>Refresh</span></button>`);
+    $('refreshCustomers').addEventListener('click', () => { customers = null; renderCustomers(); });
+    if (!customers) {
+      $('content').innerHTML = '<div class="card"><div class="empty">Loading customers…</div></div>';
+      try { customers = (await api('customers')).customers || []; } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); return; }
+      if (view !== 'customers') return;
+    }
+    const ly = catalog.loyalty;
+    const q = (ui.customerSearch || '').toLowerCase();
+    const list = customers.filter((c) => !q || `${c.name} ${c.email} ${c.phone}`.toLowerCase().includes(q));
+    $('content').innerHTML = `
+      <div class="card">
+        <div class="card__head"><h2>Loyalty points</h2></div>
+        <form class="card__body" id="loyaltyForm" novalidate>
+          <label class="check"><input type="checkbox" name="enabled"${ly.enabled ? ' checked' : ''}> Loyalty points are on</label>
+          <div class="grid-loyalty">
+            <label class="field"><span>Points per £1 spent</span><input class="input" name="pointsPerPound" type="number" min="0" max="100" value="${ly.pointsPerPound}"></label>
+            <label class="field"><span>Points for £1 off</span><input class="input" name="perPound" type="number" min="1" max="100" value="${Math.round(100 / ly.pointValue)}"></label>
+            <label class="field"><span>Smallest number to use</span><input class="input" name="minRedeem" type="number" min="0" value="${ly.minRedeem}"></label>
+            <label class="field"><span>Most of an order (%)</span><input class="input" name="maxPercent" type="number" min="1" max="100" value="${ly.maxPercent}"></label>
+            <label class="field"><span>Welcome points</span><input class="input" name="signupBonus" type="number" min="0" value="${ly.signupBonus}"></label>
+          </div>
+          <p class="help">Points are added when you mark an order <strong>Delivered</strong>, and taken back (with any points used) if you mark it <strong>Cancelled</strong>. "Points for £1 off" must divide into 100 (e.g. 100, 50, 20, 10).</p>
+          <button type="submit" class="btn btn--gold btn--sm" style="margin-top:12px">Save loyalty settings</button>
+        </form>
+      </div>
+      <div class="toolbar"><input type="search" class="input" id="customerSearch" placeholder="Search name, email or phone" value="${esc(ui.customerSearch || '')}"></div>
+      <div class="card">${list.length ? `<div class="table-wrap"><table class="table">
+        <thead><tr><th>Customer</th><th>Phone</th><th>Joined</th><th>Orders</th><th>Points</th><th></th></tr></thead>
+        <tbody>${list.map((c) => `
+          <tr data-cid="${esc(c.id)}">
+            <td class="ref">${esc(c.name)}<small>${esc(c.email)}</small></td>
+            <td data-label="Phone">${esc(c.phone) || '—'}</td>
+            <td data-label="Joined">${fmtDate(c.createdAt)}</td>
+            <td data-label="Orders">${c.orderCount}</td>
+            <td data-label="Points"><strong>${c.points}</strong></td>
+            <td><div class="row-actions">
+              <button type="button" class="btn btn--outline btn--sm" data-cact="points">Points</button>
+              <button type="button" class="btn btn--ghost btn--sm" data-cact="reset">Reset link</button>
+              <button type="button" class="icon-btn icon-btn--danger" data-cact="delete" aria-label="Delete account">${icon('trash')}</button>
+            </div></td>
+          </tr>`).join('')}</tbody></table></div>`
+        : `<div class="empty">${icon('user')}<strong>${customers.length ? 'No matching customers' : 'No customer accounts yet'}</strong>${customers.length ? '' : 'Customers create an account on the My Account page.'}</div>`}</div>`;
+
+    const search = $('customerSearch');
+    search.addEventListener('input', () => { ui.customerSearch = search.value; const pos = search.selectionStart; renderCustomers(); const s2 = $('customerSearch'); s2.focus(); s2.setSelectionRange(pos, pos); });
+    $('loyaltyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const per = Number(f.elements.perPound.value);
+      if (!Number.isInteger(per) || per < 1 || 100 % per) { toast('"Points for £1 off" must divide into 100, e.g. 100, 50 or 10.', true); return; }
+      const next = clone(catalog);
+      next.loyalty = {
+        enabled: f.elements.enabled.checked, pointsPerPound: Number(f.elements.pointsPerPound.value), pointValue: 100 / per,
+        minRedeem: Number(f.elements.minRedeem.value), maxPercent: Number(f.elements.maxPercent.value), signupBonus: Number(f.elements.signupBonus.value)
+      };
+      if (await publish(next, 'Loyalty settings saved.')) renderCustomers();
+    });
+    document.querySelectorAll('[data-cact]').forEach((b) => b.addEventListener('click', async () => {
+      const id = b.closest('[data-cid]').dataset.cid;
+      const c = customers.find((x) => x.id === id);
+      try {
+        if (b.dataset.cact === 'points') {
+          const n = prompt(`${c.name} has ${c.points} points.\nPoints to add (use a minus sign to remove, e.g. -200):`);
+          if (n === null || n.trim() === '') return;
+          const reason = prompt('Reason (shown to the customer):', 'Thank you from Envie Roses') || 'Adjusted by Envie Roses';
+          const updated = await api(`customers/${id}`, { method: 'PATCH', body: { points: Number(n), reason } });
+          customers = customers.map((x) => (x.id === id ? { ...x, points: updated.points } : x));
+          toast(`${c.name} now has ${updated.points} points.`);
+          renderCustomers();
+        } else if (b.dataset.cact === 'reset') {
+          const { link } = await api(`customers/${id}/reset-link`, { method: 'POST' });
+          const text = encodeURIComponent(`Hello ${c.name}, here is your link to set a new Envie Roses password (it works for 1 hour): ${link}`);
+          showDialogHtml('Password reset link', `<p>This link lets ${esc(c.name)} choose a new password. It works for one hour, once.</p>
+            <input class="input" readonly value="${esc(link)}" onclick="this.select()">
+            <div class="od-actions" style="margin-top:12px">${c.phone ? `<a class="btn btn--wa btn--sm" target="_blank" rel="noopener" href="https://wa.me/${waNumber(c.phone)}?text=${text}">${icon('wa')} Send on WhatsApp</a>` : ''}
+            <a class="btn btn--outline btn--sm" href="mailto:${esc(c.email)}?subject=${encodeURIComponent('Reset your password')}&body=${text}">Email</a></div>`);
+        } else if (b.dataset.cact === 'delete') {
+          if (!confirm(`Delete ${c.name}'s account? Their orders stay in Orders, but their points and saved addresses are deleted.`)) return;
+          await api(`customers/${id}`, { method: 'DELETE' });
+          customers = customers.filter((x) => x.id !== id);
+          toast('Account deleted.');
+          renderCustomers();
+        }
+      } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    }));
+  }
+
+  // A simple information dialog (reuses the order dialog)
+  function showDialogHtml(title, html) {
+    $('odTitle').textContent = title;
+    $('odBody').innerHTML = `<div class="od-section">${html}</div>`;
+    if (!$('orderDialog').open) $('orderDialog').showModal();
+  }
+  function showGiftCode(card, phone, gift) {
+    const text = encodeURIComponent(`Thank you for your order! Here is your Envie Roses gift card${gift && gift.to ? ` for ${gift.to}` : ''}:\n\nCode: ${card.display}\nValue: ${money(card.initial)}\nValid until: ${fmtDate(card.expiresAt)}\n\nUse it at checkout in the "Discount or gift card code" box.`);
+    showDialogHtml('Gift card issued', `<p class="gc-code">${esc(card.display)}</p><p>${money(card.initial)}, valid until ${fmtDate(card.expiresAt)}.</p>
+      <div class="od-actions">${phone ? `<a class="btn btn--wa btn--sm" target="_blank" rel="noopener" href="https://wa.me/${waNumber(phone)}?text=${text}">${icon('wa')} Send code on WhatsApp</a>` : ''}
+      <button type="button" class="btn btn--outline btn--sm" onclick="navigator.clipboard && navigator.clipboard.writeText('${esc(card.display)}')">Copy code</button></div>`);
+  }
+
+  // ---------- Gift cards ----------
+  let giftcards = null;
+  async function renderGiftCards() {
+    setBar(`<button type="button" class="btn btn--gold btn--sm" id="newCard">${icon('plus')}<span>Issue gift card</span></button>`);
+    $('newCard').addEventListener('click', async () => {
+      const amount = toPence(prompt('Gift card value in £ (e.g. 50):') || '');
+      if (!Number.isInteger(amount) || amount <= 0) return;
+      const note = prompt('Note (optional, e.g. who it is for):') || '';
+      try {
+        const card = await api('giftcards', { method: 'POST', body: { amount, note } });
+        giftcards = null;
+        await renderGiftCards();
+        showGiftCode(card, '', null);
+      } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    });
+    if (!giftcards) {
+      $('content').innerHTML = '<div class="card"><div class="empty">Loading gift cards…</div></div>';
+      try { giftcards = (await api('giftcards')).giftcards || []; } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); return; }
+      if (view !== 'giftcards') return;
+    }
+    const gc = catalog.giftCards;
+    $('content').innerHTML = `
+      <div class="card">
+        <div class="card__head"><h2>Gift card shop</h2></div>
+        <form class="card__body" id="gcSettings" novalidate>
+          <label class="check"><input type="checkbox" name="enabled"${gc.enabled ? ' checked' : ''}> Sell gift cards on the website (<a href="gift-cards.html" target="_blank" rel="noopener">Gift Cards page</a>)</label>
+          <div class="grid2" style="margin-top:12px">
+            <label class="field"><span>Amounts customers can choose <small>in £, separated by commas</small></span><input class="input" name="amounts" value="${gc.amounts.map((a) => a / 100).join(', ')}"></label>
+            <label class="field"><span>Valid for (months)</span><input class="input" name="months" type="number" min="12" max="120" value="${gc.months}"></label>
+          </div>
+          <p class="help">When someone buys a gift card it appears in <strong>Orders</strong>. Once it's paid, open the order and press <strong>Issue gift card</strong>, then send them the code.</p>
+          <button type="submit" class="btn btn--gold btn--sm" style="margin-top:12px">Save</button>
+        </form>
+      </div>
+      <div class="card">${giftcards.length ? `<div class="table-wrap"><table class="table">
+        <thead><tr><th>Code</th><th>Value</th><th>Balance</th><th>Expires</th><th>Note</th><th>Active</th></tr></thead>
+        <tbody>${giftcards.map((c) => `
+          <tr>
+            <td class="ref">${esc(c.display)}<small>${fmtDate(c.createdAt)}${c.orderId ? ' · ' + esc(c.orderId) : ''}</small></td>
+            <td data-label="Value">${money(c.initial)}</td>
+            <td data-label="Balance"><strong>${money(c.balance)}</strong>${c.uses.length ? `<small>${c.uses.filter((u) => !u.refund).length} use(s)</small>` : ''}</td>
+            <td data-label="Expires">${fmtDate(c.expiresAt)}${Date.parse(c.expiresAt) < Date.now() ? ' <span class="badge st-cancelled">Expired</span>' : ''}</td>
+            <td data-label="Note">${esc(c.note || c.to || '')}</td>
+            <td><input type="checkbox" data-gcact="${esc(c.code)}"${c.active ? ' checked' : ''} aria-label="Active"></td>
+          </tr>`).join('')}</tbody></table></div>` : `<div class="empty">${icon('card')}<strong>No gift cards yet</strong>Issue one here, or from a gift card order.</div>`}</div>`;
+    $('gcSettings').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const amounts = f.elements.amounts.value.split(',').map((x) => toPence(x.trim())).filter((x) => Number.isInteger(x) && x > 0);
+      const next = clone(catalog);
+      next.giftCards = { enabled: f.elements.enabled.checked, amounts, months: Number(f.elements.months.value) };
+      if (await publish(next, 'Gift card settings saved.')) renderGiftCards();
+    });
+    document.querySelectorAll('[data-gcact]').forEach((b) => b.addEventListener('change', async () => {
+      try {
+        const card = await api(`giftcards/${encodeURIComponent(b.dataset.gcact)}`, { method: 'PATCH', body: { active: b.checked } });
+        giftcards = giftcards.map((x) => (x.code === card.code ? card : x));
+        toast(card.active ? 'Gift card can be used.' : 'Gift card switched off.');
+      } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    }));
+  }
+
+  // ---------- Flower Club ----------
+  let subscriptions = null;
+  const SUB_LABELS = { pending: 'Waiting to start', 'awaiting-payment': 'Awaiting payment', active: 'Active', paused: 'Paused', 'past-due': 'Payment failed', cancelled: 'Cancelled' };
+  const SUB_BADGE = { pending: 'new', 'awaiting-payment': 'awaiting-payment', active: 'delivered', paused: 'confirmed', 'past-due': 'cancelled', cancelled: 'cancelled' };
+  let planDraft = null;
+  async function renderClub() {
+    setBar(`<button type="button" class="btn btn--outline btn--sm" id="refreshSubs">${icon('refresh')}<span>Refresh</span></button>`);
+    $('refreshSubs').addEventListener('click', () => { subscriptions = null; renderClub(); });
+    if (!subscriptions) {
+      $('content').innerHTML = '<div class="card"><div class="empty">Loading subscriptions…</div></div>';
+      try { subscriptions = (await api('subscriptions')).subscriptions || []; } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); return; }
+      if (view !== 'club') return;
+    }
+    const club = catalog.club;
+    if (!planDraft) planDraft = Object.entries(club.plans || {}).map(([id, p]) => ({ id, ...p }));
+    const FREQ = { weekly: 'Weekly', fortnightly: 'Every 2 weeks', monthly: 'Monthly' };
+    $('content').innerHTML = `
+      <div class="notice">${icon('rose')}<span>Customers join on the <a href="club.html" target="_blank" rel="noopener">Flower Club page</a> (they need an account). With Stripe card payments on, they are charged automatically and each paid delivery appears in <strong>Orders</strong>. Otherwise the request comes to you on WhatsApp: arrange payment, then set it to <strong>Active</strong> here.</span></div>
+      <div class="card">${subscriptions.length ? `<div class="table-wrap"><table class="table">
+        <thead><tr><th>Subscriber</th><th>Plan</th><th>Deliver to</th><th>Payment</th><th>Status</th><th></th></tr></thead>
+        <tbody>${subscriptions.map((s) => `
+          <tr data-sid="${esc(s.id)}">
+            <td class="ref">${esc(s.customer.name)}<small>${esc(s.customer.phone || s.customer.email)}</small></td>
+            <td data-label="Plan">${esc(s.planName)} · ${money(s.price)}<small>${esc(s.frequencyLabel)} from ${fmtDate(s.startDate)}</small></td>
+            <td data-label="Deliver to">${esc(s.delivery.recipient)}<small>${esc([s.delivery.address1, s.delivery.city, s.delivery.postcode].filter(Boolean).join(', '))}</small></td>
+            <td data-label="Payment">${s.payment === 'card' ? 'Card (Stripe)' : 'WhatsApp'}${s.cancelAtPeriodEnd ? '<small>Ends after this period</small>' : ''}</td>
+            <td><select class="status-select st-${SUB_BADGE[s.status] || 'new'}" data-sstatus aria-label="Status">${Object.entries(SUB_LABELS).map(([k, v]) => `<option value="${k}"${k === s.status ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
+            <td><div class="row-actions">
+              ${s.customer.phone ? `<a class="btn btn--wa btn--sm" target="_blank" rel="noopener" href="https://wa.me/${waNumber(s.customer.phone)}?text=${encodeURIComponent(`Hello ${s.customer.name}, about your Envie Roses Flower Club subscription ${s.id}:`)}">${icon('wa')}</a>` : ''}
+              ${s.stripeSubscription && s.status !== 'cancelled' ? `<button type="button" class="btn btn--danger btn--sm" data-scancel>Cancel</button>` : `<button type="button" class="icon-btn icon-btn--danger" data-sdel aria-label="Delete">${icon('trash')}</button>`}
+            </div></td>
+          </tr>`).join('')}</tbody></table></div>` : `<div class="empty">${icon('rose')}<strong>No subscriptions yet</strong>They appear here when customers join the Flower Club.</div>`}</div>
+
+      <div class="card">
+        <div class="card__head"><h2>Plans</h2><label class="check"><input type="checkbox" id="clubOn"${club.enabled ? ' checked' : ''}> Flower Club open</label></div>
+        <div class="card__body">
+          <div class="field"><span>How often customers can choose</span><div class="radio-row">${Object.entries(FREQ).map(([k, v]) => `<label><input type="checkbox" data-freq="${k}"${club.frequencies.includes(k) ? ' checked' : ''}> ${v}</label>`).join('')}</div></div>
+          <div class="addon-list">${planDraft.map((p, i) => `
+            <div class="card addon-edit" data-pi="${i}">
+              <button type="button" class="addon-edit__img" data-pimg="${i}" aria-label="Upload photo">${p.image ? `<img src="${esc(p.image)}" alt="">` : `${icon('upload')}<small>Photo</small>`}</button>
+              <div class="addon-edit__fields">
+                <div class="grid2">
+                  <label class="field"><span>Plan name</span><input class="input" data-pf="name" value="${esc(p.name)}" maxlength="60"></label>
+                  <label class="field"><span>Price per delivery <small>delivery included</small></span><div class="money"><input class="input" data-pf="price" inputmode="decimal" value="${p.price ? (p.price / 100).toFixed(2) : ''}"></div></label>
+                </div>
+                <label class="field"><span>Description</span><input class="input" data-pf="description" value="${esc(p.description)}" maxlength="300"></label>
+                <div class="addon-edit__foot">
+                  <label class="check"><input type="checkbox" data-pf="active"${p.active !== false ? ' checked' : ''}> Show on website</label>
+                  <button type="button" class="btn btn--danger btn--sm" data-pdel="${i}">${icon('trash')} Delete</button>
+                </div>
+              </div>
+            </div>`).join('')}</div>
+          <div class="od-actions" style="margin-top:14px">
+            <button type="button" class="btn btn--outline btn--sm" id="addPlan">${icon('plus')} Add plan</button>
+            <button type="button" class="btn btn--gold btn--sm" id="savePlans">Save plans</button>
+          </div>
+          <p class="help" style="margin-top:10px">Price changes apply to new subscribers. Existing card subscribers keep the price they signed up at.</p>
+          <input type="file" id="planFile" accept="image/jpeg,image/png,image/webp" hidden>
+        </div>
+      </div>`;
+
+    document.querySelectorAll('[data-sstatus]').forEach((sel) => sel.addEventListener('change', async () => {
+      const id = sel.closest('[data-sid]').dataset.sid;
+      try {
+        const s = await api(`subscriptions/${id}`, { method: 'PATCH', body: { status: sel.value } });
+        subscriptions = subscriptions.map((x) => (x.id === id ? s : x));
+        toast(`Subscription ${SUB_LABELS[s.status].toLowerCase()}.`);
+        renderClub();
+      } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    }));
+    document.querySelectorAll('[data-scancel]').forEach((b) => b.addEventListener('click', async () => {
+      const id = b.closest('[data-sid]').dataset.sid;
+      if (!confirm('Cancel this subscription? Stripe stops charging the customer straight away.')) return;
+      try {
+        const s = await api(`subscriptions/${id}/cancel`, { method: 'POST' });
+        subscriptions = subscriptions.map((x) => (x.id === id ? s : x));
+        toast('Subscription cancelled.');
+        renderClub();
+      } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    }));
+    document.querySelectorAll('[data-sdel]').forEach((b) => b.addEventListener('click', async () => {
+      const id = b.closest('[data-sid]').dataset.sid;
+      if (!confirm('Delete this subscription record?')) return;
+      try {
+        await api(`subscriptions/${id}`, { method: 'DELETE' });
+        subscriptions = subscriptions.filter((x) => x.id !== id);
+        renderClub();
+      } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    }));
+
+    const sync = () => document.querySelectorAll('[data-pi]').forEach((card) => {
+      const p = planDraft[Number(card.dataset.pi)];
+      card.querySelectorAll('[data-pf]').forEach((el) => {
+        const k = el.dataset.pf;
+        if (k === 'active') p.active = el.checked;
+        else if (k === 'price') p.price = toPence(el.value);
+        else p[k] = el.value;
+      });
+    });
+    let target = null;
+    document.querySelectorAll('[data-pimg]').forEach((b) => b.addEventListener('click', () => { sync(); target = Number(b.dataset.pimg); $('planFile').click(); }));
+    $('planFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file || target === null) return;
+      try { planDraft[target].image = await uploadImage(file, true); } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+      renderClub();
+    });
+    document.querySelectorAll('[data-pdel]').forEach((b) => b.addEventListener('click', () => { sync(); planDraft.splice(Number(b.dataset.pdel), 1); renderClub(); }));
+    $('addPlan').addEventListener('click', () => { sync(); planDraft.push({ id: '', name: '', description: '', image: '', price: NaN, active: true }); renderClub(); });
+    $('savePlans').addEventListener('click', async () => {
+      sync();
+      const next = clone(catalog);
+      const plans = {};
+      for (const p of planDraft) {
+        const name = String(p.name || '').trim();
+        if (!name) { toast('Every plan needs a name.', true); return; }
+        if (!Number.isInteger(p.price) || p.price < 100) { toast(`Enter a price for "${name}".`, true); return; }
+        let id = p.id;
+        if (!id) { const base = slugify(name); id = base; for (let n = 2; plans[id] || planDraft.some((x) => x !== p && x.id === id); n++) id = `${base}-${n}`; p.id = id; }
+        plans[id] = { name, description: String(p.description || '').trim(), image: p.image || '', price: p.price, active: p.active !== false };
+      }
+      const frequencies = [...document.querySelectorAll('[data-freq]:checked')].map((x) => x.dataset.freq);
+      if (!frequencies.length) { toast('Choose at least one delivery frequency.', true); return; }
+      next.club = { enabled: $('clubOn').checked, frequencies, plans };
+      if (await publish(next, 'Flower Club saved.')) { planDraft = null; renderClub(); }
+    });
+  }
+
   // ---------- Settings ----------
   function renderSettings() {
     setBar(`<button type="button" class="btn btn--gold btn--sm" id="saveSettingsTop">Save settings</button>`);
@@ -1294,6 +1610,9 @@
     orders = [];
     discounts = null;
     posts = null;
+    customers = null;
+    subscriptions = null;
+    giftcards = null;
     document.querySelectorAll('dialog[open]').forEach((d) => d.close());
     $('app').hidden = true;
     $('login').hidden = false;

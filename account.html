@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Order History | Envie Roses</title>
-  <meta name="description" content="View your Envie Roses orders placed on this device.">
+  <title>My Account | Envie Roses</title>
+  <meta name="description" content="Log in to see your Envie Roses orders, loyalty points and Flower Club deliveries.">
   <meta name="theme-color" content="#0b0b0b">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Order History | Envie Roses">
-  <meta property="og:description" content="View your Envie Roses orders placed on this device.">
+  <meta property="og:title" content="My Account | Envie Roses">
+  <meta property="og:description" content="Log in to see your Envie Roses orders, loyalty points and Flower Club deliveries.">
   <meta property="og:image" content="images/hero.jpg">
   <meta property="og:locale" content="en_GB">
   <meta name="robots" content="noindex">
@@ -21,15 +21,72 @@
   <script src="js/rules.js"></script>
   <script src="js/layout.js"></script>
 </head>
-<body class="">
+<body>
   <script>EnvieLayout.top(null);</script>
 
   <main id="main">
-    <script>EnvieLayout.pageHero({"title": "Order History", "kicker": "My Account", "intro": "Your recent Envie Roses orders."});</script>
+    <script>EnvieLayout.pageHero({"title": "My Account", "kicker": "Welcome", "intro": "Your orders, loyalty points and Flower Club deliveries in one place."});</script>
     <section class="section section--tight">
-      <div class="container orders">
-        <p class="orders__note">Orders placed on this device are listed below. For help with any order, <a href="contact.html">contact us</a> with your order reference.</p>
-        <div id="orderList"></div>
+      <div class="container acct" id="acct" aria-busy="true">
+
+        <!-- Logged out -->
+        <div class="auth" id="authBox" hidden>
+          <div class="auth__tabs" role="tablist">
+            <button type="button" role="tab" class="is-on" data-tab="login" aria-selected="true">Log in</button>
+            <button type="button" role="tab" data-tab="register" aria-selected="false">Create account</button>
+          </div>
+          <form class="auth__form" id="loginForm" data-pane="login" novalidate>
+            <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" required></label>
+            <label class="field"><span>Password</span><input name="password" type="password" autocomplete="current-password" required></label>
+            <p class="form-error" role="alert"></p>
+            <button type="submit" class="btn btn--gold btn--block">Log in</button>
+            <button type="button" class="btn btn--link auth__forgot" data-tab="forgot">Forgotten your password?</button>
+          </form>
+          <form class="auth__form" id="registerForm" data-pane="register" novalidate hidden>
+            <p class="auth__perk" id="perkText"></p>
+            <label class="field"><span>Full name</span><input name="name" autocomplete="name" required maxlength="100"></label>
+            <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" required></label>
+            <label class="field"><span>Phone <small>(optional)</small></span><input name="phone" type="tel" autocomplete="tel"></label>
+            <label class="field"><span>Password <small>at least 8 characters</small></span><input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
+            <p class="auth__small">By creating an account you agree to our <a href="terms.html">Terms</a> and confirm you have read our <a href="privacy.html">Privacy Policy</a>.</p>
+            <p class="form-error" role="alert"></p>
+            <button type="submit" class="btn btn--gold btn--block">Create account</button>
+          </form>
+          <form class="auth__form" id="forgotForm" data-pane="forgot" novalidate hidden>
+            <p>Enter your email and we&rsquo;ll send you a link to choose a new password.</p>
+            <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" required></label>
+            <p class="form-error" role="alert"></p>
+            <p class="form-ok" role="status"></p>
+            <button type="submit" class="btn btn--gold btn--block">Send reset link</button>
+            <button type="button" class="btn btn--link auth__forgot" data-tab="login">Back to log in</button>
+          </form>
+          <form class="auth__form" id="resetForm" data-pane="reset" novalidate hidden>
+            <p>Choose a new password for your account.</p>
+            <label class="field"><span>New password <small>at least 8 characters</small></span><input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
+            <p class="form-error" role="alert"></p>
+            <button type="submit" class="btn btn--gold btn--block">Save new password</button>
+          </form>
+        </div>
+
+        <!-- Logged in -->
+        <div class="acct__app" id="acctApp" hidden>
+          <aside class="acct__side">
+            <p class="acct__hello">Hello, <strong id="acctName"></strong></p>
+            <nav class="acct__nav" aria-label="My account">
+              <a href="#overview" data-sec="overview">Overview</a>
+              <a href="#orders" data-sec="orders">Orders</a>
+              <a href="#subscriptions" data-sec="subscriptions">Flower Club</a>
+              <a href="#points" data-sec="points">Loyalty Points</a>
+              <a href="#addresses" data-sec="addresses">Addresses</a>
+              <a href="#details" data-sec="details">My Details</a>
+            </nav>
+            <button type="button" class="btn btn--outline btn--sm" id="logout">Log out</button>
+          </aside>
+          <div class="acct__main" id="acctMain"></div>
+        </div>
+
+        <!-- Orders saved on this device (no account) -->
+        <div class="acct__device" id="deviceOrders" hidden></div>
       </div>
     </section>
   </main>
@@ -38,35 +95,6 @@
 
   <script src="js/main.js"></script>
   <script src="js/shop.js"></script>
-  <script>
-    (function () {
-      const list = document.getElementById('orderList');
-      const { money, esc } = EnvieLayout;
-      const orders = EnvieShop.orders();
-      if (!orders.length) {
-        list.innerHTML = `<div class="orders__empty"><svg><use href="#i-rose"/></svg><p>You haven&rsquo;t placed any orders on this device yet.</p><a href="shop.html" class="btn btn--gold">Shop the Collection</a></div>`;
-        return;
-      }
-      list.innerHTML = orders.map((o, i) => {
-        const placed = new Date(o.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-        const delivery = o.quick || !o.delivery.date ? 'Arranged on WhatsApp' : new Date(o.delivery.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-        return `
-        <article class="order-card">
-          <header class="order-card__head">
-            <div><span class="order-card__label">Order</span><strong>${esc(o.id)}</strong></div>
-            <div><span class="order-card__label">Placed</span>${placed}</div>
-            <div><span class="order-card__label">Delivery</span>${delivery}</div>
-            <div><span class="order-card__label">Total</span>${money(o.total)}</div>
-            <span class="order-card__status ${o.paid ? 'is-paid' : ''}">${o.paid ? 'Paid by card' : 'Sent on WhatsApp'}</span>
-          </header>
-          <ul class="order-card__items">${o.lines.map((l) => `<li><span>${l.qty} &times; ${esc(l.name)} <small>(${esc(l.label)})</small></span><span>${money(l.total)}</span></li>`).join('')}</ul>
-          <footer class="order-card__foot">
-            <span>${o.quick ? 'Delivery details arranged on WhatsApp' : `To ${esc(o.delivery.recipient)}, ${esc(o.delivery.city)} ${esc(o.delivery.postcode)}`}</span>
-            <a href="${EnvieShop.waLink(EnvieShop.orderText(o, o.paid))}" target="_blank" rel="noopener" class="btn btn--outline btn--sm"><svg class="icon"><use href="#i-whatsapp"/></svg> Resend on WhatsApp</a>
-          </footer>
-        </article>`;
-      }).join('');
-    })();
-  </script>
+  <script src="js/account.js"></script>
 </body>
 </html>

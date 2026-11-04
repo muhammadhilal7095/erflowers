@@ -15,15 +15,32 @@
 //   GET    /api/admin/posts            -> { posts } (including drafts)
 //   PUT    /api/admin/posts            { post, previousSlug } -> post
 //   DELETE /api/admin/posts/:slug
+//   GET    /api/admin/customers        -> { customers }
+//   PATCH  /api/admin/customers/:id    { points, reason } -> customer   (add or remove points)
+//   POST   /api/admin/customers/:id/reset-link -> { link }
+//   DELETE /api/admin/customers/:id
+//   GET    /api/admin/giftcards        -> { giftcards }
+//   POST   /api/admin/giftcards        { amount, note, to, orderId? } -> card
+//   PATCH  /api/admin/giftcards/:code  { active?, note? } -> card
+//   GET    /api/admin/subscriptions    -> { subscriptions }
+//   PATCH  /api/admin/subscriptions/:id { status?, adminNotes? } -> subscription
+//   POST   /api/admin/subscriptions/:id/cancel -> subscription (also cancels the Stripe payments)
+//   DELETE /api/admin/subscriptions/:id
 //
 // Needs the environment variable ADMIN_PASSWORD.
 
 import { purgeCache } from '@netlify/functions';
 import {
   ORDER_STATUSES, REVIEW_STATUSES, adminConfigured, deleteReview, listReviews, updateReview, checkPassword, deleteOrder, getCatalog, imageStore,
-  isAdmin, json, listOrders, makeToken, newImageKey, saveCatalog, updateOrder, validOrderId, validateCatalog,
+  isAdmin, json, listOrders, getOrder, makeToken, newImageKey, saveCatalog, updateOrder, validOrderId, validateCatalog,
   deletePost, getDiscounts, listPosts, saveDiscounts, savePost, validateDiscounts, validatePost
 } from '../lib/shop-data.mjs';
+import {
+  changePoints, deleteCustomer, deleteSubscription, getCustomer, getGiftCard, getSubscription, issueGiftCard, listCustomers,
+  listGiftCards, listSubscriptions, makeResetLink, onOrderStatus, publicCustomer, saveSubscription, stripe, updateGiftCard
+} from '../lib/accounts.mjs';
+
+const SUB_STATUSES = ['pending', 'awaiting-payment', 'active', 'paused', 'past-due', 'cancelled'];
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_IMAGE = 5 * 1024 * 1024;
@@ -76,8 +93,11 @@ export default async (req) => {
       if (method === 'PATCH') {
         const { status } = await req.json().catch(() => ({}));
         if (!ORDER_STATUSES.includes(status)) return json(400, { error: 'Unknown status.' });
-        const order = await updateOrder(id, { status });
-        return order ? json(200, order) : json(404, { error: 'Order not found.' });
+        const before = await getOrder(id);
+        if (!before) return json(404, { error: 'Order not found.' });
+        // Loyalty points and gift card balances follow the status (see onOrderStatus)
+        const extra = await onOrderStatus(await getCatalog(), before, status);
+        return json(200, await updateOrder(id, { status, ...extra }));
       }
       if (method === 'DELETE') {
         await deleteOrder(id);
@@ -106,6 +126,88 @@ export default async (req) => {
     }
 
     if (path === 'reviews' && method === 'GET') return json(200, { reviews: await listReviews() });
+
+    // ---------- Customers ----------
+    if (path === 'customers' && method === 'GET') {
+      const customers = (await listCustomers()).map((c) => ({ ...publicCustomer(c), orderCount: (c.orders || []).length, stripe: Boolean(c.stripeCustomerId) }));
+      return json(200, { customers });
+    }
+    const custMatch = path.match(/^customers\/([a-z0-9]{6,40})(\/reset-link)?$/);
+    if (custMatch) {
+      const [, id, reset] = custMatch;
+      const c = await getCustomer(id);
+      if (!c) return json(404, { error: 'Customer not found.' });
+      if (reset && method === 'POST') {
+        const site = process.env.URL || new URL(req.url).origin;
+        return json(200, { link: await makeResetLink(c, site) });
+      }
+      if (!reset && method === 'PATCH') {
+        const { points, reason } = await req.json().catch(() => ({}));
+        const n = Number(points);
+        if (!Number.isInteger(n) || !n || Math.abs(n) > 1000000) return json(400, { error: 'Enter a number of points, e.g. 200 or -200.' });
+        const updated = await changePoints(id, n, String(reason || 'Adjusted by Envie Roses').slice(0, 80));
+        return json(200, publicCustomer(updated));
+      }
+      if (!reset && method === 'DELETE') {
+        await deleteCustomer(id);
+        return json(200, { ok: true });
+      }
+    }
+
+    // ---------- Gift cards ----------
+    if (path === 'giftcards' && method === 'GET') return json(200, { giftcards: await listGiftCards() });
+    if (path === 'giftcards' && method === 'POST') {
+      const body = await req.json().catch(() => ({}));
+      const catalog = await getCatalog();
+      let orderId = '';
+      if (body.orderId) {
+        if (!validOrderId(body.orderId)) return json(400, { error: 'Invalid order reference.' });
+        const order = await getOrder(body.orderId);
+        if (!order || !order.giftCardOrder) return json(400, { error: 'That order is not a gift card order.' });
+        if (order.giftCardIssued) return json(400, { error: `A gift card was already issued for this order (${order.giftCardIssued}).` });
+        orderId = order.id;
+      }
+      const card = await issueGiftCard({ amount: body.amount, months: catalog.giftCards.months, note: body.note, to: body.to, orderId });
+      if (orderId) await updateOrder(orderId, { giftCardIssued: card.display });
+      return json(200, card);
+    }
+    const gcMatch = path.match(/^giftcards\/([A-Za-z0-9-]{8,20})$/);
+    if (gcMatch && method === 'PATCH') {
+      const card = await updateGiftCard(gcMatch[1], await req.json().catch(() => ({})));
+      return card ? json(200, card) : json(404, { error: 'Gift card not found.' });
+    }
+
+    // ---------- Flower Club subscriptions ----------
+    if (path === 'subscriptions' && method === 'GET') return json(200, { subscriptions: await listSubscriptions() });
+    const subMatch = path.match(/^subscriptions\/(SUB-[A-Z0-9]{6,20})(\/cancel)?$/);
+    if (subMatch) {
+      const [, id, cancel] = subMatch;
+      const sub = await getSubscription(id);
+      if (!sub) return json(404, { error: 'Subscription not found.' });
+      if (cancel && method === 'POST') {
+        if (sub.stripeSubscription) await stripe(`subscriptions/${sub.stripeSubscription}`, null, 'DELETE');
+        const saved = { ...sub, status: 'cancelled' };
+        await saveSubscription(saved);
+        return json(200, saved);
+      }
+      if (!cancel && method === 'PATCH') {
+        const body = await req.json().catch(() => ({}));
+        const changes = {};
+        if (body.status !== undefined) {
+          if (!SUB_STATUSES.includes(body.status)) return json(400, { error: 'Unknown status.' });
+          changes.status = body.status;
+        }
+        if (body.adminNotes !== undefined) changes.adminNotes = String(body.adminNotes).slice(0, 500);
+        const saved = { ...sub, ...changes };
+        await saveSubscription(saved);
+        return json(200, saved);
+      }
+      if (!cancel && method === 'DELETE') {
+        if (sub.stripeSubscription && !['cancelled'].includes(sub.status)) return json(400, { error: 'Cancel the subscription first, so the customer stops being charged.' });
+        await deleteSubscription(id);
+        return json(200, { ok: true });
+      }
+    }
 
     const reviewMatch = path.match(/^reviews\/([a-z0-9-]{1,60})\/([a-z0-9-]{1,40})$/);
     if (reviewMatch) {

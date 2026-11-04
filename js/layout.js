@@ -78,12 +78,12 @@
     return `
           <div class="mega" id="megaShop">
             <div class="container mega__inner">
-            ${megaCol('Shop', [['shop.html', 'All Roses'], ['shop.html?c=boxes', 'Rose Boxes'], ['shop.html?c=bouquets', 'Bouquets'], ['shop.html?c=exclusive', 'Exclusive'], ['finder.html', 'Bouquet Finder'], ['wishlist.html', 'Your Wishlist']])}
+            ${megaCol('Shop', [['shop.html', 'All Roses'], ['shop.html?c=boxes', 'Rose Boxes'], ['shop.html?c=bouquets', 'Bouquets'], ['shop.html?c=exclusive', 'Exclusive'], ['club.html', 'Flower Club'], ['gift-cards.html', 'Gift Cards'], ['finder.html', 'Bouquet Finder']])}
             ${megaCol('By Occasion', [...occ.map(([k, v]) => [`shop.html?o=${k}`, v]), ['gifts.html', 'All occasions →']])}
             ${megaCol('By Colour', Object.entries(TAGS.colours).map(([k, v]) => [`shop.html?colour=${k}`, v]))}
             ${megaCol('By Flower', Object.entries(TAGS.flowers).map(([k, v]) => [`shop.html?flower=${k}`, v]))}
             ${megaCol('By Price', Object.entries(PRICE_BANDS).map(([k, v]) => [`shop.html?price=${k}`, v.label]))}
-            ${megaCol('Who For', Object.entries(TAGS.recipients).map(([k, v]) => [`shop.html?for=${k}`, v]))}
+            ${megaCol('Who For', [...Object.entries(TAGS.recipients).map(([k, v]) => [`shop.html?for=${k}`, v]), ['weddings.html', 'Weddings'], ['sympathy.html', 'Sympathy'], ['corporate.html', 'Business']])}
             </div>
           </div>`;
   }
@@ -155,7 +155,7 @@
       <div class="header__actions">
         <button type="button" aria-label="Search" class="icon-btn" id="searchOpen"><svg class="icon"><use href="#i-search"/></svg></button>
         <a href="wishlist.html" aria-label="Wishlist" class="wish-link" id="wishLink"><svg class="icon"><use href="#i-heart"/></svg><span class="cart__count wish-count" id="wishCount" hidden>0</span></a>
-        <a href="account.html" aria-label="Order history" class="hide-sm"><svg class="icon"><use href="#i-user"/></svg></a>
+        <a href="account.html" aria-label="My account" class="hide-sm" id="accountLink"><svg class="icon"><use href="#i-user"/></svg></a>
         <button type="button" aria-label="Bag, 0 items" class="cart icon-btn" id="cart"><svg class="icon"><use href="#i-cart"/></svg><span class="cart__count" id="cartCount">0</span></button>
       </div>
     </div>
@@ -324,6 +324,8 @@
           <li><a href="shop.html?c=boxes">Rose Boxes</a></li>
           <li><a href="shop.html?c=bouquets">Bouquets</a></li>
           <li><a href="gifts.html">Gifts &amp; Occasions</a></li>
+          <li><a href="club.html">Flower Club</a></li>
+          <li><a href="gift-cards.html">Gift Cards</a></li>
           <li><a href="finder.html">Bouquet Finder</a></li>
           <li><a href="wishlist.html">Your Wishlist</a></li>
         </ul>
@@ -332,6 +334,9 @@
         <h4>Discover</h4>
         <ul>
           <li><a href="about.html">About Us</a></li>
+          <li><a href="weddings.html">Weddings</a></li>
+          <li><a href="sympathy.html">Sympathy Flowers</a></li>
+          <li><a href="corporate.html">Corporate Flowers</a></li>
           <li><a href="blog.html">Blog</a></li>
           <li><a href="guarantee.html">Freshness Guarantee</a></li>
           <li><a href="delivery.html#areas">Delivery Areas</a></li>
@@ -341,7 +346,8 @@
       <div class="footer__col">
         <h4>Customer Care</h4>
         <ul>
-          <li><a href="account.html">Order History</a></li>
+          <li><a href="account.html">My Account</a></li>
+          <li><a href="track-order.html">Track Your Order</a></li>
           <li><a href="delivery.html">Delivery Information</a></li>
           <li><a href="faq.html">FAQs</a></li>
           <li><a href="refunds.html">Refunds &amp; Returns</a></li>
@@ -453,6 +459,7 @@
         <fieldset class="co-group">
           <legend>Delivery (UK addresses)</legend>
           <div class="co-grid">
+            <label class="field field--full" id="coSavedWrap" hidden><span>Saved addresses</span><select id="coSaved"></select></label>
             <label class="field"><span>Recipient name *</span><input name="recipient" required></label>
             <label class="field"><span>Recipient phone</span><input name="recipientPhone" type="tel" pattern="[\\d\\s+\\-\\(\\)]{7,}"></label>
             <label class="field field--full"><span>Address *</span><input name="address1" required autocomplete="address-line1" placeholder="House number and street"></label>
@@ -501,9 +508,13 @@
         <div class="sum-row"><span>Subtotal</span><span id="coSubtotal"></span></div>
         <div class="sum-row"><span>Delivery</span><span id="coDelivery"></span></div>
         <div class="sum-row sum-row--discount" id="coDiscountRow" hidden><span id="coDiscountLabel">Discount</span><span id="coDiscount"></span></div>
+        <div class="sum-row sum-row--discount" id="coGiftRow" hidden><span id="coGiftLabel">Gift card</span><span id="coGift"></span></div>
+        <div class="sum-row sum-row--discount" id="coPointsRow" hidden><span id="coPointsLabel">Points</span><span id="coPoints"></span></div>
+        <label class="co-points" id="coPointsWrap" hidden><input type="checkbox" id="coUsePoints"> <span id="coPointsText"></span></label>
+        <p class="co-account" id="coAccount"></p>
         <div class="co-discount">
-          <label for="coCode" class="sr-only">Discount code</label>
-          <input id="coCode" placeholder="Discount code" autocomplete="off" autocapitalize="characters" maxlength="30">
+          <label for="coCode" class="sr-only">Discount or gift card code</label>
+          <input id="coCode" placeholder="Discount or gift card code" autocomplete="off" autocapitalize="characters" maxlength="30">
           <button type="button" class="btn btn--outline btn--sm" id="coApply">Apply</button>
         </div>
         <p class="co-discount__msg" id="coCodeMsg" role="status" aria-live="polite"></p>
@@ -522,7 +533,7 @@
       <p class="confirm__ref">Order <strong id="cfRef"></strong></p>
       <p id="cfText"></p>
       <a href="#" class="btn btn--whatsapp btn--block" id="cfWhatsapp" target="_blank" rel="noopener"><svg class="icon"><use href="#i-whatsapp"/></svg> Send Order on WhatsApp</a>
-      <a href="account.html" class="btn btn--link">View order history</a>
+      <a href="account.html" class="btn btn--link">View your orders</a>
     </div>
   </dialog>
 

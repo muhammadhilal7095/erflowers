@@ -521,3 +521,14 @@ svg { width: 18px; height: 18px; flex-shrink: 0; }
 .drop--wide { aspect-ratio: 3 / 2; }
 #postDialog code { padding: 1px 5px; border-radius: 4px; background: var(--bg); font-size: 12px; }
 @media (max-width: 760px) { .prow--post { grid-template-columns: 52px 1fr auto; } }
+
+/* ---------- Customers, gift cards, Flower Club ---------- */
+.row-actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; flex-wrap: wrap; }
+.grid-loyalty { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0 12px; margin-top: 12px; }
+.gc-code { margin: 4px 0 8px; font-family: ui-monospace, Menlo, monospace; font-size: 26px; font-weight: 700; letter-spacing: .08em; color: var(--ink); }
+.card__head .check { font-size: 13px; }
+@media (max-width: 1100px) { .grid-loyalty { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 760px) {
+  .grid-loyalty { grid-template-columns: 1fr 1fr; }
+  .row-actions { justify-content: flex-start; }
+}
