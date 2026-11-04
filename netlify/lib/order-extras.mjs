@@ -2,7 +2,7 @@
 // the customer's account, and gift card purchases. Used by orders.mjs and checkout.mjs.
 
 import {
-  changePoints, customerFromRequest, getGiftCard, giftCardProblem, linkOrder, pointsQuote, useGiftCard
+  changePoints, customerFromRequest, getGiftCard, giftCardProblem, linkOrder, markReferralUsed, pointsQuote, referralQuote, useGiftCard
 } from './accounts.mjs';
 
 const t = (v, max) => String(v ?? '').trim().slice(0, max);
@@ -13,6 +13,9 @@ export async function prepareExtras(req, body, catalog, priced) {
   let due = priced.total;
   let giftCard = null;
   let points = null;
+  // Friend's first-order discount (applied automatically when they are logged in)
+  const referral = body.noReferral ? null : referralQuote(catalog, customer, priced);
+  if (referral) due -= referral.amount;
   if (body.giftCardCode) {
     const card = await getGiftCard(body.giftCardCode);
     const problem = giftCardProblem(card);
@@ -28,6 +31,7 @@ export async function prepareExtras(req, body, catalog, priced) {
     customer,
     fields: {
       ...(customer ? { customerId: customer.id } : {}),
+      ...(referral ? { referral } : {}),
       ...(giftCard ? { giftCard } : {}),
       ...(points ? { points } : {}),
       total: Math.max(0, due)
@@ -38,6 +42,7 @@ export async function prepareExtras(req, body, catalog, priced) {
 // Runs once the order is saved for the first time
 export async function commitExtras(order) {
   if (order.customerId) await linkOrder(order.customerId, order.id);
+  if (order.customerId && order.referral) await markReferralUsed(order.customerId, order.id);
   if (order.giftCard && order.giftCard.amount) await useGiftCard(order.giftCard.code, order.giftCard.amount, order.id);
   if (order.customerId && order.points && order.points.used) await changePoints(order.customerId, -order.points.used, `Used on order ${order.id}`, order.id);
 }

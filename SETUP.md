@@ -208,3 +208,11 @@ Opening `index.html` lets you test the bag and WhatsApp ordering. Card payments 
 | `RESEND_API_KEY` and `EMAIL_FROM` | Sends "forgot password" emails through resend.com (free plan available), e.g. `EMAIL_FROM=Envie Roses <hello@yourdomain.co.uk>`. Without these, customers are asked to message you, and you create a reset link in Dashboard → Customers & Points. |
 
 To let Flower Club card customers cancel or update their card themselves, turn on the **Customer portal** in Stripe (Settings → Billing → Customer portal).
+
+### Refer a friend
+
+Every customer gets a referral link and code (e.g. `AMELIA-K2JG`) in **My Account → Refer a Friend**, with buttons to copy it or share it on WhatsApp or by email.
+
+- **The friend** creates an account through the link (or types the code) and gets **£10 off their first order of £40 or more**. It's taken off automatically at checkout while they're logged in, and can't be combined with a discount code.
+- **The customer who shared** gets **1,000 points (£10)** when you mark the friend's order **Delivered**, for up to 50 friends. If the order is cancelled, the points are removed and the friend can use their offer again.
+- Change the amounts or switch it off in Dashboard → Customers & Points.

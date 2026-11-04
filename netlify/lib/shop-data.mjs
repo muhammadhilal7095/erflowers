@@ -54,6 +54,7 @@ function withDefaults(saved) {
     addons: saved.addons || DEFAULTS.addons,
     cities: saved.cities || DEFAULTS.cities,
     loyalty: { ...DEFAULTS.loyalty, ...saved.loyalty },
+    referrals: { ...DEFAULTS.referrals, ...saved.referrals },
     club: saved.club ? { ...DEFAULTS.club, ...saved.club } : structuredClone(DEFAULTS.club),
     giftCards: { ...DEFAULTS.giftCards, ...saved.giftCards },
     products: saved.products || {}
@@ -250,6 +251,15 @@ export function validateCatalog(input) {
     signupBonus: int(ly.signupBonus ?? 0, 0, 100000, 'Welcome points')
   };
 
+  const rf = input.referrals || {};
+  const referrals = {
+    enabled: rf.enabled === true,
+    friendAmount: int(rf.friendAmount ?? 1000, 100, 100000, "Friend's discount"),
+    minSpend: int(rf.minSpend ?? 0, 0, 1000000, 'Minimum first order'),
+    referrerPoints: int(rf.referrerPoints ?? 0, 0, 100000, 'Points for referring'),
+    maxPerCustomer: int(rf.maxPerCustomer ?? 50, 1, 1000, 'Most rewards per customer')
+  };
+
   const cl = input.club || {};
   const FREQ = ['weekly', 'fortnightly', 'monthly'];
   const frequencies = (Array.isArray(cl.frequencies) ? cl.frequencies : FREQ).filter((f) => FREQ.includes(f));
@@ -277,7 +287,7 @@ export function validateCatalog(input) {
   };
   if (giftCards.enabled && !giftCards.amounts.length) throw new Error('Add at least one gift card amount.');
 
-  return { shop, legal, social, payments, delivery, addons, cities, loyalty, club, giftCards, images, products };
+  return { shop, legal, social, payments, delivery, addons, cities, loyalty, referrals, club, giftCards, images, products };
 }
 
 // ---------- Orders ----------

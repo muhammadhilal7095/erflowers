@@ -208,4 +208,15 @@
 
   // Shop and legal details in page content
   if (window.EnvieLayout) window.EnvieLayout.fill();
+
+  // ---------- Referral links (?ref=CODE): remembered for 30 days ----------
+  (function () {
+    const params = new URLSearchParams(location.search);
+    const code = (params.get('ref') || '').toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20);
+    if (!code) return;
+    try { localStorage.setItem('envie_ref', JSON.stringify({ code, at: Date.now() })); } catch (e) { /* private mode */ }
+    params.delete('ref');
+    const q = params.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + location.hash);
+  })();
 })();

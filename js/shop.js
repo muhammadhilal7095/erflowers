@@ -310,6 +310,14 @@
   }
   function fillFromAccount() {
     const acc = $('coAccount');
+    let pendingRef = null;
+    try { pendingRef = JSON.parse(localStorage.getItem('envie_ref') || 'null'); } catch (e) { /* ignore */ }
+    const rf = CATALOG.referrals || {};
+    if (!account && pendingRef && rf.enabled) {
+      acc.innerHTML = `<a href="account.html">Create an account</a> to get ${money(rf.friendAmount)} off this order with your friend's invite${rf.minSpend ? ` (orders of ${money(rf.minSpend)} or more)` : ''}.`;
+      $('coSavedWrap').hidden = true;
+      return;
+    }
     if (!account) {
       acc.innerHTML = CATALOG.loyalty && CATALOG.loyalty.enabled
         ? `<a href="account.html">Log in or create an account</a> to earn ${CATALOG.loyalty.pointsPerPound} point${CATALOG.loyalty.pointsPerPound === 1 ? '' : 's'} for every £1.`
@@ -392,6 +400,8 @@
     $('coDiscountRow').hidden = !applied;
     if (applied) { $('coDiscountLabel').textContent = `Discount (${applied.code})`; $('coDiscount').textContent = '−' + money(applied.amount); }
     const t = totals();
+    $('coReferralRow').hidden = !t.referral;
+    if (t.referral) $('coReferral').textContent = '−' + money(t.referral);
     $('coGiftRow').hidden = !t.gift;
     if (t.gift) { $('coGiftLabel').textContent = `Gift card (${giftApplied.display})`; $('coGift').textContent = '−' + money(t.gift); }
     const pq = pointsUsable(t.afterGift);
@@ -408,12 +418,22 @@
     updateSubmitLabel();
   }
   // Discount, then gift card, then points (the same order the server uses)
+  // Friend's first-order offer: only when logged in, not with a discount code, and over the minimum spend
+  function referralAmount(base) {
+    const rf = CATALOG.referrals || {};
+    const c = account && account.customer;
+    if (!rf.enabled || !c || !c.referralCredit || applied) return 0;
+    if (subtotal() < (c.referralMinSpend || 0)) return 0;
+    return Math.min(c.referralCredit, base);
+  }
   function totals() {
-    const base = Math.max(0, subtotal() + (currentFee() || 0) - discountAmount());
+    const afterDiscount = Math.max(0, subtotal() + (currentFee() || 0) - discountAmount());
+    const referral = referralAmount(afterDiscount);
+    const base = afterDiscount - referral;
     const gift = giftApplied ? Math.min(giftApplied.balance, base) : 0;
     const afterGift = base - gift;
     const pq = $('coUsePoints').checked ? pointsUsable(afterGift) : { usable: 0, amount: 0 };
-    return { base, gift, afterGift, points: pq.amount, pointsUsed: pq.usable, total: Math.max(0, afterGift - pq.amount) };
+    return { base, referral, gift, afterGift, points: pq.amount, pointsUsed: pq.usable, total: Math.max(0, afterGift - pq.amount) };
   }
   const orderTotal = () => totals().total;
   function selectedMethod() {
@@ -452,6 +472,7 @@
       sameDay: Boolean(quote.sameDay),
       discount: applied,
       discountCode: applied ? applied.code : '',
+      referral: totals().referral ? { amount: totals().referral } : null,
       giftCard: totals().gift ? { display: giftApplied.display, amount: totals().gift } : null,
       giftCardCode: giftApplied ? giftApplied.code : '',
       points: totals().points ? { used: totals().pointsUsed, amount: totals().points } : null,
@@ -509,6 +530,7 @@
       `Subtotal: ${money(order.subtotal)}`,
       `Delivery: ${typeof order.deliveryFee === 'number' ? money(order.deliveryFee) : 'to be confirmed'}${order.sameDay ? ' (same day)' : ''}`,
       ...(order.discount ? [`Discount (${order.discount.code}): -${money(order.discount.amount)}`] : []),
+      ...(order.referral ? [`Friend's welcome offer: -${money(order.referral.amount)}`] : []),
       ...(order.giftCard ? [`Gift card (${order.giftCard.display}): -${money(order.giftCard.amount)}`] : []),
       ...(order.points ? [`Points (${order.points.used}): -${money(order.points.amount)}`] : []),
       `*Total: ${money(order.total)}*`,

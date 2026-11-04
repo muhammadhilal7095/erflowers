@@ -3381,3 +3381,19 @@ body { background: #fff; color: var(--text); -webkit-font-smoothing: antialiased
 .related, .reviews-section, .pp, .signature, .instagram, .testimonials, .experience, .about--page { background: #fff; }
 .related { border-top: 1px solid var(--line); }
 input::placeholder { text-transform: none; letter-spacing: normal; }
+
+/* ---------- Refer a friend ---------- */
+.refer { margin-bottom: 24px; padding: 24px; background: var(--soft); border-radius: 12px; }
+.refer__lead { margin: 0 0 8px; font-family: var(--serif); font-size: 26px; line-height: 1.2; color: var(--black); }
+.refer p { font-size: 14px; }
+.refer__row { display: flex; gap: 8px; }
+.refer__row input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font: inherit; font-size: 14px; }
+.refer__code { margin: 12px 0; }
+.refer__code strong { font-family: ui-monospace, Menlo, monospace; letter-spacing: .06em; color: var(--black); }
+.refer__share { display: flex; flex-wrap: wrap; gap: 8px; }
+.auth__invite { padding: 12px 14px; background: #e7f8ee; color: #1e7c45 !important; border-radius: 8px; }
+.auth__invite strong { color: #1e7c45; }
+@media (max-width: 480px) { .refer { padding: 18px 16px; } .refer__lead { font-size: 22px; } .refer__row input { font-size: 16px; } }
+.refer .refer__lead { font-size: 26px; margin-bottom: 10px; }
+.refer .field { margin-top: 14px; }
+@media (max-width: 480px) { .refer .refer__lead { font-size: 22px; } }

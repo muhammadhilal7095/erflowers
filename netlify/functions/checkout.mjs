@@ -65,11 +65,11 @@ export default async (req) => {
   }
 
   // Discount code, gift card and points become one single-use coupon, so Stripe charges exactly our total
-  const off = ((order.discount && order.discount.amount) || 0) + ((order.giftCard && order.giftCard.amount) || 0) + ((order.points && order.points.amount) || 0);
+  const off = ((order.discount && order.discount.amount) || 0) + ((order.referral && order.referral.amount) || 0) + ((order.giftCard && order.giftCard.amount) || 0) + ((order.points && order.points.amount) || 0);
   let coupon = null;
   if (off > 0) {
     try {
-      const names = [order.discount && order.discount.code, order.giftCard && 'Gift card', order.points && 'Points'].filter(Boolean).join(' + ');
+      const names = [order.discount && order.discount.code, order.referral && 'Friend offer', order.giftCard && 'Gift card', order.points && 'Points'].filter(Boolean).join(' + ');
       coupon = (await stripe('coupons', { amount_off: off, currency: catalog.shop.currency, duration: 'once', max_redemptions: 1, name: clip(`${names} (${body.orderId})`, 40) })).id;
     } catch (err) {
       return json(502, { error: 'We could not apply your discount. Please try again.' });

@@ -129,7 +129,9 @@ export default async (req) => {
 
     // ---------- Customers ----------
     if (path === 'customers' && method === 'GET') {
-      const customers = (await listCustomers()).map((c) => ({ ...publicCustomer(c), orderCount: (c.orders || []).length, stripe: Boolean(c.stripeCustomerId) }));
+      const all = await listCustomers();
+      const names = Object.fromEntries(all.map((c) => [c.id, c.name]));
+      const customers = all.map((c) => ({ ...publicCustomer(c), orderCount: (c.orders || []).length, stripe: Boolean(c.stripeCustomerId), referredBy: c.referredBy ? names[c.referredBy] || 'a deleted account' : '' }));
       return json(200, { customers });
     }
     const custMatch = path.match(/^customers\/([a-z0-9]{6,40})(\/reset-link)?$/);

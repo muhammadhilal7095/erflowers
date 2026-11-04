@@ -319,6 +319,7 @@
         <ul class="od-lines">${(o.lines || []).map((l) => `<li><span>${l.qty} × ${esc(l.name)} <span class="help">(${esc(l.label)})</span></span><span>${money(l.total)}</span></li>`).join('')}</ul>
         <div class="od-lines"><li style="display:flex;justify-content:space-between"><span>Delivery${o.sameDay ? ' (same day)' : ''}</span><span>${typeof o.deliveryFee === 'number' ? money(o.deliveryFee) : 'To confirm'}</span></li>
         ${o.discount ? `<li style="display:flex;justify-content:space-between"><span>Discount ${esc(o.discount.code)} <span class="help">(${esc(o.discount.label)})</span></span><span>−${money(o.discount.amount)}</span></li>` : ''}
+        ${o.referral ? `<li style="display:flex;justify-content:space-between"><span>Friend's welcome offer${o.referralReturned ? ' <span class="help">(returned)</span>' : ''}</span><span>−${money(o.referral.amount)}</span></li>` : ''}
         ${o.giftCard ? `<li style="display:flex;justify-content:space-between"><span>Gift card ${esc(o.giftCard.display)}${o.giftCardReturned ? ' <span class="help">(returned)</span>' : ''}</span><span>−${money(o.giftCard.amount)}</span></li>` : ''}
         ${o.points ? `<li style="display:flex;justify-content:space-between"><span>${o.points.used} loyalty points${o.pointsReturned ? ' <span class="help">(returned)</span>' : ''}</span><span>−${money(o.points.amount)}</span></li>` : ''}</div>
         <div class="od-total"><span>Total</span><span>${money(o.total || 0)}</span></div>
@@ -1171,9 +1172,23 @@
           <button type="submit" class="btn btn--gold btn--sm" style="margin-top:12px">Save loyalty settings</button>
         </form>
       </div>
+      <div class="card">
+        <div class="card__head"><h2>Refer a friend</h2></div>
+        <form class="card__body" id="referForm" novalidate>
+          <label class="check"><input type="checkbox" name="enabled"${catalog.referrals.enabled ? ' checked' : ''}> Refer a friend is on</label>
+          <div class="grid-loyalty">
+            <label class="field"><span>Friend's discount</span><div class="money"><input class="input" name="friendAmount" inputmode="decimal" value="${(catalog.referrals.friendAmount / 100).toFixed(2)}"></div></label>
+            <label class="field"><span>Minimum first order</span><div class="money"><input class="input" name="minSpend" inputmode="decimal" value="${(catalog.referrals.minSpend / 100).toFixed(2)}"></div></label>
+            <label class="field"><span>Points for the referrer</span><input class="input" name="referrerPoints" type="number" min="0" value="${catalog.referrals.referrerPoints}"></label>
+            <label class="field"><span>Most rewards per customer</span><input class="input" name="maxPerCustomer" type="number" min="1" value="${catalog.referrals.maxPerCustomer}"></label>
+          </div>
+          <p class="help">Customers share their link from My Account. The friend's discount applies to their first order (not with discount codes). The referrer's points are added when that order is marked <strong>Delivered</strong>, and removed if it's cancelled.</p>
+          <button type="submit" class="btn btn--gold btn--sm" style="margin-top:12px">Save referral settings</button>
+        </form>
+      </div>
       <div class="toolbar"><input type="search" class="input" id="customerSearch" placeholder="Search name, email or phone" value="${esc(ui.customerSearch || '')}"></div>
       <div class="card">${list.length ? `<div class="table-wrap"><table class="table">
-        <thead><tr><th>Customer</th><th>Phone</th><th>Joined</th><th>Orders</th><th>Points</th><th></th></tr></thead>
+        <thead><tr><th>Customer</th><th>Phone</th><th>Joined</th><th>Orders</th><th>Points</th><th>Referrals</th><th></th></tr></thead>
         <tbody>${list.map((c) => `
           <tr data-cid="${esc(c.id)}">
             <td class="ref">${esc(c.name)}<small>${esc(c.email)}</small></td>
@@ -1181,6 +1196,7 @@
             <td data-label="Joined">${fmtDate(c.createdAt)}</td>
             <td data-label="Orders">${c.orderCount}</td>
             <td data-label="Points"><strong>${c.points}</strong></td>
+            <td data-label="Referrals">${c.referralStats.joined}${c.referralStats.joined ? `<small>${c.referralStats.rewarded} rewarded</small>` : ''}${c.referredBy ? `<small>Invited by ${esc(c.referredBy)}</small>` : ''}</td>
             <td><div class="row-actions">
               <button type="button" class="btn btn--outline btn--sm" data-cact="points">Points</button>
               <button type="button" class="btn btn--ghost btn--sm" data-cact="reset">Reset link</button>
@@ -1191,6 +1207,17 @@
 
     const search = $('customerSearch');
     search.addEventListener('input', () => { ui.customerSearch = search.value; const pos = search.selectionStart; renderCustomers(); const s2 = $('customerSearch'); s2.focus(); s2.setSelectionRange(pos, pos); });
+    $('referForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const friendAmount = toPence(f.elements.friendAmount.value);
+      const minSpend = toPence(f.elements.minSpend.value || '0');
+      if (!Number.isInteger(friendAmount) || friendAmount < 100) { toast("Enter the friend's discount, e.g. 10.00", true); return; }
+      if (!Number.isInteger(minSpend) || minSpend < 0) { toast('Enter the minimum first order, e.g. 40.00', true); return; }
+      const next = clone(catalog);
+      next.referrals = { enabled: f.elements.enabled.checked, friendAmount, minSpend, referrerPoints: Number(f.elements.referrerPoints.value), maxPerCustomer: Number(f.elements.maxPerCustomer.value) };
+      if (await publish(next, 'Referral settings saved.')) renderCustomers();
+    });
     $('loyaltyForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const f = e.target;

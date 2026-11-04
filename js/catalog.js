@@ -86,6 +86,16 @@
       signupBonus: 100       // points given when an account is created
     },
 
+    // Refer a friend. The friend gets friendAmount (pence) off their first order of minSpend or more;
+    // the customer who shared the link gets referrerPoints once that order is marked Delivered.
+    referrals: {
+      enabled: true,
+      friendAmount: 1000,
+      minSpend: 4000,
+      referrerPoints: 1000,
+      maxPerCustomer: 50
+    },
+
     // Flower Club: regular deliveries. price in pence per delivery, delivery included.
     club: {
       enabled: true,

@@ -508,6 +508,7 @@
         <div class="sum-row"><span>Subtotal</span><span id="coSubtotal"></span></div>
         <div class="sum-row"><span>Delivery</span><span id="coDelivery"></span></div>
         <div class="sum-row sum-row--discount" id="coDiscountRow" hidden><span id="coDiscountLabel">Discount</span><span id="coDiscount"></span></div>
+        <div class="sum-row sum-row--discount" id="coReferralRow" hidden><span>Friend&rsquo;s welcome offer</span><span id="coReferral"></span></div>
         <div class="sum-row sum-row--discount" id="coGiftRow" hidden><span id="coGiftLabel">Gift card</span><span id="coGift"></span></div>
         <div class="sum-row sum-row--discount" id="coPointsRow" hidden><span id="coPointsLabel">Points</span><span id="coPoints"></span></div>
         <label class="co-points" id="coPointsWrap" hidden><input type="checkbox" id="coUsePoints"> <span id="coPointsText"></span></label>

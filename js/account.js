@@ -56,7 +56,16 @@
     });
   }
   formHandler($('loginForm'), async (v) => { const r = await api('login', { method: 'POST', body: v }); setToken(r.token); await start(); });
-  formHandler($('registerForm'), async (v) => { const r = await api('register', { method: 'POST', body: v }); setToken(r.token); await start(); });
+  formHandler($('registerForm'), async (v) => {
+    if (v.ref) {
+      // Check the code first, so a typo doesn't silently lose the friend's offer
+      try { await api('referral', { method: 'POST', body: { code: v.ref } }); } catch (e) { throw new Error('That referral code is not valid. Check it, or leave the box empty.'); }
+    }
+    const r = await api('register', { method: 'POST', body: v });
+    try { localStorage.removeItem('envie_ref'); } catch (e) { /* ignore */ }
+    setToken(r.token);
+    await start();
+  });
   formHandler($('forgotForm'), async (v, f) => {
     const r = await api('forgot', { method: 'POST', body: v });
     f.querySelector('.form-ok').innerHTML = r.emailed
@@ -71,6 +80,20 @@
     await start();
   });
 
+  // ---------- Joined through a friend's link ----------
+  const rf = CATALOG.referrals || {};
+  let storedRef = '';
+  try { const r = JSON.parse(localStorage.getItem('envie_ref') || 'null'); if (r && Date.now() - r.at < 30 * 86400000) storedRef = r.code; } catch (e) { /* ignore */ }
+  if (!rf.enabled) $('refField').hidden = true;
+  else if (storedRef) {
+    $('refInput').value = storedRef;
+    api('referral', { method: 'POST', body: { code: storedRef } }).then((r) => {
+      $('inviteText').hidden = false;
+      $('inviteText').innerHTML = `<strong>${esc(r.name)} has sent you ${money(r.friendAmount)} off</strong> your first order${r.minSpend ? ` of ${money(r.minSpend)} or more` : ''}. Create your account to claim it.`;
+      showTab('register');
+    }).catch(() => {});
+  }
+
   const ly = CATALOG.loyalty || {};
   if (ly.enabled) {
     $('perkText').textContent = `Earn ${ly.pointsPerPound} point${ly.pointsPerPound === 1 ? '' : 's'} for every £1 you spend${ly.signupBonus ? `, plus ${ly.signupBonus} welcome points` : ''}. ${Math.round(100 / ly.pointValue)} points = £1 off.`;
@@ -79,7 +102,7 @@
   // ---------- Logged in ----------
   function section() {
     const want = (location.hash.slice(1) || 'overview').split('=')[0];
-    return ['overview', 'orders', 'subscriptions', 'points', 'addresses', 'details'].includes(want) ? want : 'overview';
+    return ['overview', 'orders', 'subscriptions', 'points', 'refer', 'addresses', 'details'].includes(want) ? want : 'overview';
   }
 
   const orderCard = (o) => `
@@ -122,8 +145,11 @@
     const main = $('acctMain');
     const club = new URLSearchParams(location.search).get('club') === 'success';
 
+    $('referNav').hidden = !rf.enabled;
+    const offer = c.referralCredit && rf.enabled
+      ? `<p class="notice-ok">You have <strong>${money(c.referralCredit)} off</strong> your first order${c.referralMinSpend ? ` of ${money(c.referralMinSpend)} or more` : ''}, from your friend&rsquo;s invite. It&rsquo;s taken off automatically at checkout while you&rsquo;re logged in.</p>` : '';
     if (sec === 'overview') {
-      main.innerHTML = `
+      main.innerHTML = offer + `
         <div class="acct-cards">
           ${ly.enabled ? `<a href="#points" class="acct-card"><span>Loyalty points</span><strong>${c.points}</strong><small>Worth ${money(c.points * pv)}</small></a>` : ''}
           <a href="#orders" class="acct-card"><span>Orders</span><strong>${data.orders.length}</strong><small>${data.orders[0] ? 'Latest ' + date(data.orders[0].createdAt) : 'None yet'}</small></a>
@@ -158,6 +184,45 @@
           <li>Log in before you check out to earn and use points.</li></ul>` : '<p>Our loyalty scheme is paused at the moment. Your points are safe.</p>'}
         <h3 class="acct__h3">History</h3>
         ${c.pointsLog.length ? `<ul class="points-log">${c.pointsLog.map((p) => `<li><span>${esc(p.reason)}<small>${date(p.at)}</small></span><strong class="${p.change > 0 ? 'is-plus' : 'is-minus'}">${p.change > 0 ? '+' : ''}${p.change}</strong></li>`).join('')}</ul>` : '<p class="orders__note">No points yet.</p>'}`;
+    }
+    if (sec === 'refer') {
+      const link = `${location.origin}/?ref=${encodeURIComponent(c.referralCode)}`;
+      const share = `I love ${CATALOG.shop.name}'s roses. Here's ${money(rf.friendAmount)} off your first order${rf.minSpend ? ` of ${money(rf.minSpend)} or more` : ''}: ${link}`;
+      const pts = rf.referrerPoints || 0;
+      main.innerHTML = `
+        <h2 class="acct__h">Refer a Friend</h2>
+        <div class="refer">
+          <p class="refer__lead">Give <strong>${money(rf.friendAmount)}</strong>, get <strong>${pts} points</strong>${ly.enabled ? ` (worth ${money(pts * pv)})` : ''}.</p>
+          <p>Share your link. Your friend gets ${money(rf.friendAmount)} off their first order${rf.minSpend ? ` of ${money(rf.minSpend)} or more` : ''} when they create an account. When their order is delivered, you get ${pts} points.</p>
+          <label class="field"><span>Your link</span>
+            <div class="refer__row"><input id="refLink" readonly value="${esc(link)}"><button type="button" class="btn btn--gold btn--sm" id="copyRef">Copy</button></div>
+          </label>
+          <p class="refer__code">Or share your code: <strong>${esc(c.referralCode)}</strong></p>
+          <div class="refer__share">
+            <a class="btn btn--whatsapp btn--sm" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(share)}"><svg class="icon"><use href="#i-whatsapp"/></svg> Share on WhatsApp</a>
+            <a class="btn btn--outline btn--sm" href="mailto:?subject=${encodeURIComponent(money(rf.friendAmount) + ' off at ' + CATALOG.shop.name)}&body=${encodeURIComponent(share)}">Share by email</a>
+            ${navigator.share ? '<button type="button" class="btn btn--outline btn--sm" id="nativeShare">More options</button>' : ''}
+          </div>
+        </div>
+        <div class="acct-cards">
+          <div class="acct-card"><span>Friends joined</span><strong>${c.referralStats.joined}</strong><small>Through your link</small></div>
+          <div class="acct-card"><span>Rewards earned</span><strong>${c.referralStats.rewarded}</strong><small>${c.referralStats.rewarded * pts} points</small></div>
+        </div>
+        <h3 class="acct__h3">How it works</h3>
+        <ul class="acct-rules">
+          <li>Your friend must be new to ${esc(CATALOG.shop.name)} and create an account using your link or code.</li>
+          <li>Their offer is for one order${rf.minSpend ? ` of ${money(rf.minSpend)} or more (before delivery)` : ''} and can&rsquo;t be used with a discount code.</li>
+          <li>You get your points when their order is delivered, up to ${rf.maxPerCustomer} friends. Points are removed if the order is cancelled.</li>
+          <li>You can&rsquo;t refer yourself. We may withdraw rewards that are misused.</li>
+        </ul>`;
+      $('copyRef').addEventListener('click', async () => {
+        const input = $('refLink');
+        try { await navigator.clipboard.writeText(input.value); } catch (e) { input.select(); document.execCommand('copy'); }
+        $('copyRef').textContent = 'Copied';
+        setTimeout(() => { const b = $('copyRef'); if (b) b.textContent = 'Copy'; }, 2000);
+      });
+      const ns = $('nativeShare');
+      if (ns) ns.addEventListener('click', () => navigator.share({ title: CATALOG.shop.name, text: share }).catch(() => {}));
     }
     if (sec === 'addresses') {
       const list = c.addresses;

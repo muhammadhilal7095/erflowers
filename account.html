@@ -43,11 +43,13 @@
             <button type="button" class="btn btn--link auth__forgot" data-tab="forgot">Forgotten your password?</button>
           </form>
           <form class="auth__form" id="registerForm" data-pane="register" novalidate hidden>
+            <p class="auth__invite" id="inviteText" hidden></p>
             <p class="auth__perk" id="perkText"></p>
             <label class="field"><span>Full name</span><input name="name" autocomplete="name" required maxlength="100"></label>
             <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" required></label>
             <label class="field"><span>Phone <small>(optional)</small></span><input name="phone" type="tel" autocomplete="tel"></label>
             <label class="field"><span>Password <small>at least 8 characters</small></span><input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
+            <label class="field" id="refField"><span>Friend&rsquo;s referral code <small>(optional)</small></span><input name="ref" id="refInput" maxlength="20" autocapitalize="characters" placeholder="e.g. AMELIA-7K2P"></label>
             <p class="auth__small">By creating an account you agree to our <a href="terms.html">Terms</a> and confirm you have read our <a href="privacy.html">Privacy Policy</a>.</p>
             <p class="form-error" role="alert"></p>
             <button type="submit" class="btn btn--gold btn--block">Create account</button>
@@ -77,6 +79,7 @@
               <a href="#orders" data-sec="orders">Orders</a>
               <a href="#subscriptions" data-sec="subscriptions">Flower Club</a>
               <a href="#points" data-sec="points">Loyalty Points</a>
+              <a href="#refer" data-sec="refer" id="referNav">Refer a Friend</a>
               <a href="#addresses" data-sec="addresses">Addresses</a>
               <a href="#details" data-sec="details">My Details</a>
             </nav>

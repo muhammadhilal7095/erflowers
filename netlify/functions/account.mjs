@@ -7,17 +7,19 @@
 //   POST /api/account/forgot    { email } -> { ok, emailed }
 //   POST /api/account/reset     { token, password } -> { token, customer }
 //   POST /api/account/portal    -> { url }  (Stripe page to manage Flower Club card payments)
+//   POST /api/account/referral  { code } -> { name, friendAmount, minSpend }
 
 import { getCatalog, getOrder, json } from '../lib/shop-data.mjs';
 import {
   changePassword, createCustomer, customerFromRequest, emailConfigured, findCustomerByEmail, listSubscriptions,
-  login, makeCustomerToken, makeResetLink, publicCustomer, resetPassword, sendEmail, stripe, updateProfile, cleanEmail
+  login, makeCustomerToken, makeResetLink, publicCustomer, resetPassword, sendEmail, stripe, updateProfile, cleanEmail,
+  ensureReferralCode, findByReferralCode
 } from '../lib/accounts.mjs';
 
 const orderSummary = (o) => ({
   id: o.id, createdAt: o.createdAt, status: o.status, payment: o.payment, quick: o.quick || false,
   total: o.total, deliveryFee: o.deliveryFee, discount: o.discount || null, giftCard: o.giftCard || null, points: o.points || null,
-  pointsAwarded: o.pointsAwarded || 0, giftCardOrder: o.giftCardOrder || null,
+  pointsAwarded: o.pointsAwarded || 0, giftCardOrder: o.giftCardOrder || null, referral: o.referral ? { amount: o.referral.amount } : null,
   lines: (o.lines || []).map((l) => ({ name: l.name, label: l.label, qty: l.qty, total: l.total })),
   delivery: o.delivery ? { recipient: o.delivery.recipient, city: o.delivery.city, postcode: o.delivery.postcode, date: o.delivery.date, slot: o.delivery.slot } : {}
 });
@@ -46,6 +48,12 @@ export default async (req) => {
       const c = await login(body.email, body.password);
       return json(200, { token: await makeCustomerToken(c), customer: publicCustomer(c) });
     }
+    // Checks a referral code before sign-up, so the page can say whose link it is
+    if (path === 'referral' && method === 'POST') {
+      const r = catalog.referrals && catalog.referrals.enabled ? await findByReferralCode(body.code) : null;
+      if (!r) { await new Promise((ok) => setTimeout(ok, 300)); return json(404, { error: 'That referral code is not valid.' }); }
+      return json(200, { name: r.name.split(' ')[0], friendAmount: catalog.referrals.friendAmount, minSpend: catalog.referrals.minSpend });
+    }
     if (path === 'forgot' && method === 'POST') {
       // Always the same answer, so nobody can find out which emails have accounts
       const c = await findCustomerByEmail(cleanEmail(body.email));
@@ -65,6 +73,7 @@ export default async (req) => {
     if (!c) return json(401, { error: 'Please log in.' });
 
     if (path === 'me' && method === 'GET') {
+      await ensureReferralCode(c);
       const orders = (await Promise.all((c.orders || []).slice(0, 50).map((id) => getOrder(id)))).filter(Boolean).map(orderSummary);
       const subscriptions = (await listSubscriptions(c.id)).map(subSummary);
       return json(200, { customer: publicCustomer(c), orders, subscriptions, loyalty, billing: Boolean(c.stripeCustomerId && process.env.STRIPE_SECRET_KEY) });

@@ -64,15 +64,47 @@ export async function findCustomerByEmail(email) {
 
 // What the browser is allowed to see
 export function publicCustomer(c) {
+  const refs = c.referrals || [];
   return {
     id: c.id, name: c.name, email: c.email, phone: c.phone,
     addresses: c.addresses || [], points: c.points || 0,
     pointsLog: (c.pointsLog || []).slice(-30).reverse(),
-    createdAt: c.createdAt
+    createdAt: c.createdAt,
+    referralCode: c.referralCode || '',
+    referralCredit: c.referralCredit && !c.referralUsed ? c.referralCredit : null,
+    referralMinSpend: c.referralMinSpend || 0,
+    referralStats: { joined: refs.length, rewarded: refs.filter((r) => r.rewarded).length }
   };
 }
 
-export async function createCustomer({ name, email, phone, password }, catalog) {
+// ---------- Referrals ----------
+// Each customer has a code like AMELIA-7K2P. referral/<CODE> -> { id }
+const REF_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+export const cleanReferralCode = (code) => String(code || '').toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20);
+
+export async function findByReferralCode(code) {
+  const clean = cleanReferralCode(code);
+  if (!/^[A-Z0-9]{1,10}-[A-Z0-9]{4}$/.test(clean)) return null;
+  const ref = await store().get(`referral/${clean}`, { type: 'json' });
+  return ref ? getCustomer(ref.id) : null;
+}
+
+// Gives the customer a referral code if they don't have one yet (older accounts get one on their next visit)
+export async function ensureReferralCode(c) {
+  if (c.referralCode) return c;
+  const first = String(c.name || '').trim().split(/\s+/)[0] || '';
+  const base = first.normalize('NFKD').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 10) || 'ENVIE';
+  let code;
+  do {
+    code = `${base}-${Array.from(randomBytes(4), (b) => REF_CHARS[b % REF_CHARS.length]).join('')}`;
+  } while (await store().get(`referral/${code}`, { type: 'json' }));
+  await store().setJSON(`referral/${code}`, { id: c.id });
+  c.referralCode = code;
+  await putCustomer(c);
+  return c;
+}
+
+export async function createCustomer({ name, email, phone, password, ref }, catalog) {
   const mail = cleanEmail(email);
   if (!t(name, 100)) throw new Error('Please enter your name.');
   if (!validEmail(mail)) throw new Error('Please enter a valid email address.');
@@ -87,9 +119,62 @@ export async function createCustomer({ name, email, phone, password }, catalog) 
     pointsLog: bonus ? [{ at: now(), change: bonus, reason: 'Welcome bonus' }] : [],
     createdAt: now()
   };
+
+  // Joined through a friend's link: £ off their first order, and the friend is told who joined
+  const rf = catalog.referrals || {};
+  const referrer = rf.enabled && ref ? await findByReferralCode(ref) : null;
+  if (referrer && referrer.email !== mail) {
+    c.referredBy = referrer.id;
+    c.referralCredit = rf.friendAmount;
+    c.referralMinSpend = rf.minSpend;
+  }
+
   await putCustomer(c);
   await store().setJSON(emailKey(mail), { id: c.id });
-  return c;
+  if (c.referredBy) {
+    referrer.referrals = [...(referrer.referrals || []), { id: c.id, name: c.name.split(' ')[0], at: now(), rewarded: false }].slice(-500);
+    await putCustomer(referrer);
+  }
+  return ensureReferralCode(c);
+}
+
+// Works out the friend's first-order discount (not combined with discount codes)
+export function referralQuote(catalog, customer, priced) {
+  const rf = catalog.referrals || {};
+  if (!rf.enabled || !customer || !customer.referralCredit || customer.referralUsed) return null;
+  if (priced.discount) return null;
+  if ((priced.subtotal || 0) < (customer.referralMinSpend || 0)) return null;
+  const amount = Math.min(customer.referralCredit, priced.total);
+  return amount > 0 ? { amount, referrerId: customer.referredBy } : null;
+}
+
+async function setReferralUsed(customerId, orderId) {
+  const c = await getCustomer(customerId);
+  if (!c) return;
+  if (orderId) c.referralUsed = orderId; else delete c.referralUsed;
+  await putCustomer(c);
+}
+export const markReferralUsed = (customerId, orderId) => setReferralUsed(customerId, orderId);
+
+// The person who shared the link gets their points once the friend's order is delivered
+async function rewardReferrer(catalog, order, give) {
+  const rf = catalog.referrals || {};
+  const r = await getCustomer(order.referral.referrerId);
+  if (!r) return 0;
+  const entry = (r.referrals || []).find((x) => x.id === order.customerId);
+  if (give) {
+    const already = (r.referrals || []).filter((x) => x.rewarded).length;
+    if (already >= (rf.maxPerCustomer || 0) || (entry && entry.rewarded)) return 0;
+    const pts = rf.referrerPoints || 0;
+    if (entry) entry.rewarded = true;
+    await putCustomer(r);
+    if (pts) await changePoints(r.id, pts, `Friend referral: ${entry ? entry.name : 'a friend'}`, order.id);
+    return pts;
+  }
+  if (entry) entry.rewarded = false;
+  await putCustomer(r);
+  await changePoints(r.id, -order.referralRewarded, 'Friend referral reversed (order cancelled)', order.id);
+  return 0;
 }
 
 export async function login(email, password) {
@@ -370,7 +455,17 @@ export async function onOrderStatus(catalog, order, status) {
     if (pts) await changePoints(order.customerId, pts, `Order ${order.id}`, order.id);
     changes.pointsAwarded = pts;
   }
+  if (status === 'delivered' && order.referral && order.referral.referrerId && !order.referralRewarded) {
+    changes.referralRewarded = await rewardReferrer(catalog, order, true);
+  }
   if (status === 'cancelled') {
+    if (order.referral && order.customerId && !order.referralReturned) {
+      await setReferralUsed(order.customerId, null); // the friend can use their discount again
+      changes.referralReturned = true;
+    }
+    if (order.referral && order.referralRewarded) {
+      changes.referralRewarded = await rewardReferrer(catalog, order, false);
+    }
     if (order.customerId && order.points && order.points.used && !order.pointsReturned) {
       await changePoints(order.customerId, order.points.used, `Points returned (order ${order.id} cancelled)`, order.id);
       changes.pointsReturned = true;
