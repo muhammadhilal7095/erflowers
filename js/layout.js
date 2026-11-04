@@ -151,6 +151,7 @@
         <ul>
           ${NAV.map((item) => navItem(item, active)).join('')}
         </ul>
+        <a href="account.html" class="nav__account" id="navAccount"><svg class="icon"><use href="#i-user"/></svg><span id="navAccountText">Sign in / Create account</span></a>
         ${partnerOn ? `<a href="partners.html" class="nav__partner">Become a Partner <small>Earn ${shortMoney(partnerPay)} per order</small></a>` : ''}
         <div class="nav__extra">
           <a href="tel:${tel}"><svg class="icon"><use href="#i-phone"/></svg>${esc(shop.phone)}</a>
@@ -162,7 +163,7 @@
         ${partnerOn ? `<a href="partners.html" class="partner-btn"><span class="partner-btn__top">Become a Partner</span><span class="partner-btn__sub">Earn ${shortMoney(partnerPay)} per order</span></a>` : ''}
         <button type="button" aria-label="Search" class="icon-btn" id="searchOpen"><svg class="icon"><use href="#i-search"/></svg></button>
         <a href="wishlist.html" aria-label="Wishlist" class="wish-link" id="wishLink"><svg class="icon"><use href="#i-heart"/></svg><span class="cart__count wish-count" id="wishCount" hidden>0</span></a>
-        <a href="account.html" aria-label="My account" class="hide-sm" id="accountLink"><svg class="icon"><use href="#i-user"/></svg></a>
+        <a href="account.html" class="acct-link hide-sm" id="accountLink" aria-label="Sign in or create an account"><svg class="icon"><use href="#i-user"/></svg><span class="acct-link__text" id="accountText">Sign in / Sign up</span></a>
         <button type="button" aria-label="Bag, 0 items" class="cart icon-btn" id="cart"><svg class="icon"><use href="#i-cart"/></svg><span class="cart__count" id="cartCount">0</span></button>
       </div>
     </div>
@@ -480,6 +481,15 @@
           </div>
         </fieldset>
 
+        <fieldset class="co-group co-join" id="coJoin" hidden>
+          <legend>Your account <small>(optional)</small></legend>
+          <label class="check-line co-join__tick"><input type="checkbox" id="coJoinOn"> <span><strong>Create an account</strong> to track this order, save your addresses<span id="coJoinPerk"></span>.</span></label>
+          <div class="co-join__fields" id="coJoinFields" hidden>
+            <label class="field"><span>Choose a password *</span><input type="password" id="coJoinPass" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"></label>
+            <p class="co-join__small">We&rsquo;ll use your name, email and phone from above. By creating an account you agree to our <a href="terms.html" target="_blank">Terms</a>.</p>
+          </div>
+        </fieldset>
+
         <fieldset class="co-group">
           <legend>Gift message</legend>
           <label class="field field--full"><span class="sr-only">Card message</span><textarea name="message" rows="3" maxlength="250" placeholder="Write the message for the card (optional)"></textarea></label>
@@ -579,7 +589,19 @@
     const h = Number(m[1]), h12 = h % 12 || 12;
     return `${h12}${m[2] === '00' ? '' : ':' + m[2]}${h < 12 ? 'am' : 'pm'}`;
   }
+  // Header account link: "Sign in / Sign up", or "My Account" once logged in
+  function accountLabel() {
+    let name = '';
+    try { if (localStorage.getItem('envie_account_token')) name = localStorage.getItem('envie_account_name') || 'My Account'; } catch (e) { /* ignore */ }
+    const t = document.getElementById('accountText');
+    const n = document.getElementById('navAccountText');
+    const link = document.getElementById('accountLink');
+    if (t) t.textContent = name ? (name === 'My Account' ? name : `Hi, ${name}`) : 'Sign in / Sign up';
+    if (n) n.textContent = name ? 'My Account' : 'Sign in / Create account';
+    if (link) link.setAttribute('aria-label', name ? 'My account' : 'Sign in or create an account');
+  }
   function fill() {
+    accountLabel();
     const values = {
       name: shop.name,
       legalName: legalName(),
@@ -614,5 +636,5 @@
     });
   }
 
-  window.EnvieLayout = { top, bottom, pageHero, productCard, fill, money, esc, saleActive, unitPrice, productUrl, srcset, imgAttrs, setImg, wishlist, recent, addonChoice, addonVisual };
+  window.EnvieLayout = { accountLabel, top, bottom, pageHero, productCard, fill, money, esc, saleActive, unitPrice, productUrl, srcset, imgAttrs, setImg, wishlist, recent, addonChoice, addonVisual };
 })();

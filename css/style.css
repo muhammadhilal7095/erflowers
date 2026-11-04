@@ -3605,3 +3605,24 @@ body.cpop-lock { overflow: hidden; }
   .cway__mail { font-size: 15px; }
   .cfaq .faq { padding: 0 14px; }
 }
+
+/* ---------- Sign in / sign up ---------- */
+.acct-link { display: inline-flex; align-items: center; gap: 8px; }
+.acct-link__text { font-size: 13px; font-weight: 500; white-space: nowrap; }
+@media (max-width: 1379px) { .acct-link__text { display: none; } }
+.nav__account { display: none; }
+@media (max-width: 960px) {
+  .nav__account {
+    display: flex; align-items: center; gap: 10px; margin: 18px 0 0; padding: 13px 16px; border: 1px solid var(--line); border-radius: 10px;
+    font-size: 14px; font-weight: 600; color: var(--black) !important; text-transform: none !important; letter-spacing: .02em;
+  }
+  .nav__account .icon { width: 18px; height: 18px; color: var(--gold-dark); }
+}
+.co-join { padding: 14px 16px; border: 1px dashed var(--gold); border-radius: 12px; background: var(--soft); }
+.co-join legend { padding: 0 6px; }
+.co-join legend small { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); }
+.co-join__tick { margin: 0; font-size: 14px; }
+.co-join__tick strong { color: var(--black); }
+.co-join__fields { margin-top: 12px; }
+.co-join__small { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+.co-join__small a { text-decoration: underline; }

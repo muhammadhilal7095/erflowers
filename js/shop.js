@@ -316,7 +316,52 @@
       account = res.ok ? await res.json() : null;
     } catch (e) { account = null; }
   }
+  // "Create an account" at checkout: only for customers who aren't logged in
+  function showJoin() {
+    const join = $('coJoin');
+    join.hidden = Boolean(account) || location.protocol === 'file:';
+    const ly = CATALOG.loyalty || {};
+    const rf = CATALOG.referrals || {};
+    let ref = null;
+    try { ref = JSON.parse(localStorage.getItem('envie_ref') || 'null'); } catch (e) { /* ignore */ }
+    const perks = [];
+    if (ly.enabled) perks.push(`earn ${ly.pointsPerPound} point${ly.pointsPerPound === 1 ? '' : 's'} per £1${ly.signupBonus ? ` plus ${ly.signupBonus} welcome points` : ''}`);
+    if (ref && rf.enabled) perks.push(`get your friend's ${money(rf.friendAmount)} off`);
+    $('coJoinPerk').textContent = perks.length ? ' and ' + perks.join(', and ') : '';
+  }
+  $('coJoinOn').addEventListener('change', () => {
+    const on = $('coJoinOn').checked;
+    $('coJoinFields').hidden = !on;
+    $('coJoinPass').required = on;
+    if (on) $('coJoinPass').focus();
+  });
+  async function joinAtCheckout() {
+    const f = form.elements;
+    let ref = '';
+    try { const r = JSON.parse(localStorage.getItem('envie_ref') || 'null'); if (r) ref = r.code; } catch (e) { /* ignore */ }
+    const res = await fetch('/api/account/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: f.name.value.trim(), email: f.email.value.trim(), phone: f.phone.value.trim(), password: $('coJoinPass').value, ref })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'We could not create your account.');
+    try {
+      localStorage.setItem(ACCOUNT_KEY, data.token);
+      localStorage.setItem('envie_account_name', data.customer.name.split(' ')[0]);
+      localStorage.removeItem('envie_ref');
+    } catch (e) { /* ignore */ }
+    L.accountLabel && L.accountLabel();
+    await loadAccount();
+    $('coJoinOn').checked = false;
+    $('coJoinFields').hidden = true;
+    $('coJoinPass').required = false;
+    $('coJoinPass').value = '';
+    fillFromAccount();
+    renderSummary();
+  }
+
   function fillFromAccount() {
+    showJoin();
     const acc = $('coAccount');
     let pendingRef = null;
     try { pendingRef = JSON.parse(localStorage.getItem('envie_ref') || 'null'); } catch (e) { /* ignore */ }
@@ -654,6 +699,29 @@
     if (!cart.length) return;
     updateDelivery();
     if (!quote.ok) { errorEl.textContent = quote.error; dateInput.focus(); return; }
+
+    // Create the account first, so the order is saved to it (and any friend's offer applies)
+    if ($('coJoinOn').checked && !account) {
+      const submitBtn = $('coSubmit');
+      submitBtn.disabled = true;
+      try {
+        const before = orderTotal();
+        await joinAtCheckout();
+        if (orderTotal() !== before) {
+          submitBtn.disabled = false;
+          toast('Account created! Your total has been updated, please check it and place your order.');
+          return;
+        }
+        toast('Account created. Thank you for joining!');
+      } catch (err) {
+        submitBtn.disabled = false;
+        errorEl.innerHTML = /already exists/i.test(err.message)
+          ? 'You already have an account with this email. <a href="account.html">Log in</a> first, or untick "Create an account".'
+          : escapeHtml(err.message);
+        return;
+      }
+      submitBtn.disabled = false;
+    }
 
     const order = buildOrder(makeOrderId());
     const submit = $('coSubmit');

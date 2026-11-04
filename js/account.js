@@ -3,7 +3,8 @@
 
 (function () {
   const $ = (id) => document.getElementById(id);
-  const { money, esc } = window.EnvieLayout;
+  const L = window.EnvieLayout;
+  const { money, esc } = L;
   const CATALOG = window.ENVIE_CATALOG;
   const KEY = 'envie_account_token';
   const getToken = () => { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } };
@@ -322,6 +323,8 @@
     if (getToken()) {
       try {
         data = await api('me');
+        try { localStorage.setItem('envie_account_name', data.customer.name.split(' ')[0]); } catch (e) { /* ignore */ }
+        L.accountLabel && L.accountLabel();
         $('authBox').hidden = true;
         $('deviceOrders').hidden = true;
         $('acctApp').hidden = false;
@@ -331,7 +334,9 @@
     }
     $('acctApp').hidden = true;
     $('authBox').hidden = false;
-    showTab('login');
+    try { localStorage.removeItem('envie_account_name'); } catch (e) { /* ignore */ }
+    L.accountLabel && L.accountLabel();
+    showTab(/^#(register|signup|join)$/.test(location.hash) ? 'register' : 'login');
     deviceOrders();
   }
 
