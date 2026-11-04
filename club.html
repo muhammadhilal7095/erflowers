@@ -95,6 +95,7 @@
 
   <script src="js/main.js"></script>
   <script src="js/shop.js"></script>
+  <script src="js/popup.js"></script>
   <script>
     (function () {
       const C = window.ENVIE_CATALOG;
@@ -136,6 +137,15 @@
       }
       ['clubPlan', 'clubFreq', 'clubPostcode'].forEach((id) => $(id).addEventListener('input', update));
       update();
+
+      // Coming from the popup: open the form with that plan chosen
+      const wanted = new URLSearchParams(location.search).get('plan');
+      if (wanted && club.plans[wanted] && club.plans[wanted].active !== false) {
+        $('clubPlan').value = wanted;
+        $('join').hidden = false;
+        update();
+        setTimeout(() => $('join').scrollIntoView({ block: 'start' }), 50);
+      }
 
       document.addEventListener('click', (e) => {
         const b = e.target.closest('[data-plan]');

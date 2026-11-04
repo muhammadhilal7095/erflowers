@@ -55,6 +55,7 @@ function withDefaults(saved) {
     cities: saved.cities || DEFAULTS.cities,
     loyalty: { ...DEFAULTS.loyalty, ...saved.loyalty },
     referrals: { ...DEFAULTS.referrals, ...saved.referrals },
+    popup: { ...DEFAULTS.popup, ...saved.popup },
     club: saved.club ? { ...DEFAULTS.club, ...saved.club } : structuredClone(DEFAULTS.club),
     giftCards: { ...DEFAULTS.giftCards, ...saved.giftCards },
     products: saved.products || {}
@@ -260,6 +261,14 @@ export function validateCatalog(input) {
     maxPerCustomer: int(rf.maxPerCustomer ?? 50, 1, 1000, 'Most rewards per customer')
   };
 
+  const pu = input.popup || {};
+  const popup = {
+    enabled: pu.enabled === true,
+    delay: int(pu.delay ?? 10, 0, 120, 'Popup delay (seconds)'),
+    pages: pu.pages === 'all' ? 'all' : 'home',
+    everyDays: int(pu.everyDays ?? 3, 1, 60, 'Show the popup again after (days)')
+  };
+
   const cl = input.club || {};
   const FREQ = ['weekly', 'fortnightly', 'monthly'];
   const frequencies = (Array.isArray(cl.frequencies) ? cl.frequencies : FREQ).filter((f) => FREQ.includes(f));
@@ -287,7 +296,7 @@ export function validateCatalog(input) {
   };
   if (giftCards.enabled && !giftCards.amounts.length) throw new Error('Add at least one gift card amount.');
 
-  return { shop, legal, social, payments, delivery, addons, cities, loyalty, referrals, club, giftCards, images, products };
+  return { shop, legal, social, payments, delivery, addons, cities, loyalty, referrals, club, giftCards, popup, images, products };
 }
 
 // ---------- Orders ----------

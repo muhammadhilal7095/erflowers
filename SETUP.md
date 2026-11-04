@@ -216,3 +216,7 @@ Every customer gets a referral link and code (e.g. `AMELIA-K2JG`) in **My Accoun
 - **The friend** creates an account through the link (or types the code) and gets **£10 off their first order of £40 or more**. It's taken off automatically at checkout while they're logged in, and can't be combined with a discount code.
 - **The customer who shared** gets **1,000 points (£10)** when you mark the friend's order **Delivered**, for up to 50 friends. If the order is cancelled, the points are removed and the friend can use their offer again.
 - Change the amounts or switch it off in Dashboard → Customers & Points.
+
+### Flower Club popup
+
+A calendar-style popup advertises your Flower Club plans. Visitors can "flip to tomorrow" to see the next plan, and **Join the Flower Club** opens the sign-up form with that plan chosen. By default it appears after 10 seconds on the homepage. Once closed, it doesn't appear again on that device for 3 days. It never shows during checkout, or on the account, Flower Club, gift card and tracking pages. Change it or switch it off in Dashboard → Flower Club.

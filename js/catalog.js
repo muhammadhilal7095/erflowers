@@ -107,6 +107,10 @@
       }
     },
 
+    // Flower Club popup: shown after `delay` seconds on the homepage ('home') or every page ('all'),
+    // then not again for `everyDays` once closed
+    popup: { enabled: true, delay: 10, pages: 'home', everyDays: 3 },
+
     // Gift cards: amounts in pence. Cards are issued from the dashboard once paid.
     giftCards: {
       enabled: true,

@@ -1391,6 +1391,14 @@
             <button type="button" class="btn btn--outline btn--sm" id="addPlan">${icon('plus')} Add plan</button>
             <button type="button" class="btn btn--gold btn--sm" id="savePlans">Save plans</button>
           </div>
+          <div class="field" style="margin-top:18px"><span>Flower Club popup <small>a calendar-style popup advertising your plans</small></span>
+            <div class="grid-loyalty">
+              <label class="check"><input type="checkbox" id="popOn"${catalog.popup.enabled ? ' checked' : ''}> Show the popup</label>
+              <label class="field"><span>Show after (seconds)</span><input class="input" id="popDelay" type="number" min="0" max="120" value="${catalog.popup.delay}"></label>
+              <label class="field"><span>Where</span><select class="input" id="popPages"><option value="home"${catalog.popup.pages === 'home' ? ' selected' : ''}>Homepage only</option><option value="all"${catalog.popup.pages === 'all' ? ' selected' : ''}>Every page</option></select></label>
+              <label class="field"><span>Show again after (days)</span><input class="input" id="popDays" type="number" min="1" max="60" value="${catalog.popup.everyDays}"></label>
+            </div>
+          </div>
           <p class="help" style="margin-top:10px">Price changes apply to new subscribers. Existing card subscribers keep the price they signed up at.</p>
           <input type="file" id="planFile" accept="image/jpeg,image/png,image/webp" hidden>
         </div>
@@ -1459,6 +1467,7 @@
       const frequencies = [...document.querySelectorAll('[data-freq]:checked')].map((x) => x.dataset.freq);
       if (!frequencies.length) { toast('Choose at least one delivery frequency.', true); return; }
       next.club = { enabled: $('clubOn').checked, frequencies, plans };
+      next.popup = { enabled: $('popOn').checked, delay: Number($('popDelay').value), pages: $('popPages').value, everyDays: Number($('popDays').value) };
       if (await publish(next, 'Flower Club saved.')) { planDraft = null; renderClub(); }
     });
   }
