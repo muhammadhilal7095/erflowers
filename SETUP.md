@@ -219,4 +219,4 @@ Every customer gets a referral link and code (e.g. `AMELIA-K2JG`) in **My Accoun
 
 ### Flower Club popup
 
-A calendar-style popup advertises your Flower Club plans. Visitors can "flip to tomorrow" to see the next plan, and **Join the Flower Club** opens the sign-up form with that plan chosen. By default it appears after 10 seconds on the homepage. Once closed, it doesn't appear again on that device for 3 days. It never shows during checkout, or on the account, Flower Club, gift card and tracking pages. Change it or switch it off in Dashboard → Flower Club.
+A calendar-style popup advertises your Flower Club plans. Visitors can "flip to tomorrow" to see the next plan, and **Join the Flower Club** opens the sign-up form with that plan chosen. By default it appears as soon as someone opens the website, on whichever page they land on. Once closed, it doesn't appear again on that device for 3 days. It never shows during checkout, or on the account, Flower Club, gift card and tracking pages. Change it or switch it off in Dashboard → Flower Club.

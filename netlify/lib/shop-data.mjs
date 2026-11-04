@@ -264,8 +264,8 @@ export function validateCatalog(input) {
   const pu = input.popup || {};
   const popup = {
     enabled: pu.enabled === true,
-    delay: int(pu.delay ?? 10, 0, 120, 'Popup delay (seconds)'),
-    pages: pu.pages === 'all' ? 'all' : 'home',
+    delay: int(pu.delay ?? 0, 0, 120, 'Popup delay (seconds)'),
+    pages: pu.pages === 'home' ? 'home' : 'all',
     everyDays: int(pu.everyDays ?? 3, 1, 60, 'Show the popup again after (days)')
   };
 

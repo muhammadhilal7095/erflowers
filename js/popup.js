@@ -13,7 +13,7 @@
 
   const page = location.pathname.split('/').pop() || 'index.html';
   const isHome = page === '' || page === 'index.html' || page === 'index';
-  if (cfg.pages !== 'all' && !isHome) return;
+  if (cfg.pages === 'home' && !isHome) return;
   if (/^(club|account|admin|track-order|gift-cards)(\.html)?$/.test(page.replace(/\.html$/, '')) || /checkout=/.test(location.search)) return;
 
   const KEY = 'envie_popup_closed';
@@ -126,5 +126,5 @@
     }, 260);
   });
 
-  setTimeout(open, Math.max(0, Number(cfg.delay ?? 10)) * 1000);
+  setTimeout(open, Math.max(0, Number(cfg.delay ?? 0)) * 1000);
 })();
