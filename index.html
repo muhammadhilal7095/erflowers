@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Envie Roses | Luxury Roses, London</title>
-  <meta name="description" content="Premium handpicked luxury roses and rose boxes for life's most special moments. Fast delivery across the UK.">
+  <title>Envie Roses | Luxury Rose Delivery Across the UK</title>
+  <meta name="description" content="Luxury rose boxes and bouquets, arranged by hand in London and delivered across the UK. Same-day delivery in selected areas.">
   <meta name="theme-color" content="#0b0b0b">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Envie Roses | Luxury Roses, London">
@@ -33,287 +33,172 @@
 <body>
   <script>EnvieLayout.top('home');</script>
 
-  <main id="main">
-    <!-- Hero -->
-    <section class="hero grain">
-      <div class="hero__media"><img data-img="hero" src="images/hero.jpg" srcset="images/w/hero-480.webp 480w, images/w/hero-800.webp 800w, images/w/hero-1200.webp 1200w, images/hero.jpg 2200w" sizes="(max-width: 640px) 100vw, 62vw" alt="Red roses in a black luxury gift box" fetchpriority="high"></div>
-      <div class="container hero__content">
-        <p class="eyebrow">Luxury Roses</p>
-        <h1 class="hero__title">Timeless<br><span class="foil">Beauty</span></h1>
-        <p class="hero__text">Premium roses for life's most special moments.</p>
-        <div class="hero__actions">
-          <a href="shop.html" class="btn btn--gold">Shop the Collection <svg class="icon"><use href="#i-arrow"/></svg></a>
-          <a href="about.html" class="btn btn--ghost">Our Story</a>
-        </div>
-        <ul class="hero__trust">
-          <li>Handpicked Roses</li>
-          <li>Handcrafted Boxes</li>
-          <li>UK Delivery</li>
-        </ul>
-      </div>
-      <a href="#signature" class="hero__scroll" aria-label="Scroll to collection"><span></span></a>
-    </section>
+  <main id="main" class="home">
+    <h1 class="sr-only">Envie Roses: luxury roses and rose boxes, delivered across the UK</h1>
 
-    <!-- Features -->
-    <section class="features">
-      <div class="container features__grid">
-        <div class="feature">
-          <svg class="feature__icon"><use href="#i-diamond"/></svg>
-          <h3>Premium Quality</h3>
-          <p>Fresh &amp; Handpicked Roses</p>
+    <!-- Three quick answers -->
+    <section class="h-info">
+      <div class="container h-info__grid">
+        <form class="h-info__card h-info__card--check" data-postcode-check novalidate>
+          <label for="homePostcode"><strong>Check delivery to your postcode</strong><small>See the earliest date we can deliver.</small></label>
+          <div class="pc-check__row">
+            <input id="homePostcode" placeholder="e.g. SW1A 1AA" autocomplete="postal-code" autocapitalize="characters" maxlength="10">
+            <button type="submit" class="btn btn--gold btn--sm">Check</button>
+          </div>
+          <p class="pc-check__result" role="status" aria-live="polite"></p>
+        </form>
+        <div class="h-info__card">
+          <svg class="h-info__icon"><use href="#i-truck"/></svg>
+          <div><strong id="homeSameDay">Same-day delivery</strong><small id="homeSameDayText">Order by <span data-shop="sameDayCutoff"></span> for delivery today in selected areas.</small></div>
+          <a href="delivery.html" class="h-info__link" aria-label="Delivery information"><svg class="icon"><use href="#i-arrow"/></svg></a>
         </div>
-        <div class="feature">
-          <svg class="feature__icon"><use href="#i-truck"/></svg>
-          <h3>Fast &amp; Secure Delivery</h3>
-          <p>Across UK</p>
-        </div>
-        <div class="feature">
-          <svg class="feature__icon"><use href="#i-shield"/></svg>
-          <h3>Safe Payments</h3>
-          <p>100% Secure Checkout</p>
-        </div>
-        <div class="feature">
-          <svg class="feature__icon"><use href="#i-heart"/></svg>
-          <h3>Customer Support</h3>
-          <p>We're Here to Help</p>
+        <div class="h-info__card">
+          <svg class="h-info__icon"><use href="#i-gift"/></svg>
+          <div><strong id="homeGiftTitle">Make it extra special</strong><small id="homeGiftText">Add chocolates, a teddy or a balloon to any bouquet.</small></div>
+          <a href="shop.html" class="h-info__link" aria-label="Shop now"><svg class="icon"><use href="#i-arrow"/></svg></a>
         </div>
       </div>
     </section>
 
+    <!-- Product rows are added here -->
+    <div id="homeRows"></div>
 
-    <!-- Marquee -->
-    <div class="marquee" aria-hidden="true">
-      <div class="marquee__track">
-        <span>Luxury Roses</span><span>Handcrafted Rose Boxes</span><span>Delivered Across the UK</span><span>Made in London</span><span>A Language of Love</span>
-        <span>Luxury Roses</span><span>Handcrafted Rose Boxes</span><span>Delivered Across the UK</span><span>Made in London</span><span>A Language of Love</span>
-      </div>
-    </div>
+    <!-- Templates placed between rows by the script below -->
+    <template id="tplClub">
+      <section class="h-promo">
+        <div class="container">
+          <a href="club.html" class="h-promo__card">
+            <div class="h-promo__media"><img data-img="hero" src="images/hero.jpg" srcset="images/w/hero-480.webp 480w, images/w/hero-800.webp 800w, images/w/hero-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 40vw" alt="" loading="lazy" decoding="async"></div>
+            <div class="h-promo__body">
+              <p class="kicker kicker--gold">The Flower Club</p>
+              <h2>Fresh roses, delivered regularly <span id="clubFrom"></span></h2>
+              <ul><li>Weekly, every 2 weeks or monthly</li><li>Delivery included</li><li>Pause or cancel any time</li></ul>
+            </div>
+            <span class="btn btn--gold h-promo__btn">Join the Club</span>
+          </a>
+        </div>
+      </section>
+    </template>
 
-    <!-- Signature line -->
-    <section class="section signature" id="signature">
+    <template id="tplReviews">
+      <section class="section h-reviews" id="homeReviews" hidden>
+        <div class="container">
+          <div class="h-head">
+            <h2 class="h-title">Loved by Our Customers</h2>
+            <div class="h-arrows"><button type="button" data-scroll="-1" aria-label="Previous reviews"><svg class="icon"><use href="#i-arrow"/></svg></button><button type="button" data-scroll="1" aria-label="Next reviews"><svg class="icon"><use href="#i-arrow"/></svg></button></div>
+          </div>
+          <p class="h-reviews__summary" id="reviewSummary"></p>
+          <div class="h-scroll" id="reviewTrack"></div>
+        </div>
+      </section>
+    </template>
+
+    <template id="tplInsta">
+      <section class="section h-insta">
+        <div class="container">
+          <div class="h-head"><h2 class="h-title">As Seen on Instagram</h2><a href="#" class="h-more" data-social="instagram">Follow us <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+          <div class="h-insta__grid">
+            <div class="insta-item"><img data-img="insta1" src="images/insta-1.jpg" srcset="images/w/insta-1-480.webp 480w, images/w/insta-1-800.webp 800w" sizes="(max-width: 640px) 50vw, 25vw" alt="Red roses against dark foliage" loading="lazy" decoding="async"></div>
+            <div class="insta-item"><img data-img="insta2" src="images/insta-2.jpg" srcset="images/w/insta-2-480.webp 480w, images/w/insta-2-800.webp 800w" sizes="(max-width: 640px) 50vw, 25vw" alt="Woman holding red roses" loading="lazy" decoding="async"></div>
+            <div class="insta-item"><img data-img="insta3" src="images/insta-3.jpg" srcset="images/w/insta-3-480.webp 480w, images/w/insta-3-800.webp 800w" sizes="(max-width: 640px) 50vw, 25vw" alt="A red rose on a black background" loading="lazy" decoding="async"></div>
+            <div class="insta-item"><img data-img="insta4" src="images/insta-4.jpg" srcset="images/w/insta-4-480.webp 480w, images/w/insta-4-800.webp 800w" sizes="(max-width: 640px) 50vw, 25vw" alt="Red roses in a square black gift box" loading="lazy" decoding="async"></div>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <template id="tplPrice">
+      <section class="section h-price">
+        <div class="container">
+          <div class="h-head"><h2 class="h-title">Shop by Price</h2></div>
+          <div class="h-price__grid" id="priceGrid"></div>
+        </div>
+      </section>
+    </template>
+
+    <template id="tplOccasions">
+      <section class="section h-tiles">
+        <div class="container">
+          <div class="h-head"><h2 class="h-title">Occasions</h2><a href="gifts.html" class="h-more">All occasions <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+          <div class="h-tiles__grid" id="occasionGrid"></div>
+        </div>
+      </section>
+    </template>
+
+    <template id="tplRecipients">
+      <section class="section h-tiles">
+        <div class="container">
+          <div class="h-head"><h2 class="h-title">Choose Your Recipient</h2></div>
+          <div class="h-people" id="recipientGrid"></div>
+        </div>
+      </section>
+    </template>
+
+    <template id="tplFlowers">
+      <section class="section h-tiles">
+        <div class="container">
+          <div class="h-head"><h2 class="h-title">Can&rsquo;t Pick a Bouquet?</h2><a href="finder.html" class="h-more">Try the Bouquet Finder <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+          <p class="h-sub">Shop by their favourite flower or colour.</p>
+          <div class="h-chips" id="flowerGrid"></div>
+        </div>
+      </section>
+    </template>
+
+    <!-- UK delivery -->
+    <section class="section h-uk">
       <div class="container">
-        <div class="section-head">
-          <p class="kicker">Our Signature Collection</p>
-          <h2 class="section-title">The Signature Line</h2>
-          <span class="ornament" aria-hidden="true"><svg><use href="#i-rose"/></svg></span>
-        </div>
-
-        <div class="products" id="featuredGrid"></div>
-        <script>
-          (function () {
-            const { products } = window.ENVIE_CATALOG;
-            const ids = Object.keys(products).filter((id) => products[id].featured);
-            document.getElementById('featuredGrid').innerHTML = (ids.length ? ids : Object.keys(products).slice(0, 3)).map(EnvieLayout.productCard).join('');
-          })();
-        </script>
-        <p class="swipe-hint" aria-hidden="true">Swipe to explore &rarr;</p>
-        <div class="center view-all"><a href="shop.html" class="btn btn--outline">View All Roses <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+        <h2 class="h-big">We deliver across the UK, <em>to towns and villages too.</em></h2>
+        <div class="h-uk__grid" id="ukGrid"></div>
+        <p class="h-uk__note">These are some of our most-ordered places. Check any postcode above, or see <a href="delivery.html#areas">all delivery areas</a>.</p>
       </div>
     </section>
 
-    <!-- Occasions -->
-    <section class="section occasions">
+    <!-- How it works -->
+    <section class="section h-how">
       <div class="container">
-        <div class="section-head">
-          <p class="kicker kicker--gold">For Every Moment</p>
-          <h2 class="section-title section-title--light">Shop by Occasion</h2>
-          <span class="ornament" aria-hidden="true"><svg><use href="#i-rose"/></svg></span>
-        </div>
-        <div class="occasion-grid">
-          <a href="shop.html?o=anniversary" class="occasion">
-            <svg class="occasion__icon"><use href="#i-rings"/></svg>
-            <h3>Anniversary</h3>
-            <p>Celebrate the years together</p>
-            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
-          </a>
-          <a href="shop.html?o=birthday" class="occasion">
-            <svg class="occasion__icon"><use href="#i-gift"/></svg>
-            <h3>Birthday</h3>
-            <p>Make their day unforgettable</p>
-            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
-          </a>
-          <a href="shop.html?o=love" class="occasion">
-            <svg class="occasion__icon"><use href="#i-hearts"/></svg>
-            <h3>Love &amp; Romance</h3>
-            <p>Say it with roses</p>
-            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
-          </a>
-          <a href="shop.html?o=congratulations" class="occasion">
-            <svg class="occasion__icon"><use href="#i-sparkle"/></svg>
-            <h3>Congratulations</h3>
-            <p>Mark every milestone</p>
-            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
-          </a>
-          <a href="shop.html?o=sympathy" class="occasion">
-            <svg class="occasion__icon"><use href="#i-leaf"/></svg>
-            <h3>Sympathy</h3>
-            <p>Thoughtful, gentle tributes</p>
-            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
-          </a>
-          <a href="shop.html?o=just-because" class="occasion">
-            <svg class="occasion__icon"><use href="#i-sun"/></svg>
-            <h3>Just Because</h3>
-            <p>No reason needed</p>
-            <span class="occasion__link">Shop now <svg class="icon"><use href="#i-arrow"/></svg></span>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Blue roses banner -->
-    <section class="banner grain" id="blue">
-      <div class="banner__media"><img data-img="blueBanner" src="images/blue-roses.jpg" srcset="images/w/blue-roses-480.webp 480w, images/w/blue-roses-800.webp 800w, images/w/blue-roses-1200.webp 1200w" sizes="(max-width: 640px) 100vw, 62vw" alt="A lush bouquet of blue roses" loading="lazy" decoding="async"></div>
-      <div class="container banner__content">
-        <p class="eyebrow">Exclusive &amp; Timeless</p>
-        <h2 class="banner__title">Quintessential<br>Blue Roses</h2>
-        <p class="banner__text">Exclusively For Our Members</p>
-        <a href="#" class="btn btn--gold" data-enquire="Quintessential Blue Roses"><svg class="icon"><use href="#i-whatsapp"/></svg> Enquire Now</a>
-      </div>
-    </section>
-
-    <!-- Experience -->
-    <section class="section experience">
-      <div class="container">
-        <div class="section-head">
-          <p class="kicker">How It Works</p>
-          <h2 class="section-title section-title--sm">The Envie Experience</h2>
-        </div>
-        <ol class="steps">
-          <li class="step">
-            <span class="step__num">01</span>
-            <svg class="step__icon"><use href="#i-rose"/></svg>
-            <h3>Choose Your Roses</h3>
-            <p>Browse our signature boxes and bouquets, then pick the size and colour that says it best.</p>
-          </li>
-          <li class="step">
-            <span class="step__num">02</span>
-            <svg class="step__icon"><use href="#i-pen"/></svg>
-            <h3>Make It Personal</h3>
-            <p>Add your own message so every gift carries the words that matter most.</p>
-          </li>
-          <li class="step">
-            <span class="step__num">03</span>
-            <svg class="step__icon"><use href="#i-box"/></svg>
-            <h3>Delivered Beautifully</h3>
-            <p>Your roses are handcrafted with care and delivered across the UK, ready to impress.</p>
-          </li>
+        <h2 class="h-big">How <em>delivery works</em></h2>
+        <ol class="h-how__steps">
+          <li><span>Step 1</span><strong>Choose your roses and any extras</strong></li>
+          <li><span>Step 2</span><strong>Enter the postcode and pick a date</strong></li>
+          <li><span>Step 3</span><strong>We arrange your roses by hand</strong></li>
+          <li><span>Step 4</span><strong>Delivered, with updates on WhatsApp</strong></li>
         </ol>
+        <div class="center"><a href="track-order.html" class="btn btn--outline btn--sm">Track an order</a></div>
       </div>
     </section>
 
-    <!-- Bespoke -->
-    <section class="bespoke grain">
-      <div class="bespoke__media"><img data-img="bespoke" src="images/bespoke.jpg" srcset="images/w/bespoke-480.webp 480w, images/w/bespoke-800.webp 800w, images/w/bespoke-1200.webp 1200w" sizes="(max-width: 960px) 100vw, 50vw" alt="Red roses arranged in a heart shape in a black box" loading="lazy" decoding="async"></div>
-      <div class="bespoke__content">
-        <p class="eyebrow">Bespoke Service</p>
-        <h2 class="bespoke__title">Designed Around<br>Your Story</h2>
-        <p>A heart of roses for a proposal, a signature colour for a celebration, or a statement piece for an event. Tell us your idea and our florists will create something made only for you.</p>
-        <ul class="bespoke__list">
-          <li>Proposals &amp; anniversaries</li>
-          <li>Custom colours &amp; sizes</li>
-          <li>Events &amp; corporate gifting</li>
+    <!-- FAQ -->
+    <section class="section h-faq">
+      <div class="container h-faq__inner">
+        <h2 class="h-title">Questions &amp; Answers</h2>
+        <details class="faq"><summary>If I order today, can my roses arrive today?</summary><p>Yes, in selected areas. Order by <span data-shop="sameDayCutoff"></span> (UK time) and choose today&rsquo;s date at checkout. Enter the postcode above to see if same-day delivery is available there.</p></details>
+        <details class="faq"><summary>Where do you deliver?</summary><p>We deliver across England, Scotland, Wales and Northern Ireland. For some islands and remote areas, please message us first so we can confirm timings.</p></details>
+        <details class="faq"><summary>Can I choose the delivery date and time?</summary><p>Yes. Pick any available date at checkout, plus a morning, afternoon or evening slot. We aim to deliver within the slot you choose.</p></details>
+        <details class="faq"><summary>Can I add a card message?</summary><p>Yes, a personal card message is included free with every order. Write it at checkout.</p></details>
+        <details class="faq"><summary>What if the recipient isn&rsquo;t in?</summary><p>We may leave the roses with a neighbour or in a safe, sheltered place, or arrange another delivery. Add a safe place or the recipient&rsquo;s phone number at checkout to help us deliver first time.</p></details>
+        <details class="faq"><summary>How do I pay?</summary><p>Send your order on WhatsApp and we&rsquo;ll confirm payment with you<span class="h-faq__card" hidden>, or pay securely by card, Apple Pay or Google Pay at checkout</span>.</p></details>
+        <details class="faq"><summary>What if my roses aren&rsquo;t perfect?</summary><p>Tell us within 24 hours with a photo and we&rsquo;ll replace them or give you a refund. See our <a href="guarantee.html">Freshness Guarantee</a>.</p></details>
+        <details class="faq"><summary>Can I track my order?</summary><p>Yes. Use <a href="track-order.html">Track Your Order</a> with your order reference and postcode, or log in to <a href="account.html">My Account</a>.</p></details>
+        <details class="faq"><summary>Do you sell gift cards and subscriptions?</summary><p>Yes. Send a <a href="gift-cards.html">gift card</a>, or join the <a href="club.html">Flower Club</a> for regular deliveries you can pause or cancel any time.</p></details>
+        <div class="center"><a href="faq.html" class="btn btn--outline btn--sm">More questions</a></div>
+      </div>
+    </section>
+
+    <!-- About / SEO text -->
+    <section class="section h-text">
+      <div class="container prose">
+        <h2>Luxury Rose Delivery in the UK</h2>
+        <p>Envie Roses creates luxury rose boxes and hand-tied bouquets in London and delivers them across the UK. Every rose is chosen for its colour and form, then arranged by hand on the day it leaves us.</p>
+        <h3>Roses for every moment</h3>
+        <p>Choose from classic red roses for anniversaries and Valentine&rsquo;s Day, soft pinks and whites for birthdays and new arrivals, or calm, gentle designs for sympathy. Not sure what to choose? Our <a href="finder.html">Bouquet Finder</a> suggests roses in four quick questions, or <a href="#" data-enquire="help choosing roses">message our florists on WhatsApp</a>.</p>
+        <h3>Why order from Envie Roses</h3>
+        <ul>
+          <li>Hand-selected roses, arranged by hand</li>
+          <li>Choose your delivery date and time slot, with same-day delivery in selected areas</li>
+          <li>Free personal card message, plus optional gifts</li>
+          <li>Earn loyalty points on every order with a free <a href="account.html">account</a></li>
+          <li>A <a href="guarantee.html">freshness guarantee</a> on every order</li>
         </ul>
-        <div class="bespoke__actions">
-          <a href="#" class="btn btn--gold" data-enquire="a bespoke rose arrangement"><svg class="icon"><use href="#i-whatsapp"/></svg> Start on WhatsApp</a>
-          <a href="#" data-shop-href="phone" class="btn btn--ghost">Call Us</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Instagram -->
-    <section class="section instagram">
-      <div class="container">
-        <div class="section-head">
-          <p class="kicker">Instagram</p>
-          <h2 class="section-title section-title--sm">The Journey of the Roses</h2>
-        </div>
-      </div>
-      <div class="insta-grid">
-        <div class="insta-item"><img data-img="insta1" src="images/insta-1.jpg" srcset="images/w/insta-1-480.webp 480w, images/w/insta-1-800.webp 800w, images/w/insta-1-1200.webp 1200w" sizes="(max-width: 640px) 62vw, 22vw" alt="Red roses against dark foliage" loading="lazy" decoding="async"></div>
-        <div class="insta-item"><img data-img="insta2" src="images/insta-2.jpg" srcset="images/w/insta-2-480.webp 480w, images/w/insta-2-800.webp 800w, images/w/insta-2-1200.webp 1200w" sizes="(max-width: 640px) 62vw, 22vw" alt="Woman holding red roses" loading="lazy" decoding="async"></div>
-        <div class="insta-item"><img data-img="insta3" src="images/insta-3.jpg" srcset="images/w/insta-3-480.webp 480w, images/w/insta-3-800.webp 800w, images/w/insta-3-1200.webp 1200w" sizes="(max-width: 640px) 62vw, 22vw" alt="A red rose on a black background" loading="lazy" decoding="async"></div>
-        <div class="insta-item"><img data-img="insta4" src="images/insta-4.jpg" srcset="images/w/insta-4-480.webp 480w, images/w/insta-4-800.webp 800w, images/w/insta-4-1200.webp 1200w" sizes="(max-width: 640px) 62vw, 22vw" alt="Red roses in a square black gift box" loading="lazy" decoding="async"></div>
-        <div class="insta-item"><img data-img="insta5" src="images/insta-5.jpg" srcset="images/w/insta-5-480.webp 480w, images/w/insta-5-800.webp 800w, images/w/insta-5-1200.webp 1200w" sizes="(max-width: 640px) 62vw, 22vw" alt="Red rosebud with raindrops" loading="lazy" decoding="async"></div>
-      </div>
-      <div class="center">
-        <a href="#" data-social="instagram" class="btn btn--outline btn--sm">Follow Us on Instagram <svg class="icon"><use href="#i-arrow"/></svg></a>
-      </div>
-    </section>
-
-    <!-- About -->
-    <section class="about" id="about">
-      <div class="about__media"><img data-img="about" src="images/about-rose.jpg" srcset="images/w/about-rose-480.webp 480w, images/w/about-rose-800.webp 800w, images/w/about-rose-1200.webp 1200w, images/about-rose.jpg 1800w" sizes="(max-width: 960px) 100vw, 47vw" alt="Red rose with water droplets" loading="lazy" decoding="async"></div>
-      <div class="about__content">
-        <p class="kicker kicker--left">About Envie Roses</p>
-        <h2 class="section-title section-title--left">The Journey of<br>the Roses</h2>
-        <p>At Envie Roses, we believe that flowers are more than just a gift, they are a language of love. A symbol of emotions and a way to create unforgettable moments. Our handcrafted rose boxes are designed with passion, care and the finest blooms, bringing elegance, beauty, and meaning to every occasion.</p>
-        <a href="about.html" class="btn btn--outline btn--sm">Read More <svg class="icon"><use href="#i-arrow"/></svg></a>
-      </div>
-    </section>
-
-    <!-- Rose care -->
-    <section class="section care">
-      <div class="container care__inner">
-        <div class="care__intro">
-          <p class="kicker kicker--left">Rose Care Guide</p>
-          <h2 class="section-title section-title--left">Make the Moment Last</h2>
-          <p>A little care goes a long way. Follow these simple steps to keep your fresh roses looking their most beautiful for longer.</p>
-          <a href="contact.html" class="btn btn--outline btn--sm">Ask Our Florists <svg class="icon"><use href="#i-arrow"/></svg></a>
-        </div>
-        <div class="care__list">
-          <details class="faq" open>
-            <summary>Trim the stems<span class="faq__icon" aria-hidden="true"></span></summary>
-            <p>Cut 2–3 cm from each stem at an angle with a clean, sharp knife or scissors before placing roses in water.</p>
-          </details>
-          <details class="faq">
-            <summary>Fresh water, often<span class="faq__icon" aria-hidden="true"></span></summary>
-            <p>Use a clean vase and replace the water every two days, trimming the stems again each time.</p>
-          </details>
-          <details class="faq">
-            <summary>Remove lower leaves<span class="faq__icon" aria-hidden="true"></span></summary>
-            <p>Strip any leaves that would sit below the waterline to keep the water clean for longer.</p>
-          </details>
-          <details class="faq">
-            <summary>Choose the right spot<span class="faq__icon" aria-hidden="true"></span></summary>
-            <p>Keep your roses away from direct sunlight, radiators and fruit bowls, as heat and ripening fruit shorten their life.</p>
-          </details>
-        </div>
-      </div>
-    </section>
-
-    <!-- Testimonials -->
-    <section class="section testimonials">
-      <div class="container">
-        <div class="section-head">
-          <p class="kicker">What Our Customers Say</p>
-          <h2 class="section-title section-title--sm">Real Moments, Real Emotions</h2>
-        </div>
-        <div class="reviews">
-          <figure class="review">
-            <div class="review__avatar">S</div>
-            <div>
-              <blockquote>"Absolutely stunning roses! Fresh, beautiful and delivered on time. Highly recommended!"</blockquote>
-              <figcaption>Sarah M.</figcaption>
-              <div class="stars" aria-label="5 out of 5 stars"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div>
-            </div>
-          </figure>
-          <figure class="review">
-            <div class="review__avatar">J</div>
-            <div>
-              <blockquote>"The most luxurious rose box I've ever received. Will definitely order again!"</blockquote>
-              <figcaption>James T.</figcaption>
-              <div class="stars" aria-label="5 out of 5 stars"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div>
-            </div>
-          </figure>
-          <figure class="review">
-            <div class="review__avatar">E</div>
-            <div>
-              <blockquote>"Perfect service and amazing quality. My partner loved it! Thank you Envie Roses!"</blockquote>
-              <figcaption>Emily R.</figcaption>
-              <div class="stars" aria-label="5 out of 5 stars"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div>
-            </div>
-          </figure>
-        </div>
       </div>
     </section>
   </main>
@@ -322,5 +207,6 @@
 
   <script src="js/main.js"></script>
   <script src="js/shop.js"></script>
+  <script src="js/home.js"></script>
 </body>
 </html>

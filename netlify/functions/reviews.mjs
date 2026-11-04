@@ -9,6 +9,19 @@ const clean = (v, max) => String(v || '').replace(/\s+/g, ' ').trim().slice(0, m
 export default async (req) => {
   const url = new URL(req.url);
 
+  if (req.method === 'GET' && url.searchParams.get('latest')) {
+    // Homepage: newest approved reviews from every product, plus the overall average
+    const catalog = await getCatalog();
+    const approved = (await listReviews()).filter((r) => r.status === 'approved' && catalog.products[r.productId]);
+    const count = approved.length;
+    const average = count ? Math.round((approved.reduce((n, r) => n + r.rating, 0) / count) * 10) / 10 : 0;
+    const reviews = approved.sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt))).slice(0, 12)
+      .map(({ name, rating, title, text, createdAt, productId }) => ({ name, rating, title, text, createdAt, productId, productName: catalog.products[productId].name }));
+    return new Response(JSON.stringify({ count, average, reviews }), {
+      headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=300' }
+    });
+  }
+
   if (req.method === 'GET') {
     const productId = url.searchParams.get('product') || '';
     if (!/^[a-z0-9-]{1,60}$/.test(productId)) return json(400, { error: 'Unknown product.' });
