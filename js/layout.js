@@ -83,7 +83,7 @@
     return `
           <div class="mega" id="megaShop">
             <div class="container mega__inner">
-            ${megaCol('Shop', [['shop.html', 'All Roses'], ['shop.html?c=boxes', 'Rose Boxes'], ['shop.html?c=bouquets', 'Bouquets'], ['shop.html?c=exclusive', 'Exclusive'], ['club.html', 'Flower Club'], ['gift-cards.html', 'Gift Cards'], ['finder.html', 'Bouquet Finder']])}
+            ${megaCol('Shop', [['shop.html', 'All Roses'], ['shop.html?c=boxes', 'Rose Boxes'], ['shop.html?c=bouquets', 'Bouquets'], ['shop.html?c=exclusive', 'Exclusive'], ['membership.html', 'Membership'], ['club.html', 'Flower Club'], ['gift-cards.html', 'Gift Cards'], ['finder.html', 'Bouquet Finder']])}
             ${megaCol('By Occasion', [...occ.map(([k, v]) => [`shop.html?o=${k}`, v]), ['gifts.html', 'All occasions →']])}
             ${megaCol('By Colour', Object.entries(TAGS.colours).map(([k, v]) => [`shop.html?colour=${k}`, v]))}
             ${megaCol('By Flower', Object.entries(TAGS.flowers).map(([k, v]) => [`shop.html?flower=${k}`, v]))}
@@ -355,6 +355,7 @@
           <li><a href="shop.html?c=boxes">Rose Boxes</a></li>
           <li><a href="shop.html?c=bouquets">Bouquets</a></li>
           <li><a href="gifts.html">Gifts &amp; Occasions</a></li>
+          <li><a href="membership.html">Membership</a></li>
           <li><a href="club.html">Flower Club</a></li>
           <li><a href="gift-cards.html">Gift Cards</a></li>
           <li><a href="finder.html">Bouquet Finder</a></li>
@@ -548,6 +549,7 @@
         <div id="coItems"></div>
         <div class="sum-row"><span>Subtotal</span><span id="coSubtotal"></span></div>
         <div class="sum-row"><span>Delivery</span><span id="coDelivery"></span></div>
+        <div class="sum-row sum-row--discount" id="coMemberRow" hidden><span id="coMemberLabel">Member discount</span><span id="coMember"></span></div>
         <div class="sum-row sum-row--discount" id="coDiscountRow" hidden><span id="coDiscountLabel">Discount</span><span id="coDiscount"></span></div>
         <div class="sum-row sum-row--discount" id="coReferralRow" hidden><span>Friend&rsquo;s welcome offer</span><span id="coReferral"></span></div>
         <div class="sum-row sum-row--discount" id="coGiftRow" hidden><span id="coGiftLabel">Gift card</span><span id="coGift"></span></div>

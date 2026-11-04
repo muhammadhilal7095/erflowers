@@ -42,7 +42,7 @@
   const VIEWS = {
     overview: 'Overview', orders: 'Orders', products: 'Products', reviews: 'Reviews',
     addons: 'Gift Add-ons', delivery: 'Delivery', discounts: 'Discount Codes',
-    customers: 'Customers & Points', club: 'Flower Club', partners: 'Partners', giftcards: 'Gift Cards', blog: 'Blog',
+    customers: 'Customers & Points', membership: 'Membership', club: 'Flower Club', partners: 'Partners', giftcards: 'Gift Cards', blog: 'Blog',
     images: 'Site Images', settings: 'Settings'
   };
   const RULES = window.ENVIE_RULES;
@@ -166,6 +166,7 @@
   function go(next) {
     view = VIEWS[next] ? next : 'overview';
     addonDraft = null;
+    mplanDraft = null;
     planDraft = null;
     if (location.hash !== `#${view}`) history.replaceState(null, '', `#${view}`);
     document.querySelectorAll('.side__nav [data-view]').forEach((b) => b.classList.toggle('is-active', b.dataset.view === view));
@@ -179,7 +180,7 @@
     ({
       overview: renderOverview, orders: renderOrders, products: renderProducts, reviews: renderReviews,
       addons: renderAddons, delivery: renderDelivery, discounts: renderDiscounts, blog: renderBlog,
-      customers: renderCustomers, club: renderClub, partners: renderPartners, giftcards: renderGiftCards,
+      customers: renderCustomers, membership: renderMembership, club: renderClub, partners: renderPartners, giftcards: renderGiftCards,
       images: renderImages, settings: renderSettings
     })[view]();
   }
@@ -346,6 +347,8 @@
         ${o.giftCardOrder.message ? `<p class="od-quote">${esc(o.giftCardOrder.message)}</p>` : ''}
         ${o.giftCardIssued ? `<p>Issued: <strong>${esc(o.giftCardIssued)}</strong></p>` : `<p class="help">Once paid, issue the card and send the code to the customer.</p><button type="button" class="btn btn--gold btn--sm" id="odIssue">${icon('card')} Issue gift card</button>`}
       </div>` : ''}
+      ${o.member ? `<div class="od-section"><p class="help">Member price: ${esc(o.member.name)} (${o.member.percent}% off${o.member.amount ? ' = ' + money(o.member.amount) : ''}${o.member.freeDelivery ? ', free delivery' : ''}).</p></div>` : ''}
+      ${o.membershipBouquet ? `<div class="od-section"><p class="notice" style="margin:0">VIP monthly bouquet from a membership payment. Confirm the delivery date and address with the member.</p></div>` : ''}
       ${o.affiliate ? `<div class="od-section"><p class="help">Came through partner link <strong>${esc(o.affiliate.code)}</strong>: ${money(o.affiliate.commission)} commission ${o.affiliateCancelled ? 'cancelled' : o.affiliateEarned ? 'earned' : 'when delivered'}.</p></div>` : ''}
       ${o.customerId || o.subscriptionId || o.pointsAwarded ? `<div class="od-section"><p class="help">${o.customerId ? 'Customer has an account. ' : ''}${o.subscriptionId ? `Flower Club delivery (${esc(o.subscriptionId)}). ` : ''}${o.pointsAwarded ? `${o.pointsAwarded} points added.` : o.customerId && !o.giftCardOrder ? 'Loyalty points are added when you mark this order Delivered.' : ''}</p></div>` : ''}
       ${o.message ? `<div class="od-section"><h3>Card message</h3><p class="od-quote">${esc(o.message)}</p></div>` : ''}
@@ -1599,6 +1602,140 @@
     }));
   }
 
+
+  // ---------- Membership ----------
+  let memberships = null;
+  let mplanDraft = null;
+  const MEM_LABELS = { pending: 'Waiting to start', 'awaiting-payment': 'Awaiting payment', trialing: 'Free trial', active: 'Active', 'past-due': 'Payment failed', cancelled: 'Cancelled' };
+  const MEM_BADGE = { pending: 'new', 'awaiting-payment': 'awaiting-payment', trialing: 'confirmed', active: 'delivered', 'past-due': 'cancelled', cancelled: 'cancelled' };
+  async function renderMembership() {
+    setBar(`<button type="button" class="btn btn--outline btn--sm" id="refreshMem">${icon('refresh')}<span>Refresh</span></button>`);
+    $('refreshMem').addEventListener('click', () => { memberships = null; renderMembership(); });
+    if (!memberships) {
+      $('content').innerHTML = '<div class="card"><div class="empty">Loading members…</div></div>';
+      try { memberships = (await api('memberships')).memberships || []; } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); return; }
+      if (view !== 'membership') return;
+    }
+    const cfg = catalog.membership;
+    if (!mplanDraft) mplanDraft = Object.entries(cfg.plans || {}).map(([id, p]) => ({ id, ...p }));
+    const active = memberships.filter((m) => ['trialing', 'active'].includes(m.status));
+    const mrr = memberships.filter((m) => m.status === 'active').reduce((n, m) => n + (m.price || 0), 0);
+    $('content').innerHTML = `
+      <div class="stats">
+        <div class="card stat"><p class="stat__label">Members</p><p class="stat__value">${active.length}</p><p class="stat__sub">Active or on free trial</p></div>
+        <div class="card stat"><p class="stat__label">On free trial</p><p class="stat__value">${memberships.filter((m) => m.status === 'trialing').length}</p><p class="stat__sub">Not paying yet</p></div>
+        <div class="card stat"><p class="stat__label">Monthly income</p><p class="stat__value">${money(mrr)}</p><p class="stat__sub">From paying members</p></div>
+        <div class="card stat"><p class="stat__label">Waiting</p><p class="stat__value">${memberships.filter((m) => ['pending', 'awaiting-payment'].includes(m.status)).length}</p><p class="stat__sub">To set up</p></div>
+      </div>
+      <div class="notice">${icon('card')}<span>Members join on the <a href="membership.html" target="_blank" rel="noopener">Membership page</a> and need an account. With Stripe card payments on, the free trial, monthly payments and cancellations happen automatically. Without Stripe, requests come to you on WhatsApp: arrange payment, then set the member to <strong>Free trial</strong> or <strong>Active</strong> here. Member prices apply at checkout while the member is logged in.</span></div>
+      <div class="card">${memberships.length ? `<div class="table-wrap"><table class="table">
+        <thead><tr><th>Member</th><th>Plan</th><th>Dates</th><th>Payment</th><th>Status</th><th></th></tr></thead>
+        <tbody>${memberships.map((m) => `
+          <tr data-mid="${esc(m.customerId)}">
+            <td class="ref">${esc(m.customer.name)}<small>${esc(m.customer.email)}${m.customer.phone ? ' · ' + esc(m.customer.phone) : ''}</small></td>
+            <td data-label="Plan">${esc(m.planName)}<small>${money(m.price)} a month</small></td>
+            <td data-label="Dates">Joined ${fmtDate(m.createdAt)}<small>${m.trialEnd ? 'Trial ends ' + fmtDate(m.trialEnd) : ''}${m.periodEnd ? ' · Paid to ' + fmtDate(m.periodEnd) : ''}${m.cancelAtPeriodEnd ? ' · cancelled, ends then' : ''}</small></td>
+            <td data-label="Payment">${m.payment === 'card' ? 'Card (Stripe)' : 'WhatsApp'}</td>
+            <td>${m.payment === 'card' && m.stripeSubscription ? `<span class="badge st-${MEM_BADGE[m.status] || 'new'}">${esc(MEM_LABELS[m.status] || m.status)}</span>`
+              : `<select class="status-select st-${MEM_BADGE[m.status] || 'new'}" data-mstatus aria-label="Status">${Object.entries(MEM_LABELS).map(([k, v]) => `<option value="${k}"${k === m.status ? ' selected' : ''}>${v}</option>`).join('')}</select>`}</td>
+            <td><div class="row-actions">
+              ${m.customer.phone ? `<a class="btn btn--wa btn--sm" target="_blank" rel="noopener" href="https://wa.me/${waNumber(m.customer.phone)}?text=${encodeURIComponent(`Hello ${m.customer.name}, about your Envie Roses membership:`)}">${icon('wa')}</a>` : ''}
+              ${m.status !== 'cancelled' ? `<button type="button" class="btn btn--danger btn--sm" data-mcancel>Cancel</button>` : `<button type="button" class="icon-btn icon-btn--danger" data-mdel aria-label="Delete">${icon('trash')}</button>`}
+            </div></td>
+          </tr>`).join('')}</tbody></table></div>` : `<div class="empty">${icon('card')}<strong>No members yet</strong>They appear here when customers join.</div>`}</div>
+
+      <div class="card">
+        <div class="card__head"><h2>Plans</h2><label class="check"><input type="checkbox" id="memOn"${cfg.enabled ? ' checked' : ''}> Membership open</label></div>
+        <div class="card__body">
+          <label class="field" style="max-width:220px"><span>Free trial for new members (days) <small>0 = no trial</small></span><input class="input" id="memTrial" type="number" min="0" max="90" value="${cfg.trialDays}"></label>
+          <div class="addon-list">${mplanDraft.map((p, i) => `
+            <div class="card addon-edit addon-edit--wide" data-mi="${i}">
+              <div class="addon-edit__fields">
+                <div class="grid-loyalty">
+                  <label class="field"><span>Plan name</span><input class="input" data-mf="name" value="${esc(p.name)}" maxlength="60"></label>
+                  <label class="field"><span>Price a month</span><div class="money"><input class="input" data-mf="price" inputmode="decimal" value="${p.price ? (p.price / 100).toFixed(2) : ''}"></div></label>
+                  <label class="field"><span>Discount on flowers (%)</span><input class="input" data-mf="discount" type="number" min="0" max="50" value="${p.discount}"></label>
+                  <label class="field"><span>Free delivery over <small>0 = always</small></span><div class="money"><input class="input" data-mf="freeDeliveryOver" inputmode="decimal" value="${(p.freeDeliveryOver / 100).toFixed(2)}"></div></label>
+                </div>
+                <label class="field"><span>Benefits shown on the page <small>one per line</small></span><textarea class="input" data-mf="perks" rows="4">${esc((p.perks || []).join('\n'))}</textarea></label>
+                <div class="addon-edit__foot">
+                  <span style="display:flex;gap:16px;flex-wrap:wrap">
+                    <label class="check"><input type="checkbox" data-mf="monthlyBouquet"${p.monthlyBouquet ? ' checked' : ''}> Monthly bouquet (added to Orders each paid month)</label>
+                    <label class="check"><input type="checkbox" data-mf="popular"${p.popular ? ' checked' : ''}> "Most popular" label</label>
+                    <label class="check"><input type="checkbox" data-mf="active"${p.active !== false ? ' checked' : ''}> Show on website</label>
+                  </span>
+                  <button type="button" class="btn btn--danger btn--sm" data-mpdel="${i}">${icon('trash')} Delete</button>
+                </div>
+              </div>
+            </div>`).join('')}</div>
+          <div class="od-actions" style="margin-top:14px">
+            <button type="button" class="btn btn--outline btn--sm" id="addMPlan">${icon('plus')} Add plan</button>
+            <button type="button" class="btn btn--gold btn--sm" id="saveMPlans">Save membership</button>
+          </div>
+          <p class="help" style="margin-top:10px">Price changes apply to new members. Existing card members keep their price; tell them in advance if you change it. Only list benefits you will actually give.</p>
+        </div>
+      </div>`;
+
+    const findM = (el) => memberships.find((x) => x.customerId === el.closest('[data-mid]').dataset.mid);
+    document.querySelectorAll('[data-mstatus]').forEach((sel) => sel.addEventListener('change', async () => {
+      const m = findM(sel);
+      try {
+        const saved = await api(`memberships/${m.customerId}`, { method: 'PATCH', body: { status: sel.value } });
+        memberships = memberships.map((x) => (x.customerId === m.customerId ? saved : x));
+        toast(`${m.customer.name}: ${MEM_LABELS[saved.status].toLowerCase()}.`);
+        renderMembership();
+      } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    }));
+    document.querySelectorAll('[data-mcancel]').forEach((b) => b.addEventListener('click', async () => {
+      const m = findM(b);
+      if (!confirm(`Cancel ${m.customer.name}'s membership now? ${m.stripeSubscription ? 'Stripe stops charging them straight away.' : ''}`)) return;
+      try {
+        const saved = await api(`memberships/${m.customerId}/cancel`, { method: 'POST' });
+        memberships = memberships.map((x) => (x.customerId === m.customerId ? saved : x));
+        renderMembership();
+      } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    }));
+    document.querySelectorAll('[data-mdel]').forEach((b) => b.addEventListener('click', async () => {
+      const m = findM(b);
+      if (!confirm('Delete this membership record?')) return;
+      try {
+        await api(`memberships/${m.customerId}`, { method: 'DELETE' });
+        memberships = memberships.filter((x) => x.customerId !== m.customerId);
+        renderMembership();
+      } catch (err) { if (err.message !== 'Session ended') toast(err.message, true); }
+    }));
+
+    const sync = () => document.querySelectorAll('[data-mi]').forEach((card) => {
+      const p = mplanDraft[Number(card.dataset.mi)];
+      card.querySelectorAll('[data-mf]').forEach((el) => {
+        const k = el.dataset.mf;
+        if (el.type === 'checkbox') p[k] = el.checked;
+        else if (k === 'price' || k === 'freeDeliveryOver') p[k] = toPence(el.value || '0');
+        else if (k === 'discount') p[k] = Number(el.value);
+        else if (k === 'perks') p[k] = el.value.split('\n').map((x) => x.trim()).filter(Boolean);
+        else p[k] = el.value;
+      });
+    });
+    document.querySelectorAll('[data-mpdel]').forEach((b) => b.addEventListener('click', () => { sync(); mplanDraft.splice(Number(b.dataset.mpdel), 1); renderMembership(); }));
+    $('addMPlan').addEventListener('click', () => { sync(); mplanDraft.push({ id: '', name: '', price: NaN, discount: 5, freeDeliveryOver: 0, monthlyBouquet: false, popular: false, active: true, perks: [] }); renderMembership(); });
+    $('saveMPlans').addEventListener('click', async () => {
+      sync();
+      const plans = {};
+      for (const p of mplanDraft) {
+        const name = String(p.name || '').trim();
+        if (!name) { toast('Every plan needs a name.', true); return; }
+        if (!Number.isInteger(p.price) || p.price < 100) { toast(`Enter a monthly price for "${name}".`, true); return; }
+        if (!Number.isInteger(p.discount) || p.discount < 0 || p.discount > 50) { toast(`Discount for "${name}" must be 0 to 50%.`, true); return; }
+        let id = p.id;
+        if (!id) { const base = slugify(name); id = base; for (let n = 2; plans[id] || mplanDraft.some((x) => x !== p && x.id === id); n++) id = `${base}-${n}`; p.id = id; }
+        plans[id] = { name, price: p.price, discount: p.discount, freeDeliveryOver: Number.isInteger(p.freeDeliveryOver) ? p.freeDeliveryOver : 0, monthlyBouquet: p.monthlyBouquet, popular: p.popular, active: p.active !== false, perks: p.perks || [] };
+      }
+      const next = clone(catalog);
+      next.membership = { enabled: $('memOn').checked, trialDays: Number($('memTrial').value), plans };
+      if (await publish(next, 'Membership saved.')) { mplanDraft = null; renderMembership(); }
+    });
+  }
+
   // ---------- Settings ----------
   function renderSettings() {
     setBar(`<button type="button" class="btn btn--gold btn--sm" id="saveSettingsTop">Save settings</button>`);
@@ -1777,6 +1914,7 @@
     subscriptions = null;
     giftcards = null;
     affiliates = null;
+    memberships = null;
     document.querySelectorAll('dialog[open]').forEach((d) => d.close());
     $('app').hidden = true;
     $('login').hidden = false;

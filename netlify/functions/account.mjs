@@ -15,6 +15,7 @@ import {
   login, makeCustomerToken, makeResetLink, publicCustomer, resetPassword, sendEmail, stripe, updateProfile, cleanEmail,
   ensureReferralCode, findByReferralCode
 } from '../lib/accounts.mjs';
+import { getMembership, publicMembership } from '../lib/membership.mjs';
 
 const orderSummary = (o) => ({
   id: o.id, createdAt: o.createdAt, status: o.status, payment: o.payment, quick: o.quick || false,
@@ -76,7 +77,8 @@ export default async (req) => {
       await ensureReferralCode(c);
       const orders = (await Promise.all((c.orders || []).slice(0, 50).map((id) => getOrder(id)))).filter(Boolean).map(orderSummary);
       const subscriptions = (await listSubscriptions(c.id)).map(subSummary);
-      return json(200, { customer: publicCustomer(c), orders, subscriptions, loyalty, billing: Boolean(c.stripeCustomerId && process.env.STRIPE_SECRET_KEY) });
+      const membership = publicMembership(await getMembership(c.id), catalog);
+      return json(200, { customer: { ...publicCustomer(c), trialUsed: Boolean(c.membershipTrialUsed) }, membership, orders, subscriptions, loyalty, billing: Boolean(c.stripeCustomerId && process.env.STRIPE_SECRET_KEY) });
     }
     if (path === 'me' && method === 'PUT') {
       return json(200, { customer: publicCustomer(await updateProfile(c, body)) });

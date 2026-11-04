@@ -232,3 +232,17 @@ A **Become a Partner · Earn £10 per order** button in the header (and in the p
 5. Pay partners yourself (e.g. bank transfer from £50), then press **Record payout** so their balance is correct.
 
 You can change the commission, link length and minimum payout, or close the programme, in Dashboard → Partners. The partner terms on `partners.html` require partners to label posts as ads (#ad), as UK advertising rules require.
+
+### Membership (`membership.html`)
+
+Three monthly plans: **Flower Lover £9.99**, **Flower Club Premium £19.99** and **Flower Club VIP £39.99**. New members get the **first 30 days free**. Change plans, prices, benefits and the trial length in **Dashboard → Membership**.
+
+- **What the website applies automatically** while a member is logged in:
+  - their % off flowers (gifts and add-ons aren't discounted);
+  - free standard delivery over their plan's minimum (VIP: always).
+  Member discounts and discount codes don't add together: the bigger saving is used.
+- **VIP monthly bouquet:** each paid month adds a "VIP monthly bouquet" order to Orders, with the member's first saved address. Confirm the date with them. The bouquet starts with the first paid month, not during the free trial.
+- **Before joining**, the page shows the price today (£0 on a trial), the exact date of the first payment and the monthly price, and the customer must tick a box confirming they understand it renews automatically. One free trial per customer.
+- **With Stripe** (card payments on and `STRIPE_WEBHOOK_SECRET` set): the trial, monthly payments, failed payments and cancellations all update automatically. Customers cancel in My Account → Membership, and benefits continue until the end of the trial or paid month. In Stripe, turn on **Settings → Billing → Subscriptions → Send emails about upcoming renewals / trial endings**, so members get a reminder before they're charged.
+- **Without Stripe:** sign-ups come to you on WhatsApp. Arrange payment, then set the member to **Free trial** or **Active** in the dashboard.
+- Benefits like "exclusive member offers", "member-only bouquets", "early access", "birthday offers", "priority service" and "occasion reminders" are delivered by you (for example by WhatsApp or email). Only list the ones you will actually give.

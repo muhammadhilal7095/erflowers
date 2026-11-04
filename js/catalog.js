@@ -110,6 +110,28 @@
     // Partner programme: commission (pence) per delivered order from a partner's link
     affiliates: { enabled: true, commission: 1000, cookieDays: 30, minPayout: 5000 },
 
+    // Membership (membership.html): monthly plans with member prices. price in pence per month.
+    // discount = % off flowers (not gifts); freeDeliveryOver = pence (0 = always free standard delivery);
+    // monthlyBouquet = a standard bouquet each paid month. Free trial for new members.
+    membership: {
+      enabled: true,
+      trialDays: 30,
+      plans: {
+        lover: {
+          name: 'Flower Lover', price: 999, discount: 5, freeDeliveryOver: 4000, monthlyBouquet: false, popular: false, active: true,
+          perks: ['5% off all flowers', 'Exclusive member offers', 'Birthday treat', 'Free delivery on orders over £40']
+        },
+        premium: {
+          name: 'Flower Club Premium', price: 1999, discount: 10, freeDeliveryOver: 3000, monthlyBouquet: false, popular: true, active: true,
+          perks: ['10% off all flowers', 'Free standard delivery on orders over £30', 'Exclusive member-only bouquets', 'Early access to new collections', 'Birthday and anniversary offers']
+        },
+        vip: {
+          name: 'Flower Club VIP', price: 3999, discount: 15, freeDeliveryOver: 0, monthlyBouquet: true, popular: false, active: true,
+          perks: ['One standard bouquet every month', 'Free standard UK delivery', '15% off additional flowers', 'Exclusive premium collections', 'Priority customer service', 'Special occasion reminders']
+        }
+      }
+    },
+
     // Flower Club popup: shown as soon as the site opens (delay 0) on any page ('all') or the homepage only ('home'),
     // everyDays: 0 = every visit, or hide for that many days once closed
     popup: { enabled: true, delay: 0, pages: 'all', everyDays: 0 },

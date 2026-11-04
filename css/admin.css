@@ -532,3 +532,4 @@ svg { width: 18px; height: 18px; flex-shrink: 0; }
   .grid-loyalty { grid-template-columns: 1fr 1fr; }
   .row-actions { justify-content: flex-start; }
 }
+.addon-edit--wide { grid-template-columns: 1fr; }

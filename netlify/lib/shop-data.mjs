@@ -57,6 +57,7 @@ function withDefaults(saved) {
     referrals: { ...DEFAULTS.referrals, ...saved.referrals },
     popup: { ...DEFAULTS.popup, ...saved.popup },
     affiliates: { ...DEFAULTS.affiliates, ...saved.affiliates },
+    membership: saved.membership ? { ...DEFAULTS.membership, ...saved.membership } : structuredClone(DEFAULTS.membership),
     club: saved.club ? { ...DEFAULTS.club, ...saved.club } : structuredClone(DEFAULTS.club),
     giftCards: { ...DEFAULTS.giftCards, ...saved.giftCards },
     products: saved.products || {}
@@ -270,6 +271,26 @@ export function validateCatalog(input) {
     minPayout: int(af.minPayout ?? 5000, 0, 1000000, 'Minimum payout')
   };
 
+  const ms = input.membership || {};
+  const msPlansIn = ms.plans && typeof ms.plans === 'object' ? ms.plans : {};
+  if (Object.keys(msPlansIn).length > 6) throw new Error('Too many membership plans (maximum 6).');
+  const msPlans = {};
+  for (const [id, pl] of Object.entries(msPlansIn)) {
+    if (!/^[a-z0-9-]{1,40}$/.test(id)) throw new Error(`Membership plan ID "${id}" is not valid.`);
+    const name = str(pl.name, 60, 'Membership plan name', { required: true });
+    msPlans[id] = {
+      name,
+      price: int(pl.price, 100, 100000, `Monthly price for "${name}"`),
+      discount: int(pl.discount ?? 0, 0, 50, `Discount for "${name}"`),
+      freeDeliveryOver: int(pl.freeDeliveryOver ?? 0, 0, 1000000, `Free delivery threshold for "${name}"`),
+      monthlyBouquet: pl.monthlyBouquet === true,
+      popular: pl.popular === true,
+      active: pl.active !== false,
+      perks: (Array.isArray(pl.perks) ? pl.perks : []).map((x) => str(x, 120, `Benefit for "${name}"`)).filter(Boolean).slice(0, 10)
+    };
+  }
+  const membership = { enabled: ms.enabled === true, trialDays: int(ms.trialDays ?? 30, 0, 90, 'Free trial (days)'), plans: msPlans };
+
   const pu = input.popup || {};
   const popup = {
     enabled: pu.enabled === true,
@@ -305,7 +326,7 @@ export function validateCatalog(input) {
   };
   if (giftCards.enabled && !giftCards.amounts.length) throw new Error('Add at least one gift card amount.');
 
-  return { shop, legal, social, payments, delivery, addons, cities, loyalty, referrals, club, giftCards, popup, affiliates, images, products };
+  return { shop, legal, social, payments, delivery, addons, cities, loyalty, referrals, club, giftCards, popup, affiliates, membership, images, products };
 }
 
 // ---------- Orders ----------
@@ -314,7 +335,8 @@ export const unitPrice = RULES.unitPrice;
 
 // Prices an order from the live catalogue. items: { productId, optionId, qty } or { addonId, qty }.
 // delivery: { postcode, date } checks same-day rules and sets the fee; omit for WhatsApp quick orders.
-export function priceOrder(catalog, items, { delivery = null, discount = null } = {}) {
+// member: { planId, name, discount (%), freeDeliveryOver (pence, 0 = always) } for an active member
+export function priceOrder(catalog, items, { delivery = null, discount = null, member = null } = {}) {
   if (!Array.isArray(items) || !items.length || items.length > 30) throw new Error('Your bag is empty.');
   const lines = [];
   for (const item of items) {
@@ -344,14 +366,33 @@ export function priceOrder(catalog, items, { delivery = null, discount = null } 
     sameDay = Boolean(quote.sameDay);
   }
 
+  // Members: free standard delivery over their plan's threshold (not same-day)
+  let memberInfo = null;
+  if (member) {
+    const flowers = lines.filter((l) => l.productId).reduce((n, l) => n + l.total, 0);
+    memberInfo = { planId: member.planId, name: member.name, percent: member.discount, amount: Math.round((flowers * member.discount) / 100), freeDelivery: false };
+    if (!sameDay && deliveryFee > 0 && (member.freeDeliveryOver === 0 || subtotal >= member.freeDeliveryOver)) {
+      deliveryFee = 0;
+      memberInfo.freeDelivery = true;
+    }
+  }
+
   let discountInfo = null;
   if (discount) {
     const result = RULES.applyDiscount(discount, subtotal, deliveryFee);
     if (!result.ok) throw new Error(result.error);
     discountInfo = { code: result.code, label: result.label, amount: result.amount };
   }
-  const total = Math.max(0, subtotal + (deliveryFee || 0) - (discountInfo ? discountInfo.amount : 0));
-  return { lines, subtotal, deliveryFee, sameDay, discount: discountInfo, total };
+  // Member discount and discount codes don't add together: the bigger one is used
+  let note = '';
+  if (memberInfo && discountInfo) {
+    if (discountInfo.amount > memberInfo.amount) { memberInfo.amount = 0; note = 'Your code saves more than your member discount, so we used the code.'; }
+    else { note = `Your ${memberInfo.percent}% member discount saves more than the code, so we used that.`; discountInfo = null; }
+  }
+  if (memberInfo && !memberInfo.amount && !memberInfo.freeDelivery) memberInfo = null;
+  const off = (discountInfo ? discountInfo.amount : 0) + (memberInfo ? memberInfo.amount : 0);
+  const total = Math.max(0, subtotal + (deliveryFee || 0) - off);
+  return { lines, subtotal, deliveryFee, sameDay, discount: discountInfo, member: memberInfo, ...(note ? { discountNote: note } : {}), total };
 }
 
 export function cleanOrderDetails(body) {

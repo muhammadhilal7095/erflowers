@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Membership: Member Prices on Flowers | Envie Roses</title>
+  <meta name="description" content="Join Envie Roses membership for money off flowers, free delivery and member-only offers. Try it free for 30 days, cancel any time.">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Membership: Member Prices on Flowers | Envie Roses">
+  <meta property="og:description" content="Join Envie Roses membership for money off flowers, free delivery and member-only offers. Try it free for 30 days, cancel any time.">
+  <meta property="og:image" content="images/hero.jpg">
+  <meta property="og:locale" content="en_GB">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23c9a96e' stroke-width='2'%3E%3Cpath d='M20 9c4 2 7 5 7 9.5S23.8 27 20 27s-7-3.5-7-8.5S16 11 20 9z'/%3E%3Cpath d='M20 27v5'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/catalog.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/layout.js"></script>
+</head>
+<body>
+  <script>EnvieLayout.top(null);</script>
+
+  <main id="main" class="mship">
+    <section class="mship__hero">
+      <div class="container">
+        <nav class="crumbs crumbs--light" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><span aria-current="page">Membership</span></nav>
+        <p class="kicker">Envie Roses Membership</p>
+        <h1 class="mship__title">Member prices on <em>every bouquet</em></h1>
+        <p class="mship__intro">Save on flowers all year, get free delivery and enjoy member-only offers. Choose the plan that suits you.</p>
+        <p class="mship__trial" id="trialBadge" hidden><span>Launch offer</span> <strong id="trialText">First 30 days free</strong>, then billed monthly. Cancel any time.</p>
+      </div>
+    </section>
+
+    <section class="mship__plans-wrap">
+      <div class="container">
+        <div class="mship__plans" id="plans"></div>
+        <p class="mship__closed" id="closed" hidden>Membership isn&rsquo;t open at the moment. Please check back soon.</p>
+      </div>
+    </section>
+
+    <!-- Join panel: shows the exact price and dates before anyone signs up -->
+    <section class="mship__join-wrap" id="join" hidden>
+      <div class="container">
+        <form class="mship__join" id="joinForm" novalidate>
+          <h2 id="joinTitle">Join</h2>
+          <div class="mship__summary" id="joinSummary"></div>
+          <div id="joinBody"></div>
+          <p class="form-error" id="joinError" role="alert"></p>
+        </form>
+      </div>
+    </section>
+
+    <section class="mship__section">
+      <div class="container">
+        <h2 class="cpage__h">How membership works</h2>
+        <ol class="partner-steps">
+          <li><span>1</span><h3>Pick a plan</h3><p>Choose Flower Lover, Premium or VIP. You&rsquo;ll need a free account.</p></li>
+          <li><span>2</span><h3>Try it free</h3><p id="stepTrial">New members get their first 30 days free. We tell you the exact date your first payment is due before you join.</p></li>
+          <li><span>3</span><h3>Save on every order</h3><p>Log in before you check out and your member prices and free delivery are applied automatically.</p></li>
+          <li><span>4</span><h3>Cancel any time</h3><p>Cancel in My Account in two clicks. Cancel during the free trial and you won&rsquo;t pay anything.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="mship__section cfaq">
+      <div class="container cfaq__inner">
+        <h2 class="cpage__h">Questions</h2>
+        <details class="faq" open><summary>How does the free trial work?<span class="faq__icon" aria-hidden="true"></span></summary><p id="faqTrial"></p></details>
+        <details class="faq"><summary>How do I get my member discount?<span class="faq__icon" aria-hidden="true"></span></summary><p>Log in to your account before you check out. Your discount comes off the flowers in your bag automatically, and delivery is free when your order qualifies. Member discounts can&rsquo;t be added to discount codes: we automatically use whichever saves you more. Gifts and add-ons aren&rsquo;t discounted.</p></details>
+        <details class="faq"><summary>What does &ldquo;free standard delivery&rdquo; mean?<span class="faq__icon" aria-hidden="true"></span></summary><p>Standard delivery on your chosen date is free when your order meets your plan&rsquo;s minimum (VIP: always). Same-day delivery is charged as normal.</p></details>
+        <details class="faq"><summary>How does the VIP monthly bouquet work?<span class="faq__icon" aria-hidden="true"></span></summary><p>For each paid month we prepare one standard bouquet for you, chosen by our florists. We&rsquo;ll message you to confirm the delivery date and address. The monthly bouquet starts with your first paid month, not during the free trial.</p></details>
+        <details class="faq"><summary>How do I cancel?<span class="faq__icon" aria-hidden="true"></span></summary><p>Go to <a href="account.html#membership">My Account &rarr; Membership</a> and press Cancel membership, or message us. Your benefits continue until the end of the period you&rsquo;ve paid for (or the end of your trial), and you won&rsquo;t be charged again.</p></details>
+        <details class="faq"><summary>Can I change plan?<span class="faq__icon" aria-hidden="true"></span></summary><p>Yes. Message us and we&rsquo;ll switch you over, or cancel and join the new plan when your current period ends.</p></details>
+      </div>
+    </section>
+
+    <section class="mship__section">
+      <div class="container prose mship__terms">
+        <h2>Membership terms</h2>
+        <ul>
+          <li>Membership is a monthly subscription that renews automatically each month at the plan price shown until you cancel.</li>
+          <li id="termTrial">New members get a free trial of the length shown. One free trial per customer. If you don&rsquo;t cancel before the trial ends, the monthly price is charged on the date shown when you join, and then every month on the same day.</li>
+          <li>You can cancel at any time in My Account or by contacting us. Cancelling stops future payments; your benefits continue until the end of the current paid period or trial.</li>
+          <li>Member discounts apply to flowers (not gifts, add-ons, delivery or gift cards), can&rsquo;t be combined with discount codes, and apply only while you&rsquo;re logged in with an active membership.</li>
+          <li>We&rsquo;ll tell you in advance of any price change, and you can cancel before it applies.</li>
+          <li>These terms don&rsquo;t affect your statutory rights. See our <a href="terms.html">Terms &amp; Conditions</a>.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script>EnvieLayout.bottom();</script>
+
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/membership.js"></script>
+</body>
+</html>

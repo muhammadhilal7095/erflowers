@@ -293,7 +293,28 @@
   }
   postcodeInput.addEventListener('input', updateDelivery);
   dateInput.addEventListener('change', updateDelivery);
-  const currentFee = () => (quote.ok && typeof quote.fee === 'number' ? quote.fee : typeof shop.deliveryFee === 'number' ? shop.deliveryFee : null);
+  const baseFee = () => (quote.ok && typeof quote.fee === 'number' ? quote.fee : typeof shop.deliveryFee === 'number' ? shop.deliveryFee : null);
+  // Members: same rules as the server (priceOrder in shop-data.mjs)
+  function memberPlan() {
+    const m = account && account.membership;
+    const cfg = CATALOG.membership || {};
+    if (!cfg.enabled || !m || !m.active) return null;
+    const plan = (cfg.plans || {})[m.planId];
+    return plan ? { ...plan, planId: m.planId } : null;
+  }
+  const memberFreeDelivery = () => {
+    const p = memberPlan();
+    const fee = baseFee();
+    return Boolean(p && !quote.sameDay && fee > 0 && (p.freeDeliveryOver === 0 || subtotal() >= p.freeDeliveryOver));
+  };
+  const currentFee = () => (memberFreeDelivery() ? 0 : baseFee());
+  // A discount code is only kept by the server when it beats the member discount
+  function memberDiscount() {
+    const p = memberPlan();
+    if (!p || applied) return 0;
+    const flowers = cartLines().filter((l) => !l.addon).reduce((n, l) => n + l.total, 0);
+    return Math.round((flowers * p.discount) / 100);
+  }
 
   // ---------- Customer account (optional): prefill, saved addresses, loyalty points ----------
   const ACCOUNT_KEY = 'envie_account_token';
@@ -407,7 +428,7 @@
   // ---------- Discount codes (checked by the server; codes are never stored in the website) ----------
   let applied = null;
   let giftApplied = null;
-  const discountAmount = () => (applied ? applied.amount : 0);
+  const discountAmount = () => (applied ? applied.amount : 0) + memberDiscount();
   async function applyCode(silent) {
     const code = RULES.cleanCode($('coCode').value);
     const msg = $('coCodeMsg');
@@ -416,7 +437,7 @@
     try {
       const pc = postcodeInput.value.trim();
       const res = await fetch('/api/discount', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ code, items: itemsForServer(), postcode: RULES.normalizePostcode(pc) ? pc : undefined, date: dateInput.value || undefined, discountCode: applied ? applied.code : undefined })
       });
       const data = await res.json().catch(() => ({}));
@@ -426,7 +447,7 @@
         msg.textContent = `Gift card ${data.display} applied (balance ${money(data.balance)}).`;
       } else {
         applied = { code: data.code, label: data.label, amount: data.amount };
-        msg.textContent = `${data.code} applied: ${data.label}.`;
+        msg.textContent = data.note || `${data.code} applied: ${data.label}.`;
       }
       msg.className = 'co-discount__msg is-good';
       $('coCode').value = '';
@@ -449,7 +470,10 @@
       </div>`).join('');
     const fee = currentFee();
     $('coSubtotal').textContent = money(subtotal());
-    $('coDelivery').textContent = fee === null ? 'Confirmed with your order' : fee === 0 ? 'Free' : money(fee) + (quote.sameDay ? ' (same day)' : '');
+    $('coDelivery').textContent = fee === null ? 'Confirmed with your order' : fee === 0 ? (memberFreeDelivery() ? 'Free (member)' : 'Free') : money(fee) + (quote.sameDay ? ' (same day)' : '');
+    const md = memberDiscount();
+    $('coMemberRow').hidden = !md;
+    if (md) { const p = memberPlan(); $('coMemberLabel').textContent = `Member discount (${p.discount}%)`; $('coMember').textContent = '−' + money(md); }
     $('coDiscountRow').hidden = !applied;
     if (applied) { $('coDiscountLabel').textContent = `Discount (${applied.code})`; $('coDiscount').textContent = '−' + money(applied.amount); }
     const t = totals();
@@ -524,6 +548,7 @@
       deliveryFee: currentFee(),
       sameDay: Boolean(quote.sameDay),
       discount: applied,
+      member: memberDiscount() ? { amount: memberDiscount() } : null,
       discountCode: applied ? applied.code : '',
       referral: totals().referral ? { amount: totals().referral } : null,
       giftCard: totals().gift ? { display: giftApplied.display, amount: totals().gift } : null,
@@ -582,6 +607,7 @@
       '',
       `Subtotal: ${money(order.subtotal)}`,
       `Delivery: ${typeof order.deliveryFee === 'number' ? money(order.deliveryFee) : 'to be confirmed'}${order.sameDay ? ' (same day)' : ''}`,
+      ...(order.member ? [`Member discount: -${money(order.member.amount)}`] : []),
       ...(order.discount ? [`Discount (${order.discount.code}): -${money(order.discount.amount)}`] : []),
       ...(order.referral ? [`Friend's welcome offer: -${money(order.referral.amount)}`] : []),
       ...(order.giftCard ? [`Gift card (${order.giftCard.display}): -${money(order.giftCard.amount)}`] : []),

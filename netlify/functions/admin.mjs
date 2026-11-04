@@ -44,6 +44,8 @@ import {
   deleteAffiliate, getAffiliate, listAffiliates, newAffiliateKey, onAffiliateStatus, recordPayout, updateAffiliate, approveAffiliate
 } from '../lib/affiliates.mjs';
 
+import { MEMBER_STATUSES, deleteMembership, getMembership, listMemberships, markTrialUsed, saveMembership } from '../lib/membership.mjs';
+
 const SUB_STATUSES = ['pending', 'awaiting-payment', 'active', 'paused', 'past-due', 'cancelled'];
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -130,6 +132,42 @@ export default async (req) => {
     }
 
     if (path === 'reviews' && method === 'GET') return json(200, { reviews: await listReviews() });
+
+    // ---------- Memberships ----------
+    if (path === 'memberships' && method === 'GET') return json(200, { memberships: await listMemberships() });
+    const memMatch = path.match(/^memberships\/([a-z0-9]{6,40})(\/cancel)?$/);
+    if (memMatch) {
+      const [, cid, cancel] = memMatch;
+      const m = await getMembership(cid);
+      if (!m) return json(404, { error: 'Membership not found.' });
+      if (cancel && method === 'POST') {
+        // Stops all future charges straight away
+        if (m.stripeSubscription && m.status !== 'cancelled') await stripe(`subscriptions/${m.stripeSubscription}`, null, 'DELETE');
+        const saved = { ...m, status: 'cancelled', cancelledAt: new Date().toISOString() };
+        await saveMembership(saved);
+        return json(200, saved);
+      }
+      if (!cancel && method === 'PATCH') {
+        const body = await req.json().catch(() => ({}));
+        const changes = {};
+        if (body.status !== undefined) {
+          if (!MEMBER_STATUSES.includes(body.status)) return json(400, { error: 'Unknown status.' });
+          if (m.payment === 'card' && m.stripeSubscription) return json(400, { error: 'Card memberships are updated by Stripe. Use Cancel to end one.' });
+          changes.status = body.status;
+          if (body.status === 'trialing' && m.trialDays && !m.trialEnd) changes.trialEnd = new Date(Date.now() + m.trialDays * 86400000).toISOString();
+          if (body.status === 'trialing') await markTrialUsed(m.customerId);
+        }
+        if (body.adminNotes !== undefined) changes.adminNotes = String(body.adminNotes).slice(0, 500);
+        const saved = { ...m, ...changes };
+        await saveMembership(saved);
+        return json(200, saved);
+      }
+      if (!cancel && method === 'DELETE') {
+        if (m.stripeSubscription && m.status !== 'cancelled') return json(400, { error: 'Cancel the membership first, so the member stops being charged.' });
+        await deleteMembership(cid);
+        return json(200, { ok: true });
+      }
+    }
 
     // ---------- Partners (affiliates) ----------
     if (path === 'affiliates' && method === 'GET') {

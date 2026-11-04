@@ -60,6 +60,7 @@ const ROUTES = [
   { match: (p) => p === '/api/subscribe', load: () => fn('subscribe.mjs') },
   { match: (p) => p === '/api/track', load: () => fn('track.mjs') },
   { match: (p) => p.startsWith('/api/affiliate/'), load: () => fn('affiliate.mjs') },
+  { match: (p) => p.startsWith('/api/membership/'), load: () => fn('membership.mjs') },
   { match: (p) => p === '/api/stripe-webhook', load: () => fn('stripe-webhook.mjs') },
   { match: (p) => p.startsWith('/api/admin/'), load: () => fn('admin.mjs') },
   { match: (p) => /^\/api\/image\/[\w-]+$/.test(p), load: () => fn('image.mjs'), params: (p) => ({ key: p.split('/').pop() }) }

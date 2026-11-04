@@ -8,6 +8,7 @@ import { cleanOrderDetails, findDiscount, getCatalog, json, priceOrder, saveOrde
 import { cleanGiftBuyer, commitExtras, prepareExtras, priceGiftCardPurchase } from '../lib/order-extras.mjs';
 import { stripe } from '../lib/accounts.mjs';
 import { affiliateForOrder, noteAffiliateOrder } from '../lib/affiliates.mjs';
+import { memberForRequest } from '../lib/membership.mjs';
 
 // Stripe metadata values are limited to 500 characters
 const clip = (value, max = 490) => String(value || '').trim().slice(0, max);
@@ -37,7 +38,8 @@ export default async (req) => {
       const details = cleanOrderDetails(body);
       const discount = body.discountCode ? await findDiscount(body.discountCode) : null;
       if (body.discountCode && !discount) throw new Error('That discount code is not valid.');
-      const priced = priceOrder(catalog, body.items, { delivery: details.delivery, discount });
+      const { member } = await memberForRequest(req, catalog);
+      const priced = priceOrder(catalog, body.items, { delivery: details.delivery, discount, member });
       const { fields } = await prepareExtras(req, body, catalog, priced);
       order = { ...details, ...priced, ...fields };
     }
@@ -68,11 +70,11 @@ export default async (req) => {
   }
 
   // Discount code, gift card and points become one single-use coupon, so Stripe charges exactly our total
-  const off = ((order.discount && order.discount.amount) || 0) + ((order.referral && order.referral.amount) || 0) + ((order.giftCard && order.giftCard.amount) || 0) + ((order.points && order.points.amount) || 0);
+  const off = ((order.discount && order.discount.amount) || 0) + ((order.member && order.member.amount) || 0) + ((order.referral && order.referral.amount) || 0) + ((order.giftCard && order.giftCard.amount) || 0) + ((order.points && order.points.amount) || 0);
   let coupon = null;
   if (off > 0) {
     try {
-      const names = [order.discount && order.discount.code, order.referral && 'Friend offer', order.giftCard && 'Gift card', order.points && 'Points'].filter(Boolean).join(' + ');
+      const names = [order.discount && order.discount.code, order.member && order.member.amount && 'Member discount', order.referral && 'Friend offer', order.giftCard && 'Gift card', order.points && 'Points'].filter(Boolean).join(' + ');
       coupon = (await stripe('coupons', { amount_off: off, currency: catalog.shop.currency, duration: 'once', max_redemptions: 1, name: clip(`${names} (${body.orderId})`, 40) })).id;
     } catch (err) {
       return json(502, { error: 'We could not apply your discount. Please try again.' });

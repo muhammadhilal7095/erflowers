@@ -5,6 +5,7 @@
 import { cleanOrderDetails, findDiscount, getCatalog, json, priceOrder, saveOrder, validOrderId } from '../lib/shop-data.mjs';
 import { cleanGiftBuyer, commitExtras, prepareExtras, priceGiftCardPurchase } from '../lib/order-extras.mjs';
 import { affiliateForOrder, noteAffiliateOrder } from '../lib/affiliates.mjs';
+import { memberForRequest } from '../lib/membership.mjs';
 
 export default async (req) => {
   if (req.method !== 'POST') return json(405, { error: 'Method not allowed.' });
@@ -39,7 +40,8 @@ export default async (req) => {
         discount = await findDiscount(body.discountCode);
         if (!discount) return json(400, { error: 'That discount code is not valid.' });
       }
-      const priced = priceOrder(catalog, body.items, { delivery: quick ? null : details.delivery, discount });
+      const { member } = await memberForRequest(req, catalog);
+      const priced = priceOrder(catalog, body.items, { delivery: quick ? null : details.delivery, discount, member });
       const { fields } = await prepareExtras(req, quick ? {} : body, catalog, priced);
       order = { ...details, ...priced, ...fields };
     }

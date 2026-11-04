@@ -103,7 +103,7 @@
   // ---------- Logged in ----------
   function section() {
     const want = (location.hash.slice(1) || 'overview').split('=')[0];
-    return ['overview', 'orders', 'subscriptions', 'points', 'refer', 'addresses', 'details'].includes(want) ? want : 'overview';
+    return ['overview', 'orders', 'membership', 'subscriptions', 'points', 'refer', 'addresses', 'details'].includes(want) ? want : 'overview';
   }
 
   const orderCard = (o) => `
@@ -185,6 +185,46 @@
           <li>Log in before you check out to earn and use points.</li></ul>` : '<p>Our loyalty scheme is paused at the moment. Your points are safe.</p>'}
         <h3 class="acct__h3">History</h3>
         ${c.pointsLog.length ? `<ul class="points-log">${c.pointsLog.map((p) => `<li><span>${esc(p.reason)}<small>${date(p.at)}</small></span><strong class="${p.change > 0 ? 'is-plus' : 'is-minus'}">${p.change > 0 ? '+' : ''}${p.change}</strong></li>`).join('')}</ul>` : '<p class="orders__note">No points yet.</p>'}`;
+    }
+    if (sec === 'membership') {
+      const m = data.membership;
+      const flag = new URLSearchParams(location.search).get('member');
+      const MS = { pending: 'Waiting to start', 'awaiting-payment': 'Waiting for payment', trialing: 'Free trial', active: 'Active', 'past-due': 'Payment problem', cancelled: 'Cancelled' };
+      const d = (x) => (x ? date(x) : '');
+      let html = flag === 'welcome' ? '<p class="notice-ok">Welcome! Your membership is being set up. Your member prices apply while you&rsquo;re logged in.</p>'
+        : flag === 'requested' ? '<p class="notice-ok">Thank you! We&rsquo;ve received your request and will confirm your membership on WhatsApp.</p>' : '';
+      html += '<h2 class="acct__h">Membership</h2>';
+      if (!m || m.status === 'cancelled' && !m.active) {
+        html += `<div class="orders__empty"><svg><use href="#i-rose"/></svg><p>${m ? 'Your membership has ended.' : 'Save on every bouquet with a membership.'}</p><a href="membership.html" class="btn btn--gold">See membership plans</a></div>`;
+      } else {
+        const benefits = [`${m.discount}% off flowers`, m.freeDeliveryOver ? `Free standard delivery over ${money(m.freeDeliveryOver)}` : 'Free standard delivery', ...(m.monthlyBouquet ? ['A standard bouquet each paid month'] : [])];
+        html += `
+          <div class="order-card">
+            <header class="order-card__head">
+              <div><span class="order-card__label">Plan</span><strong>${esc(m.planName)}</strong></div>
+              <div><span class="order-card__label">Price</span>${money(m.price)} a month</div>
+              <div><span class="order-card__label">${m.cancelAtPeriodEnd ? 'Ends on' : m.status === 'trialing' ? 'Free until' : 'Renews on'}</span>${d(m.status === 'trialing' && !m.cancelAtPeriodEnd ? m.trialEnd : m.periodEnd) || '—'}</div>
+              <span class="order-card__status st-${m.active ? 'paid' : 'new'}">${esc(MS[m.status] || m.status)}${m.cancelAtPeriodEnd ? ' (cancelled)' : ''}</span>
+            </header>
+            <ul class="order-card__items">${benefits.map((b) => `<li><span>✓ ${esc(b)}</span><span></span></li>`).join('')}</ul>
+            <footer class="order-card__foot">
+              <span>${m.active ? 'Log in before you check out and your member prices are applied automatically.' : 'Your benefits start once your membership is active.'}</span>
+              ${m.cancelAtPeriodEnd ? '' : '<button type="button" class="btn btn--outline btn--sm" id="cancelMember">Cancel membership</button>'}
+            </footer>
+          </div>
+          <p class="orders__note">${m.status === 'trialing' && !m.cancelAtPeriodEnd ? `Your first payment of ${money(m.price)} is due on ${d(m.trialEnd) || 'the date shown when you joined'}. Cancel before then and you won&rsquo;t pay anything.` : ''} Want to change plan? <a href="#" data-enquire="changing my membership plan">Message us</a>.</p>`;
+      }
+      main.innerHTML = html;
+      const cb = $('cancelMember');
+      if (cb) cb.addEventListener('click', async () => {
+        const when = m.status === 'trialing' ? 'at the end of your free trial, and you won\u2019t be charged' : 'at the end of the period you\u2019ve paid for, and you won\u2019t be charged again';
+        if (!confirm(`Cancel your ${m.planName} membership? It will end ${when}.`)) return;
+        cb.disabled = true;
+        try {
+          data.membership = (await api('../membership/cancel', { method: 'POST' })).membership;
+          render();
+        } catch (e) { alert(e.message); cb.disabled = false; }
+      });
     }
     if (sec === 'refer') {
       const link = `${location.origin}/?ref=${encodeURIComponent(c.referralCode)}`;
