@@ -119,6 +119,19 @@
           <span class="logo__sub">Roses</span>
         </a>`;
 
+  // Messages for the top bar, built from the live settings so they are always true
+  function announcements() {
+    const C = window.ENVIE_CATALOG;
+    const d = C.delivery || {};
+    const msgs = [];
+    msgs.push(d.sameDayEnabled ? `Same-day delivery in selected areas: order by ${niceTime(d.sameDayCutoff)}` : 'UK delivery on the date you choose');
+    const free = Object.values(C.addons || {}).find((x) => x.active !== false && x.price === 0);
+    if (free) msgs.push(`Free ${esc(free.name.toLowerCase())} with any bouquet`);
+    if (C.loyalty && C.loyalty.enabled) msgs.push(`Earn rewards with a free <a href="account.html#register">account</a>`);
+    msgs.push('Hand-selected roses, arranged by hand in London');
+    return msgs;
+  }
+
   function top(active) {
     write(`
   <a href="#main" class="skip-link">Skip to content</a>
@@ -126,45 +139,55 @@
 
   <div class="topbar">
     <div class="container topbar__inner">
-      <ul class="topbar__contact">
-        <li><a href="tel:${tel}"><svg class="icon"><use href="#i-phone"/></svg>${esc(shop.phone)}</a></li>
-        <li><a href="mailto:${esc(shop.email)}"><svg class="icon"><use href="#i-mail"/></svg>${esc(shop.email)}</a></li>
-        <li class="hide-sm"><svg class="icon"><use href="#i-pin"/></svg>London, UK</li>
+      <ul class="topbar__links">
+        <li><a href="track-order.html">Track order</a></li>
+        <li><a href="delivery.html">Delivery</a></li>
+        <li><a href="contact.html">Help</a></li>
       </ul>
       <div class="announce" aria-live="polite">
-        <p class="announce__msg is-active">Delivery across the UK</p>
-        <p class="announce__msg">Handcrafted rose boxes</p>
-        <p class="announce__msg">Order on WhatsApp</p>
-        <p class="announce__msg">Secure checkout</p>
+        ${announcements().map((m, i) => `<p class="announce__msg${i ? '' : ' is-active'}">${m}</p>`).join('')}
       </div>
-      ${socialList()}
+      <ul class="topbar__contact">
+        <li><a href="tel:${tel}"><svg class="icon"><use href="#i-phone"/></svg>${esc(shop.phone)}</a></li>
+        <li><a href="#" data-enquire=""><svg class="icon"><use href="#i-whatsapp"/></svg>WhatsApp</a></li>
+      </ul>
     </div>
   </div>
 
   <header class="header" id="header">
     <div class="container header__inner">
-      <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="nav">
-        <span></span><span></span><span></span>
-      </button>
+      <div class="header__left">
+        <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="nav">
+          <span></span><span></span><span></span>
+        </button>
+        <form class="hsearch" role="search" action="shop.html">
+          <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+          <input type="search" name="q" placeholder="Search roses, gifts…" aria-label="Search roses and gifts" autocomplete="off">
+        </form>
+      </div>
       ${logo}
-      <nav class="nav" id="nav" aria-label="Main">
-        <ul>
-          ${NAV.map((item) => navItem(item, active)).join('')}
-        </ul>
-        <a href="account.html" class="nav__account" id="navAccount"><svg class="icon"><use href="#i-user"/></svg><span id="navAccountText">Sign in / Create account</span></a>
-        ${partnerOn ? `<a href="partners.html" class="nav__partner">Become a Partner <small>Earn ${shortMoney(partnerPay)} per order</small></a>` : ''}
-        <div class="nav__extra">
-          <a href="tel:${tel}"><svg class="icon"><use href="#i-phone"/></svg>${esc(shop.phone)}</a>
-          <a href="mailto:${esc(shop.email)}"><svg class="icon"><use href="#i-mail"/></svg>${esc(shop.email)}</a>
-          ${socialList()}
-        </div>
-      </nav>
       <div class="header__actions">
         ${partnerOn ? `<a href="partners.html" class="partner-btn"><span class="partner-btn__top">Become a Partner</span><span class="partner-btn__sub">Earn ${shortMoney(partnerPay)} per order</span></a>` : ''}
-        <button type="button" aria-label="Search" class="icon-btn" id="searchOpen"><svg class="icon"><use href="#i-search"/></svg></button>
-        <a href="wishlist.html" aria-label="Wishlist" class="wish-link" id="wishLink"><svg class="icon"><use href="#i-heart"/></svg><span class="cart__count wish-count" id="wishCount" hidden>0</span></a>
-        <a href="account.html" class="acct-link hide-sm" id="accountLink" aria-label="Sign in or create an account"><svg class="icon"><use href="#i-user"/></svg><span class="acct-link__text" id="accountText">Sign in / Sign up</span></a>
-        <button type="button" aria-label="Bag, 0 items" class="cart icon-btn" id="cart"><svg class="icon"><use href="#i-cart"/></svg><span class="cart__count" id="cartCount">0</span></button>
+        <button type="button" aria-label="Search" class="icon-btn hact hact--search" id="searchOpen"><svg class="icon"><use href="#i-search"/></svg></button>
+        <a href="account.html" class="acct-link hact hide-sm" id="accountLink" aria-label="Sign in or create an account"><svg class="icon"><use href="#i-user"/></svg><span class="hact__label acct-link__text" id="accountText">Sign in</span></a>
+        <a href="wishlist.html" aria-label="Wishlist" class="wish-link hact" id="wishLink"><svg class="icon"><use href="#i-heart"/></svg><span class="hact__label">Saved</span><span class="cart__count wish-count" id="wishCount" hidden>0</span></a>
+        <button type="button" aria-label="Bag, 0 items" class="cart icon-btn hact" id="cart"><svg class="icon"><use href="#i-cart"/></svg><span class="hact__label">Bag</span><span class="cart__count" id="cartCount">0</span></button>
+      </div>
+    </div>
+    <div class="header__navbar">
+      <div class="container">
+        <nav class="nav" id="nav" aria-label="Main">
+          <ul>
+            ${NAV.map((item) => navItem(item, active)).join('')}
+          </ul>
+          <a href="account.html" class="nav__account" id="navAccount"><svg class="icon"><use href="#i-user"/></svg><span id="navAccountText">Sign in / Create account</span></a>
+          ${partnerOn ? `<a href="partners.html" class="nav__partner">Become a Partner <small>Earn ${shortMoney(partnerPay)} per order</small></a>` : ''}
+          <div class="nav__extra">
+            <a href="tel:${tel}"><svg class="icon"><use href="#i-phone"/></svg>${esc(shop.phone)}</a>
+            <a href="mailto:${esc(shop.email)}"><svg class="icon"><use href="#i-mail"/></svg>${esc(shop.email)}</a>
+            ${socialList()}
+          </div>
+        </nav>
       </div>
     </div>
   </header>
@@ -596,7 +619,7 @@
     const t = document.getElementById('accountText');
     const n = document.getElementById('navAccountText');
     const link = document.getElementById('accountLink');
-    if (t) t.textContent = name ? (name === 'My Account' ? name : `Hi, ${name}`) : 'Sign in / Sign up';
+    if (t) t.textContent = name ? (name === 'My Account' ? 'Account' : `Hi, ${name}`) : 'Sign in';
     if (n) n.textContent = name ? 'My Account' : 'Sign in / Create account';
     if (link) link.setAttribute('aria-label', name ? 'My account' : 'Sign in or create an account');
   }
